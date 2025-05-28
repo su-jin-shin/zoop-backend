@@ -8,6 +8,6 @@ jobs:
   delete-branch:
     runs-on: ubuntu-latest
     steps:
-      - uses: peter-evans/delete-branch@v3
+      - uses: peter-evans/delete-branch@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
