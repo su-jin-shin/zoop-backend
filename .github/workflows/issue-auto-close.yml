@@ -21,4 +21,5 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           comment: |
-            이 PR이 병합되어 관련 이슈를 자동으로 닫습니다. 
+            이 PR이 병합되어 관련 이슈를 자동으로 닫습니다.
+        continue-on-error: true
