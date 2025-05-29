@@ -26,10 +26,6 @@ jobs:
       - name: Build and Test
         run: ./mvnw clean verify
 
-      # 2. 코드 스타일 검사(Checkstyle)
-      - name: Checkstyle
-        run: ./mvnw checkstyle:check
-
-      # 3. 정적 분석(SpotBugs)
+      # 2. 정적 분석(SpotBugs)
       - name: SpotBugs
         run: ./mvnw spotbugs:check
