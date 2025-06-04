@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>닉네임 입력</title>
+    <style>
+        body { font-family: sans-serif; margin: 2rem; }
+        input, button { margin: 1rem 0; display: block; }
+    </style>
+</head>
+<body>
+<h1>닉네임 등록</h1>
+
+<input id="nickname" placeholder="닉네임 입력" />
+<button id="register-btn">등록</button>
+
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const email = urlParams.get('email');
+
+    document.getElementById('register-btn').onclick = async () => {
+        const nickname = document.getElementById('nickname').value;
+        if (!nickname) return alert('닉네임을 입력하세요.');
+
+        const res = await fetch('/users/auth/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, nickname })
+        });
+
+        if (res.ok) {
+            alert('닉네임 등록 완료');
+            window.location.href = '/home.html';
+        } else {
+            alert('닉네임 등록 실패');
+        }
+    };
+</script>
+</body>
+</html>
