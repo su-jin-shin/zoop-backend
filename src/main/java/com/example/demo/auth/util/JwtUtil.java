@@ -6,36 +6,58 @@ import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 @Component
 @RequiredArgsConstructor
 public class JwtUtil {
 
-    @Value("${jwt.secret}") private String secretKey;
-    private static final long ACCESS_EXP  = 60 * 60 * 1000;        // 1일
-    private static final long REFRESH_EXP = 14L * 24 * 60 * 60 * 1000; // 14일
+    @Value("${jwt.secret}")
+    private String secretKey;
 
-    public String generateAccess(String sub){ return build(sub, ACCESS_EXP); }
-    public String generateRefresh(String sub){ return build(sub, REFRESH_EXP); }
+    private static final long ACCESS_EXP  = 60 * 60 * 1000;        // 1 h
+    private static final long REFRESH_EXP = 14L * 24 * 60 * 60 * 1000; // 14 d
 
-    public Boolean isExpired(String token){
-        return Jwts.parserBuilder().setSigningKey(secretKey.getBytes())
-                .build().parseClaimsJws(token)
-                .getBody().getExpiration().before(new Date());
+    /* ---------------- 헬퍼 ---------------- */
+    private byte[] keyBytes() {
+        // DM_DEFAULT_ENCODING --> UTF-8 명시
+        return secretKey.getBytes(StandardCharsets.UTF_8);
     }
-    public String getSubject(String token){
-        return Jwts.parserBuilder().setSigningKey(secretKey.getBytes())
-                .build().parseClaimsJws(token)
-                .getBody().getSubject();
+
+    /* ---------------- 발급 ---------------- */
+    public String generateAccess(String sub)  { return build(sub, ACCESS_EXP); }
+    public String generateRefresh(String sub) { return build(sub, REFRESH_EXP); }
+
+    /* ---------------- 검증 ---------------- */
+    public boolean isExpired(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(keyBytes())
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .getExpiration()
+                .before(new Date());
     }
-    private String build(String sub,long exp){
+
+    public String getSubject(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(keyBytes())
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .getSubject();
+    }
+
+    /* ---------------- 내부 ---------------- */
+    private String build(String sub, long exp) {
         Date now = new Date();
         return Jwts.builder()
                 .setSubject(sub)
                 .setIssuedAt(now)
-                .setExpiration(new Date(now.getTime()+exp))
-                .signWith(Keys.hmacShaKeyFor(secretKey.getBytes()),SignatureAlgorithm.HS256)
+                .setExpiration(new Date(now.getTime() + exp))
+                .signWith(Keys.hmacShaKeyFor(keyBytes()), SignatureAlgorithm.HS256)
                 .compact();
     }
 }

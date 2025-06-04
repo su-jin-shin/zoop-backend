@@ -2,6 +2,7 @@ package com.example.demo.auth.service;
 
 import com.example.demo.auth.dto.KakaoTokenResponse;
 import com.example.demo.auth.dto.KakaoUserDto;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -15,6 +16,8 @@ import reactor.core.publisher.Mono;
 
 @Service
 @Slf4j
+@SuppressFBWarnings(value = {"EI_EXPOSE_REP2"},
+        justification = "WebClient는 Bean이며 불변 객체로 안전하게 주입됨")
 public class KakaoAuthServiceImpl implements KakaoAuthService {
 
     private final WebClient kauthClient;
@@ -56,7 +59,6 @@ public class KakaoAuthServiceImpl implements KakaoAuthService {
                 .bodyToMono(KakaoUserDto.class)
                 .block();
     }
-
 
     @Override
     public void logout(String kakaoAccessToken) {
