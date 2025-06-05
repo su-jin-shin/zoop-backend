@@ -2,30 +2,39 @@ name: Maven CI All Checks
 
 on:
   push:
-    branches: [ "main", "dev" ]
   pull_request:
-    branches: [ "main", "dev" ]
 
 jobs:
+  # ────────────────────────────────────────────────────────────────
   build-and-test:
     runs-on: ubuntu-latest
+
     steps:
+      # 0) 소스 체크아웃
       - uses: actions/checkout@v4
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
+      # 1) JDK 17 설치
+      - uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      # Maven Wrapper에 실행 권한 부여
+      # 2) Maven 캐시 (빌드 속도↑)
+      - uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      # 3) Maven Wrapper 실행 권한
       - name: Grant execute permission for Maven Wrapper
         run: chmod +x ./mvnw
 
-      # 1. 빌드 및 테스트
+      # 4) 빌드 + 단위 테스트
       - name: Build and Test
         run: ./mvnw clean verify
 
-      # 2. 정적 분석(SpotBugs)
+      # 5) SpotBugs 정적 분석
       - name: SpotBugs
         run: ./mvnw spotbugs:check

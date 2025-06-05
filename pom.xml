@@ -155,6 +155,13 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
       </plugin>
+      <!-- pom.xml -->
+          <!-- SonarQube Scanner -->
+          <plugin>
+            <groupId>org.sonarsource.scanner.maven</groupId>
+            <artifactId>sonar-maven-plugin</artifactId>
+            <version>5.1.0.4751</version> <!-- 2025-03 기준 최신 -->
+          </plugin>
 
       <!-- Java 컴파일 + Lombok/QueryDSL -->
       <plugin>
