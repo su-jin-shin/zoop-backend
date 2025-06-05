@@ -25,11 +25,13 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class AuthController {
 
+
     private final LoginService loginService;
     private final KakaoAuthService kakaoAuthService;
     private final JwtUtil jwtUtil;
     private final UserInfoRepository userRepo;
 
+    
     @Value("${kakao.client-id}")
     private String kakaoClientId;
 
