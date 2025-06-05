@@ -26,6 +26,8 @@ public class UserInfo {
     private Long kakaoId;
 
     private String email;
+
+    @Column(nullable = false, unique = true)
     private String nickname;
     private String profileImage;
     private String withdrawReason;
