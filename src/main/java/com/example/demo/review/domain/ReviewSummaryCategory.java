@@ -1,9 +1,12 @@
 package com.example.demo.review.domain;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.persistence.*;
 
 @Entity
 @Table(name = "review_summary_category")
+@SuppressFBWarnings(value = "UWF_UNWRITTEN_FIELD",
+        justification = "content, rating, review_summary_id unused SpotBugs 무시")
 public class ReviewSummaryCategory {
 
     @Id
