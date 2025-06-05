@@ -31,6 +31,7 @@ public class AuthController {
     private final JwtUtil jwtUtil;
     private final UserInfoRepository userRepo;
 
+    
     @Value("${kakao.client-id}")
     private String kakaoClientId;
 
