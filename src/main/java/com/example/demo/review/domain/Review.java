@@ -5,10 +5,12 @@ import lombok.Setter;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Entity
-@Table(name="reviews")
+@Table(name="review")
 @Getter
 @Setter
 public class Review {
@@ -18,9 +20,13 @@ public class Review {
     @Column(name = "review_id")
     private Long id;
 
-    private Long complex_id;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "complex_id")
+    private Complex complex;
 
-    private Long user_id;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "members_id")
+    private Members members;
 
     private String content;
 
@@ -33,4 +39,10 @@ public class Review {
     private LocalDateTime created_at;
     private LocalDateTime updated_at;
     private LocalDateTime deleted_at;
+
+
+    //필드 초기화
+    @OneToMany(mappedBy = "review")
+    private List<ReviewComment> comments = new ArrayList<>();
+
 }

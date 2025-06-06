@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name="review_comment")
@@ -18,14 +20,25 @@ public class ReviewComment {
     @Column(name = "comment_id")
     private Long id;
 
-    private Long review_id;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "review_id")
+    private Review review;
 
-    private Long user_id;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "members_id")
+    private Members members;
 
     private String content;
 
     private LocalDateTime created_at;
     private LocalDateTime updated_at;
     private LocalDateTime deleted_at;
+
+    @OneToMany(mappedBy = "reviewComment")
+    private List<ReviewCommentLike> commentLikes = new ArrayList<>();
+
+
+
+
 
 }

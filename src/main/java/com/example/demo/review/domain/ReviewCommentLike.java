@@ -3,7 +3,7 @@ package com.example.demo.review.domain;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 
@@ -18,9 +18,13 @@ public class ReviewCommentLike {
     @Column(name = "review_comment_like_id")
     private Long id;
 
-    private Long comment_id;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "comment_id")
+    private ReviewComment reviewComment;
 
-    private Long user_id;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "members_id")
+    private Members members;
 
     private boolean is_liked;
 

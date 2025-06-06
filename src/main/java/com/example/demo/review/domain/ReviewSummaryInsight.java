@@ -15,9 +15,11 @@ public class ReviewSummaryInsight {
     @Column(name = "review_summary_insight_id")
     private Long id;
 
-    private Long review_summary_id;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "review_summary_id")
+    private ReviewSummary reviewSummary;
 
-
+    @Enumerated(EnumType.STRING)
     private InsightType type;  //'GOOD' , 'BAD'
 
     private String content;

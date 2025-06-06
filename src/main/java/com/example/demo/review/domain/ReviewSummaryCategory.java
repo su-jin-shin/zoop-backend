@@ -14,7 +14,9 @@ public class ReviewSummaryCategory {
     @Column(name = "review_summary_category_id")
     private Long id;
 
-    private Long review_summary_id;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "review_summary_id")
+    private ReviewSummary reviewSummary;
 
     @Enumerated(EnumType.STRING)
     private CategoryType type;  //'TRANSPORTATION','RESIDENTIAL','EDUCATION','FACILITIES'
