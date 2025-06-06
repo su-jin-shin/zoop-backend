@@ -1,5 +1,6 @@
 package com.example.demo.review.domain;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,6 +12,7 @@ import java.time.LocalDateTime;
 @Table(name = "review_comment_like")
 @Getter
 @Setter
+@SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class ReviewCommentLike {
 
     @Id

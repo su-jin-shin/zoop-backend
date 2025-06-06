@@ -1,5 +1,6 @@
 package com.example.demo.review.domain;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.Getter;
 import lombok.Setter;
 import jakarta.persistence.*;
@@ -13,6 +14,7 @@ import java.util.List;
 @Table(name="review")
 @Getter
 @Setter
+@SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class Review {
 
     @Id
