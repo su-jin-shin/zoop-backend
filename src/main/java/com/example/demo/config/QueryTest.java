@@ -1,6 +1,6 @@
 package com.example.demo.config;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
 
 public class QueryTest {
