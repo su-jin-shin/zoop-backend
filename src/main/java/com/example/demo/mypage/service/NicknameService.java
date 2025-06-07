@@ -3,13 +3,14 @@ package com.example.demo.mypage.service;
 import com.example.demo.auth.domain.UserInfo;
 import com.example.demo.mypage.repository.MypageUserInfoRepository;
 import com.sun.jdi.request.DuplicateRequestException;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.EntityNotFoundException;
+import jakarta.persistence.EntityNotFoundException;
 
 @Service
 @RequiredArgsConstructor
