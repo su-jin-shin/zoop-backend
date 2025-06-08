@@ -24,7 +24,7 @@ public class NotificationController {
     public ResponseEntity<List<NotificationResponseDto>> getAllNotifications(@AuthenticationPrincipal LoginUser loginUser) {
 
         // 로그인한 유저의 userId 추출
-        Long userId = loginUser.getUserInfo().getUserId();
+        Long userId = Long.valueOf(loginUser.getUsername());
 
         // 서비스에서 알림 목록 조회
         List<NotificationResponseDto> notifications = notificationService.findByUserIdAndIsUsedTrue(userId);

@@ -13,6 +13,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class LoginUser implements UserDetails {
 
+    @Getter(lombok.AccessLevel.NONE)
     private final UserInfo userInfo;
 
     @Override
