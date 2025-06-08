@@ -23,7 +23,10 @@ public class KeywordFilterHistory {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @Getter(lombok.AccessLevel.NONE)
-    @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "JPA Entity 연관관계 필드는 ORM에 의해 관리되므로 직접적인 노출 위험이 낮습니다.")
+    @SuppressFBWarnings(
+            value = "EI_EXPOSE_REP2",
+            justification = "UserInfo는 JPA 엔티티로, 내부 변경이 제한되며 ORM이 이를 관리합니다."
+    )
     private UserInfo userInfo;                // 유저인포 테이블과 관계 맺기
 
     @ManyToOne(fetch = FetchType.LAZY)

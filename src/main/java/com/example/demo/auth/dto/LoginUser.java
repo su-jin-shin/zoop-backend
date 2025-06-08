@@ -1,6 +1,7 @@
 package com.example.demo.auth.dto;
 
 import com.example.demo.auth.domain.UserInfo;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
@@ -11,9 +12,17 @@ import java.util.List;
 
 @Getter
 @RequiredArgsConstructor
+@SuppressFBWarnings(
+        value = "EI_EXPOSE_REP2",
+        justification = "LoginUser는 세션 DTO 용도이며, UserInfo는 JPA Entity로 변경 위험이 낮음"
+)
 public class LoginUser implements UserDetails {
 
     @Getter(lombok.AccessLevel.NONE)
+    @SuppressFBWarnings(
+            value = "SE_BAD_FIELD",
+            justification = "LoginUser는 userInfo 직렬화를 요구하지 않으며, 세션 저장 시 해당 필드는 무시해도 무방합니다."
+    )
     private final UserInfo userInfo;
 
     @Override
