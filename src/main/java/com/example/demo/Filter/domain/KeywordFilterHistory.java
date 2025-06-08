@@ -15,6 +15,10 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@SuppressFBWarnings(
+        value = "EI_EXPOSE_REP2",
+        justification = "UserInfo는 JPA 엔티티로, 내부 변경이 제한되며 Builder를 통한 저장도 안전합니다."
+)
 public class KeywordFilterHistory {
 
     @Id
@@ -23,10 +27,6 @@ public class KeywordFilterHistory {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @Getter(lombok.AccessLevel.NONE)
-    @SuppressFBWarnings(
-            value = "EI_EXPOSE_REP2",
-            justification = "UserInfo는 JPA 엔티티로, 내부 변경이 제한되며 ORM이 이를 관리합니다."
-    )
     private UserInfo userInfo;                // 유저인포 테이블과 관계 맺기
 
     @ManyToOne(fetch = FetchType.LAZY)
