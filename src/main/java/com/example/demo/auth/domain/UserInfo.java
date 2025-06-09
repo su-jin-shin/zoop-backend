@@ -29,6 +29,8 @@ public class UserInfo {
 
 //    @Column(nullable = false, unique = true)
     private String nickname;
+
+    @Column(columnDefinition = "TEXT")
     private String profileImage;
     private String withdrawReason;
 
