@@ -56,7 +56,7 @@
     function submitNickname() {
         const nickname = document.getElementById("nickname").value.trim();
         const accessToken = localStorage.getItem("accessToken");
-        const token = "Bearer " + localStorage.getItem("accessToken");
+        const token = "Bearer " + accessToken;
 
         if (!nickname) {
             alert("닉네임을 입력해주세요.");
@@ -85,7 +85,7 @@
             .then(res => {
                 if (res.ok) {
                     alert("닉네임이 성공적으로 변경되었습니다.");
-                    location.reload();
+                    location.href = "/mypage/account/view";
                 } else {
                     return res.json().then(err => {
                         alert(err.message || "닉네임 변경 실패");

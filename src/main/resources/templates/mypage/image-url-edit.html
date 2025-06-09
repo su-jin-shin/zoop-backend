@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>프로필 이미지 변경</title>
+    <style>
+        body {
+            font-family: 'Pretendard', sans-serif;
+            padding: 2rem;
+            background-color: #f9f9f9;
+        }
+        .container {
+            max-width: 400px;
+            margin: auto;
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            text-align: center;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 0.5rem;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+        button {
+            padding: 0.5rem 1.5rem;
+            font-size: 1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 0.5rem;
+        }
+        .save-btn {
+            background-color: #4a90e2;
+            color: white;
+        }
+        .save-btn:hover {
+            background-color: #3a78c2;
+        }
+        .delete-btn {
+            background-color: #ccc;
+            color: #333;
+        }
+        .delete-btn:hover {
+            background-color: #999;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>프로필 이미지 변경</h2>
+
+    <input type="text" id="imageUrl" placeholder="이미지 URL 입력" />
+
+    <div>
+        <button class="save-btn" onclick="updateImageUrl()">이미지 저장</button>
+        <button class="delete-btn" onclick="resetToDefault()">이미지 삭제</button>
+    </div>
+</div>
+
+<script>
+    const token = "Bearer " + localStorage.getItem("accessToken");
+
+    function updateImageUrl() {
+        const url = document.getElementById("imageUrl").value.trim();
+        if (!url) {
+            alert("이미지 URL을 입력해주세요.");
+            return;
+        }
+
+        fetch("/mypage/profile-image", {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json"
+                // , "Authorization": token
+            },
+            body: JSON.stringify({ profileImageUrl: url })
+        })
+            .then(res => {
+                if (res.ok) {
+                    alert("이미지가 변경되었습니다.");
+                    location.href = "/mypage/account/view";
+                } else {
+                    return res.json().then(err => {
+                        alert(err.message || "이미지 변경 실패");
+                    });
+                }
+            })
+            .catch(() => {
+                alert("서버와 연결할 수 없습니다.");
+            });
+    }
+
+    function resetToDefault() {
+        if (!confirm("기본 이미지로 초기화하시겠습니까?")) return;
+
+        fetch("/mypage/profile-image", {
+            method: "DELETE",
+            headers: {
+                // "Authorization": token
+            }
+        })
+            .then(res => {
+                if (res.ok) {
+                    alert("기본 이미지로 변경되었습니다.");
+                    location.href = "/mypage/account/view";
+                } else {
+                    return res.json().then(err => {
+                        alert(err.message || "이미지 초기화 실패");
+                    });
+                }
+            })
+            .catch(() => {
+                alert("서버와 연결할 수 없습니다.");
+            });
+    }
+</script>
+</body>
+</html>

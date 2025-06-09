@@ -24,23 +24,27 @@ public class MyPageAccountController {
     private final NicknameService nicknameService;
     private final ProfileImageService profileImageService;
 
-    private Long parseUserId(LoginUser loginUser) {
-        try {
-            return Long.valueOf(loginUser.getUsername());
-        } catch (Exception e) {
-            return null;
-        }
-    }
+//    private Long parseUserId(LoginUser loginUser) {
+//        try {
+//            return Long.valueOf(loginUser.getUsername());
+//        } catch (Exception e) {
+//            return null;
+//        }
+//    }
+
+    Long userId = 1L;
+
     // 닉네임 수정
     @PatchMapping("/user-nickname")
     public ResponseEntity<?> updateNickname(
             @RequestBody @Valid NicknameUpdateRequest request
             , @AuthenticationPrincipal LoginUser loginUser) {
 
-//        Long userId = 1L;
+
         System.out.println("😂😂"+loginUser); // >>> 테스트 중 아직 인증 부분에 문제가 있음
 
-        Long userId = parseUserId(loginUser);
+//        Long userId = parseUserId(loginUser);
+        Long userId = 1L;
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(new MyPageAccountController.ErrorResponse("로그인이 필요합니다."));
@@ -81,7 +85,8 @@ public class MyPageAccountController {
             @AuthenticationPrincipal LoginUser loginUser,
             @RequestBody @Valid ProfileImageUpdateRequest request) {
 
-        Long userId = parseUserId(loginUser);
+//        Long userId = parseUserId(loginUser);
+        Long userId = 1L;
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(new ErrorResponse("로그인 후 다시 시도해주세요."));
@@ -97,7 +102,8 @@ public class MyPageAccountController {
     public ResponseEntity<?> deleteProfileImage(
             @AuthenticationPrincipal LoginUser loginUser) {
 
-        Long userId = parseUserId(loginUser);
+//        Long userId = parseUserId(loginUser);
+        Long userId = 1L;
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(new ErrorResponse("로그인 후 다시 시도해주세요."));
@@ -115,7 +121,8 @@ public class MyPageAccountController {
     @GetMapping("/account")
     public ResponseEntity<?> getAccountInfo(@AuthenticationPrincipal LoginUser loginUser) {
 
-        Long userId = parseUserId(loginUser);
+//        Long userId = parseUserId(loginUser);
+        Long userId = 1L;
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(new ErrorResponse("로그인 후 다시 시도해주세요."));
