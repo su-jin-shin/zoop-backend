@@ -2,37 +2,52 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>닉네임 입력</title>
+    <title>닉네임 수정</title>
     <style>
         body { font-family: sans-serif; margin: 2rem; }
         input, button { margin: 1rem 0; display: block; }
+        #message { color: red; }
     </style>
 </head>
 <body>
-<h1>닉네임 등록</h1>
+<h1>닉네임 수정</h1>
 
-<input id="nickname" placeholder="닉네임 입력" />
-<button id="register-btn">등록</button>
+<input id="nickname" placeholder="새 닉네임 입력" />
+<button id="update-btn">닉네임 저장</button>
+
+<p id="message"></p>
 
 <script>
-    const urlParams = new URLSearchParams(window.location.search);
-    const email = urlParams.get('email');
-
-    document.getElementById('register-btn').onclick = async () => {
+    document.getElementById('update-btn').onclick = async () => {
         const nickname = document.getElementById('nickname').value;
-        if (!nickname) return alert('닉네임을 입력하세요.');
+        const messageEl = document.getElementById('message');
+        messageEl.innerText = ''; // 초기화
 
-        const res = await fetch('/users/auth/register', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, nickname })
-        });
+        if (!nickname) {
+            messageEl.innerText = '닉네임을 입력해주세요.';
+            return;
+        }
 
-        if (res.ok) {
-            alert('닉네임 등록 완료');
-            window.location.href = '/home.html';
-        } else {
-            alert('닉네임 등록 실패');
+        try {
+            const res = await fetch('/mypage/user-nickname', {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ nickname: nickname })
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                alert('닉네임이 성공적으로 변경되었습니다.');
+                window.location.href = '/home.html'; // 또는 마이페이지 등
+            } else {
+                messageEl.innerText = data.message || '닉네임 변경 실패';
+            }
+        } catch (e) {
+            console.error(e);
+            messageEl.innerText = '서버 오류가 발생했습니다.';
         }
     };
 </script>

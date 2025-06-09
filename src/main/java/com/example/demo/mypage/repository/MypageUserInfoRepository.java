@@ -6,5 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface MypageUserInfoRepository extends JpaRepository<UserInfo, Long> {
-    boolean existsByNickname(String nickname);
+
 }

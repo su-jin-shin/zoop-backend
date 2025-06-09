@@ -27,7 +27,7 @@ public class UserInfo {
 
     private String email;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = true, unique = true)
     private String nickname;
     private String profileImage;
     private String withdrawReason;
