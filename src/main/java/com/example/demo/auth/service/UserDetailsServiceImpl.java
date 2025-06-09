@@ -21,6 +21,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
 
         // ➡LoginUser 래퍼로 반환
-        return new LoginUser(user);
+        return new LoginUser(user.getUserId());
     }
 }
