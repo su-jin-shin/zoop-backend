@@ -15,6 +15,14 @@ public class ViewController {
 
     private final MypageAccountService myPageService;
 
+    private Long parseUserId(LoginUser loginUser) {
+        try {
+            return Long.valueOf(loginUser.getUsername());
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     @GetMapping("/mypage/nickname-edit")
     public String showNicknameEditPage() {
         return "mypage/nickname-edit";
@@ -26,14 +34,13 @@ public class ViewController {
     }
 
     @GetMapping("/mypage/account/view")
-    public String accountView(Model model/*, @AuthenticationPrincipal LoginUser loginUser*/) {
-
-        Long userId = 1L; // 테스트용 사용자 ID
-
+    public String accountView(Model model /*, @AuthenticationPrincipal LoginUser loginUser*/) {
 //        if (loginUser == null) {
-//            return "redirect:/login"; // 또는 에러 페이지
+//            return "redirect:/login.html"; // 인증 안 된 경우 처리
 //        }
-//        Long userId = Long.valueOf(loginUser.getUsername());
+//
+//        Long userId = parseUserId(loginUser);
+        Long userId = 1L; // 테스트용 하드코딩
         MyPageAccountResponse response = myPageService.getAccountInfo(userId);
 
         model.addAttribute("email", response.getEmail());
@@ -42,4 +49,5 @@ public class ViewController {
 
         return "mypage/account";
     }
+
 }

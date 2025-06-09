@@ -63,8 +63,7 @@
 </div>
 
 <script>
-    const token = "Bearer " + localStorage.getItem("accessToken");
-
+    const DEFAULT_PROFILE_IMAGE_URL ="http://localhost:8080/images/default-profile.png";
     function updateImageUrl() {
         const url = document.getElementById("imageUrl").value.trim();
         if (!url) {
@@ -72,45 +71,33 @@
             return;
         }
 
-        fetch("/mypage/profile-image", {
-            method: "PATCH",
-            headers: {
-                "Content-Type": "application/json"
-                // , "Authorization": token
-            },
-            body: JSON.stringify({ profileImageUrl: url })
-        })
-            .then(res => {
-                if (res.ok) {
-                    alert("이미지가 변경되었습니다.");
-                    location.href = "/mypage/account/view";
-                } else {
-                    return res.json().then(err => {
-                        alert(err.message || "이미지 변경 실패");
-                    });
-                }
-            })
-            .catch(() => {
-                alert("서버와 연결할 수 없습니다.");
-            });
+        sendProfileImageUpdate(url);
     }
 
     function resetToDefault() {
         if (!confirm("기본 이미지로 초기화하시겠습니까?")) return;
+        document.getElementById("imageUrl").value = DEFAULT_PROFILE_IMAGE_URL;
+        sendProfileImageUpdate(DEFAULT_PROFILE_IMAGE_URL);
+    }
+
+    function sendProfileImageUpdate(imageUrl) {
+        const token = "Bearer " + localStorage.getItem("accessToken");
 
         fetch("/mypage/profile-image", {
-            method: "DELETE",
+            method: "PATCH",
             headers: {
-                // "Authorization": token
-            }
+                "Content-Type": "application/json"
+                , "Authorization": token
+            },
+            body: JSON.stringify({ profileImageUrl: imageUrl })
         })
             .then(res => {
                 if (res.ok) {
-                    alert("기본 이미지로 변경되었습니다.");
+                    alert("프로필 이미지가 변경되었습니다.");
                     location.href = "/mypage/account/view";
                 } else {
                     return res.json().then(err => {
-                        alert(err.message || "이미지 초기화 실패");
+                        alert(err.message || "이미지 변경 실패");
                     });
                 }
             })

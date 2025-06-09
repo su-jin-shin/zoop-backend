@@ -24,27 +24,26 @@ public class MyPageAccountController {
     private final NicknameService nicknameService;
     private final ProfileImageService profileImageService;
 
-//    private Long parseUserId(LoginUser loginUser) {
-//        try {
-//            return Long.valueOf(loginUser.getUsername());
-//        } catch (Exception e) {
-//            return null;
-//        }
-//    }
+    private Long parseUserId(LoginUser loginUser) {
+        try {
+            return Long.valueOf(loginUser.getUsername());
+        } catch (Exception e) {
+            return null;
+        }
+    }
 
-    Long userId = 1L;
+//    Long userId = 1L;
 
     // 닉네임 수정
     @PatchMapping("/user-nickname")
     public ResponseEntity<?> updateNickname(
             @RequestBody @Valid NicknameUpdateRequest request
             , @AuthenticationPrincipal LoginUser loginUser) {
-
-
-        System.out.println("😂😂"+loginUser); // >>> 테스트 중 아직 인증 부분에 문제가 있음
-
-//        Long userId = parseUserId(loginUser);
-        Long userId = 1L;
+//        System.out.println("😂😂"+loginUser); // >>> 테스트 중 아직 인증 부분에 문제가 있음
+//
+//        System.out.println("😂😂"+loginUser.getUsername());
+        Long userId = parseUserId(loginUser);
+//        Long userId = 1L;
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(new MyPageAccountController.ErrorResponse("로그인이 필요합니다."));
@@ -85,8 +84,8 @@ public class MyPageAccountController {
             @AuthenticationPrincipal LoginUser loginUser,
             @RequestBody @Valid ProfileImageUpdateRequest request) {
 
-//        Long userId = parseUserId(loginUser);
-        Long userId = 1L;
+        Long userId = parseUserId(loginUser);
+//        Long userId = 1L;
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(new ErrorResponse("로그인 후 다시 시도해주세요."));
@@ -97,22 +96,22 @@ public class MyPageAccountController {
         return ResponseEntity.ok(new ProfileImageResponse(savedUrl));
     }
 
-    // 프로필 이미지 삭제 (DB에 저장되어 있는 기본 이미지로 재설정)
-    @DeleteMapping("/profile-image")
-    public ResponseEntity<?> deleteProfileImage(
-            @AuthenticationPrincipal LoginUser loginUser) {
-
+//    // 프로필 이미지 삭제 (DB에 저장되어 있는 기본 이미지로 재설정)
+//    @DeleteMapping("/profile-image")
+//    public ResponseEntity<?> deleteProfileImage(
+//            @AuthenticationPrincipal LoginUser loginUser) {
+//
 //        Long userId = parseUserId(loginUser);
-        Long userId = 1L;
-        if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new ErrorResponse("로그인 후 다시 시도해주세요."));
-        }
-
-        String defaultUrl = profileImageService.resetToDefaultImage(userId);
-
-        return ResponseEntity.ok().body(new ProfileImageResponse(defaultUrl));
-    }
+////        Long userId = 1L;
+//        if (userId == null) {
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+//                    .body(new ErrorResponse("로그인 후 다시 시도해주세요."));
+//        }
+//
+//        String defaultUrl = profileImageService.resetToDefaultImage(userId);
+//
+//        return ResponseEntity.ok().body(new ProfileImageResponse(defaultUrl));
+//    }
 
     // 회원 탈퇴
 //    @DeleteMapping("/withdraw")
@@ -121,8 +120,8 @@ public class MyPageAccountController {
     @GetMapping("/account")
     public ResponseEntity<?> getAccountInfo(@AuthenticationPrincipal LoginUser loginUser) {
 
-//        Long userId = parseUserId(loginUser);
-        Long userId = 1L;
+        Long userId = parseUserId(loginUser);
+//        Long userId = 1L;
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(new ErrorResponse("로그인 후 다시 시도해주세요."));
