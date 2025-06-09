@@ -43,6 +43,7 @@ public class AuthController {
     public ResponseEntity<Void> redirectToKakao(
             @RequestParam(value = "state", required = false) String state) {
 
+
         String url = UriComponentsBuilder
                 .fromHttpUrl("https://kauth.kakao.com/oauth/authorize")
                 .queryParam("client_id", kakaoClientId)
@@ -54,10 +55,13 @@ public class AuthController {
                 .encode()
                 .toUriString();
 
+
         return ResponseEntity.status(HttpStatus.FOUND)
                 .header(HttpHeaders.LOCATION, url)
                 .build();
     }
+
+
 
     // 카카오가 redirect_uri로 돌려준 code 처리 + 로그인 기록(IP)까지!
     @GetMapping("/kakao/callback")

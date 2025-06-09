@@ -18,6 +18,7 @@ public class SecurityConfig {
                         .anyRequest().permitAll()  // 모든 요청 허가
                 );
 
+
 //    @Bean
 //    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 //        http
@@ -36,6 +37,9 @@ public class SecurityConfig {
 //                                "/images/**",   // 이미지 경로 (예: /images/logo.png)
 //                                "/favicon.ico"
 //                        ).permitAll()
+//                        // 로그인/회원가입만 열어두기
+//                        .requestMatchers("/users/auth/**").permitAll()
+//                        // 나머지는 로그인된 사용자만
 //                        .anyRequest().authenticated()
 //                );
 
