@@ -26,10 +26,20 @@ public class CheckUserOwnerAspect {
         if (!(auth.getPrincipal() instanceof LoginUser loginUser)) {
             throw new AccessDeniedException("401 Unauthorized: 인증 정보가 올바르지 않습니다.");
         }
-        Long loggedInUserId = loginUser.getUserId();
 
+        /* ───── LoginUser 에 getUserId()가 없으므로
+                 getUsername() → "userId" 문자열을 Long 으로 파싱 ───── */
+        Long loggedInUserId;
+        try {
+            loggedInUserId = Long.parseLong(loginUser.getUsername());
+        } catch (NumberFormatException e) {
+            throw new AccessDeniedException("401 Unauthorized: 잘못된 사용자 정보");
+        }
+
+        /* ---------- 메서드 인자 순회 ---------- */
         for (Object arg : joinPoint.getArgs()) {
 
+            // 1) Long userId 직접 전달
             if (arg instanceof Long targetUserId) {
                 if (!targetUserId.equals(loggedInUserId)) {
                     throw new AccessDeniedException("403 Forbidden: 다른 사용자의 데이터 접근 불가");
@@ -37,6 +47,7 @@ public class CheckUserOwnerAspect {
                 break;
             }
 
+            // 2) DTO·Entity 안에 getUserId() 가 있는 경우
             try {
                 Long targetId = (Long) arg.getClass().getMethod("getUserId").invoke(arg);
                 if (!targetId.equals(loggedInUserId)) {
@@ -44,7 +55,7 @@ public class CheckUserOwnerAspect {
                 }
                 break;
             } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ignored) {
-                // getUserId 메서드 없으면 무시
+                // getUserId 메서드가 없으면 무시
             }
         }
 
