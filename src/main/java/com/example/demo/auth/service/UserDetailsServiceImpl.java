@@ -20,7 +20,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         UserInfo user = userRepo.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
 
-        // ➡LoginUser 래퍼로 반환
-        return new LoginUser(user.getUserId());
+        // LoginUser 래퍼로 반환
+        return new LoginUser(user);
     }
 }
