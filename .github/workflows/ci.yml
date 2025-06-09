@@ -1,40 +1,58 @@
-name: Maven CI All Checks
+name: Maven & Python CI
 
 on:
   push:
   pull_request:
 
 jobs:
-  # ────────────────────────────────────────────────────────────────
-  build-and-test:
+  backend:
+    name: Backend (Maven)
     runs-on: ubuntu-latest
-
+    defaults:
+      run:
+        working-directory: backend
     steps:
-      # 0) 소스 체크아웃
       - uses: actions/checkout@v4
-
-      # 1) JDK 17 설치
       - uses: actions/setup-java@v4
         with:
-          java-version: '17'
-          distribution: 'temurin'
-
-      # 2) Maven 캐시 (빌드 속도↑)
+          distribution: temurin
+          java-version: "17"
       - uses: actions/cache@v3
         with:
           path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
-
-      # 3) Maven Wrapper 실행 권한
+          key: ${{ runner.os }}-maven-${{ hashFiles('backend/pom.xml') }}
       - name: Grant execute permission for Maven Wrapper
-        run: chmod +x ./mvnw
-
-      # 4) 빌드 + 단위 테스트
+        run: chmod +x backend/mvnw
       - name: Build and Test
         run: ./mvnw clean verify
-
-      # 5) SpotBugs 정적 분석
       - name: SpotBugs
         run: ./mvnw spotbugs:check
+
+  crawler:
+    name: Crawler (Python)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: crawler
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+      - name: Cache Poetry & Dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/pypoetry
+            ~/.cache/pip
+          key: ${{ runner.os }}-poetry-${{ hashFiles('crawler/pyproject.toml') }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry
+          poetry install --no-root
+      - name: Run Tests
+        run: poetry run pytest
+      - name: Type Check
+        run: poetry run mypy src/crawler
