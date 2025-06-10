@@ -1,10 +1,13 @@
 package com.example.demo.review.domain;
 
+import com.example.demo.auth.domain.UserInfo;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.Getter;
 import lombok.Setter;
 import jakarta.persistence.*;
+import org.hibernate.annotations.ColumnDefault;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,29 +25,55 @@ public class Review {
     @Column(name = "review_id")
     private Long id;
 
+    // 단지 정보: 있을 수도, 없을 수도 있음  --> 없는 경우 매물 ID로 조회
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "complex_id")
     private Complex complex;
 
+    // 매물(property) 고유 ID
+    @Column(name = "property_id", nullable = false)
+    private Long propertyId;
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "members_id")
-    private Members members;
+    @JoinColumn(name = "user_id",nullable = false)
+    private UserInfo user;   // 작성자
+
+    @Column(name = "rating",precision = 2, scale = 1, nullable = false)
+    private BigDecimal rating;
 
     private String content;
 
-    private Long like_count;
+    @Column(name = "like_count")
+    @ColumnDefault("0")
+    private Long likeCount = 0L;
 
-    private boolean has_children;
+    @Column(name = "has_children")
+    private boolean hasChildren;
 
-    private boolean is_resident;
+    @Column(name = "is_resident")
+    private boolean isResident;
 
-    private LocalDateTime created_at;
-    private LocalDateTime updated_at;
-    private LocalDateTime deleted_at;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+    private LocalDateTime deletedAt;
 
 
-    //필드 초기화
-    @OneToMany(mappedBy = "review")
-    private List<ReviewComment> comments = new ArrayList<>();
+
+
+
+    public boolean isMine(Long currentUserId){
+        return user != null && user.getUserId().equals(currentUserId);
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
 
 }
