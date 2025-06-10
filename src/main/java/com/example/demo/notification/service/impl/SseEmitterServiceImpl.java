@@ -11,6 +11,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@SuppressWarnings("EI_EXPOSE_REP2")
 public class SseEmitterServiceImpl implements SseEmitterService {
 
     private final SseEmitterRepository sseEmitterRepository;
@@ -56,12 +57,19 @@ public class SseEmitterServiceImpl implements SseEmitterService {
         return emitter;
     }
 
+    // 이벤트 캐시를 저장
+    @Override
+    public void saveEventCache(String emitterId, Object event) {
+        sseEmitterRepository.saveEventCache(emitterId, event);
+    }
+
     // 클라이언트로 실제 알림을 전송하는 private 헬퍼 메서드
     private void sendToClient(SseEmitter emitter, String emitterId, Object data) {
         try {
             emitter.send(SseEmitter.event()
                     .id(emitterId)
                     .data(data));
+            saveEventCache(emitterId, data);
         } catch (IOException exception) {
             // 알림 전송 중 에러 발생 시 해당 emitter 삭제
             sseEmitterRepository.deleteById(emitterId);

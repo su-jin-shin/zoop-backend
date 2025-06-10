@@ -29,13 +29,6 @@ public class SseEmitterRepositoryImpl implements SseEmitterRepository {
         eventCache.put(emitterId,event);
     }
 
-    // 특정 사용자 ID로 시작하는 모든 SseEmitter 객체들을 찾아 반환
-    @Override
-    public Map<String, SseEmitter> findAllEmitterStartWithByUserId(String userId) {
-        return emitters.entrySet().stream()
-                .filter(entry -> entry.getKey().startsWith(userId))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-    }
 
     // 특정 사용자 ID로 시작하는 모든 이벤트 캐시 데이터를 찾아 반환
     @Override
@@ -58,18 +51,6 @@ public class SseEmitterRepositoryImpl implements SseEmitterRepository {
                 (key,emitter) -> {
                     if(key.startsWith(userId)){
                         emitters.remove(key);
-                    }
-                }
-        );
-    }
-
-    // 특정 사용자 ID로 시작하는 모든 이벤트 캐시 데이터들을 삭제
-    @Override
-    public void deleteAllEventCacheStartWithId(String userId) {
-        eventCache.forEach(
-                (key, emitter) -> {
-                    if (key.startsWith(userId)) {
-                        eventCache.remove(key);
                     }
                 }
         );

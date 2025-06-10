@@ -12,9 +12,6 @@ public interface SseEmitterRepository {
     // 특정 SseEmitter와 관련된 이벤트를 캐시에 저장
     void saveEventCache(String emitterId, Object event);
 
-    // 특정 사용자 ID로 시작하는 모든 SseEmitter 객체들을 찾아 반환
-    Map<String, SseEmitter> findAllEmitterStartWithByUserId(String userId);
-
     // 특정 사용자 ID로 시작하는 모든 이벤트 캐시 데이터를 찾아 반환
     Map<String,Object> findAllEventCacheStartWithByUserId(String userId);
 
@@ -24,6 +21,4 @@ public interface SseEmitterRepository {
     // 특정 사용자 ID로 시작하는 모든 SseEmitter 객체들을 삭제
     void deleteAllEmitterStartWithId(String userId);
 
-    // 특정 사용자 ID로 시작하는 모든 이벤트 캐시 데이터들을 삭제
-    void deleteAllEventCacheStartWithId(String userId);
 }
