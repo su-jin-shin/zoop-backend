@@ -83,7 +83,7 @@ public class Property {
 
     private String area1; //공급면적
     private String area2; //전용면적
-    private String direction; //방향
+    private String direction; //방향  
 
     @Column(columnDefinition = "TEXT")
     private String articleFeatureDesc; //매물특징요약
