@@ -1,6 +1,7 @@
 package com.example.demo.review.domain;
 
 
+import com.example.demo.auth.domain.UserInfo;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -23,24 +24,40 @@ public class ReviewComment {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "review_id")
+    @JoinColumn(name = "review_id",nullable = false)
     private Review review;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "members_id")
-    private Members members;
+    @JoinColumn(name = "user_id",nullable = false)
+    private UserInfo user;
 
     private String content;
 
-    private LocalDateTime created_at;
-    private LocalDateTime updated_at;
-    private LocalDateTime deleted_at;
+    @Column(name = "is_resident")
+    private boolean isResident;  //매핑시 getIsxxx가 아닌 isXXX로 매핑됨
 
-    @OneToMany(mappedBy = "reviewComment")
-    private List<ReviewCommentLike> commentLikes = new ArrayList<>();
-
+    @Column(name = "has_children")
+    private boolean hasChildren;   //매핑시 getHasxxx가 아닌 HasXXX로 매핑됨
 
 
 
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+    private LocalDateTime deletedAt;
 
+    @PrePersist
+    public void prePersist() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    // 기본 false 반환 -> 서비스에서 실제 여부 판단
+    public boolean isLikedByMe(UserInfo currentUser) {
+        return false;
+    }
 }
