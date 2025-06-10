@@ -2,6 +2,7 @@ package com.example.demo.notification.service.impl;
 
 import com.example.demo.notification.repository.SseEmitterRepository;
 import com.example.demo.notification.service.SseEmitterService;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -11,7 +12,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
-@SuppressWarnings("EI_EXPOSE_REP2")
+@SuppressFBWarnings("EI_EXPOSE_REP2")
 public class SseEmitterServiceImpl implements SseEmitterService {
 
     private final SseEmitterRepository sseEmitterRepository;
