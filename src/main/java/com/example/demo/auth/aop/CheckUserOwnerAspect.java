@@ -1,6 +1,5 @@
 package com.example.demo.auth.aop;
 
-import com.example.demo.auth.annotation.CheckUserOwner;
 import com.example.demo.auth.dto.LoginUser;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;

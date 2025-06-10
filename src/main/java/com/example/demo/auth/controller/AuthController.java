@@ -70,7 +70,7 @@ public class AuthController {
             HttpServletRequest request) {
 
         String clientIp = getClientIpAddress(request);
-        LoginResponseDto res = loginService.kakaoLogin(code, clientIp);
+        LoginResponseDto res = loginService.kakaoLogin(code, clientIp, request);
 
         String redirect;
         if (res.getNeedsNickname()) {
