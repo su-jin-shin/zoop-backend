@@ -1,8 +1,9 @@
-package com.example.demo.notification.service;
+package com.example.demo.notification.service.impl;
 
 import com.example.demo.notification.domain.Notification;
 import com.example.demo.notification.dto.NotificationResponseDto;
 import com.example.demo.notification.repository.NotificationRepository;
+import com.example.demo.notification.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

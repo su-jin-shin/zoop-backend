@@ -1,8 +1,9 @@
-package com.example.demo.notification.repository;
+package com.example.demo.notification.repository.impl;
 
 import com.example.demo.Filter.domain.QKeywordFilterHistory;
 import com.example.demo.notification.domain.Notification;
 import com.example.demo.notification.domain.QNotification;
+import com.example.demo.notification.repository.NotificationRepositoryCustom;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.RequiredArgsConstructor;
