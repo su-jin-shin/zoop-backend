@@ -27,6 +27,7 @@ public class NotificationServiceImpl implements NotificationService {
                 .toList();
     }
 
+    // 특정 알림 '읽음' 처리
     @Override
     public void read(Long userId, Long notificationId) {
         UserInfo userInfo = userInfoRepository.findByUserId(userId).orElseThrow();
@@ -37,7 +38,8 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     private void isUserOfNotification(Notification notification, UserInfo userInfo) {
-        if(notification.getKeywordFilterHistory().getUserInfo().getUserId() != userInfo.getUserId()){
+        Long userId = notification.getKeywordFilterHistory().getUserInfo().getUserId();
+        if(!userId.equals(userInfo.getUserId())) {
             throw new RuntimeException();
         }
     }
