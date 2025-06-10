@@ -9,9 +9,9 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-
 @Configuration
 @RequiredArgsConstructor
+@SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "Spring DI로 주입된 Bean은 안전하게 관리됩니다.")
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
@@ -21,38 +21,18 @@ public class SecurityConfig {
 
         http
                 .csrf(csrf -> csrf.disable())
-                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
-                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())  // 전체 허용
+                .sessionManagement(sm ->
+                        sm.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(
+                                "/api-docs", "/api-docs/**", "/v3/api-docs/**",
+                                "/swagger-ui/**", "/swagger-ui.html",
+                                "/css/**", "/js/**", "/images/**", "/favicon.ico"
+                        ).permitAll()
+                        .requestMatchers("/users/auth/**").permitAll()
+                        .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 }
-
-//@Configuration
-//@RequiredArgsConstructor
-//@SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "Spring DI로 주입된 Bean은 안전하게 관리됩니다.")
-//public class SecurityConfig {
-//
-//    private final JwtAuthFilter jwtAuthFilter;
-//
-//    @Bean
-//    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-//
-//        http
-//                .csrf(csrf -> csrf.disable())
-//                .sessionManagement(sm ->
-//                        sm.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
-//                .authorizeHttpRequests(auth -> auth
-//                        .requestMatchers(
-//                                "/api-docs", "/api-docs/**", "/v3/api-docs/**",
-//                                "/swagger-ui/**", "/swagger-ui.html",
-//                                "/css/**", "/js/**", "/images/**", "/favicon.ico"
-//                        ).permitAll()
-//                        .requestMatchers("/users/auth/**").permitAll()
-//                        .anyRequest().authenticated())
-//                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
-//
-//        return http.build();
-//    }
-//}
