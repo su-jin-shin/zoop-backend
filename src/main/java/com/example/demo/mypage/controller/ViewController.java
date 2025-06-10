@@ -43,6 +43,11 @@ public class ViewController {
         Long userId = 1L; // 테스트용 하드코딩
         MyPageAccountResponse response = myPageService.getAccountInfo(userId);
 
+        String profileImageUrl = response.getProfileImageUrl();
+        if (profileImageUrl == null || profileImageUrl.isBlank()) {
+            profileImageUrl = "/images/default-profile.png";
+        }
+
         model.addAttribute("email", response.getEmail());
         model.addAttribute("nickname", response.getNickname());
         model.addAttribute("profileImageUrl", response.getProfileImageUrl());

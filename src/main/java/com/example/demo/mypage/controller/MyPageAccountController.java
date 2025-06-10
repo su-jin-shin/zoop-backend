@@ -4,7 +4,6 @@ import com.example.demo.auth.dto.LoginUser;
 import com.example.demo.mypage.dto.MyPageAccountResponse;
 import com.example.demo.mypage.dto.NicknameUpdateRequest;
 import com.example.demo.mypage.dto.ProfileImageResponse;
-import com.example.demo.mypage.dto.ProfileImageUpdateRequest;
 import com.example.demo.mypage.service.MypageAccountService;
 import com.example.demo.mypage.service.NicknameService;
 import com.example.demo.mypage.service.ProfileImageService;
@@ -13,7 +12,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/mypage")
@@ -79,10 +82,34 @@ public class MyPageAccountController {
     }
 
     // 프로필 이미지 수정
-    @PatchMapping("/profile-image")
+    @PostMapping("/profile-image")
     public ResponseEntity<?> updateProfileImage(
             @AuthenticationPrincipal LoginUser loginUser,
-            @RequestBody @Valid ProfileImageUpdateRequest request) {
+            @RequestParam("profileImage") MultipartFile file) {
+
+        Long userId = parseUserId(loginUser);
+//        Long userId = 1L;
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ErrorResponse("로그인 후 다시 시도해주세요."));
+        }
+        if (file.isEmpty()) {
+            return ResponseEntity.badRequest().body(new ErrorResponse("이미지 파일이 없습니다."));
+        }
+
+        try {
+            String savedUrl = profileImageService.uploadAndSave(userId, file);
+            return ResponseEntity.ok(new ProfileImageResponse(savedUrl));
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ErrorResponse("파일 업로드에 실패했습니다."));
+        }
+    }
+
+    // 프로필 이미지 삭제 (DB에 저장되어 있는 기본 이미지로 재설정)
+    @PatchMapping("/profile-image/reset")
+    public ResponseEntity<?> deleteProfileImage(
+            @AuthenticationPrincipal LoginUser loginUser) {
 
         Long userId = parseUserId(loginUser);
 //        Long userId = 1L;
@@ -91,34 +118,16 @@ public class MyPageAccountController {
                     .body(new ErrorResponse("로그인 후 다시 시도해주세요."));
         }
 
-        String savedUrl = profileImageService.updateProfileImage(userId, request.getProfileImageUrl());
-
-        return ResponseEntity.ok(new ProfileImageResponse(savedUrl));
+        String defaultUrl = profileImageService.resetToDefaultImage(userId);
+        return ResponseEntity.ok().body(new ProfileImageResponse(defaultUrl));
     }
-
-//    // 프로필 이미지 삭제 (DB에 저장되어 있는 기본 이미지로 재설정)
-//    @DeleteMapping("/profile-image")
-//    public ResponseEntity<?> deleteProfileImage(
-//            @AuthenticationPrincipal LoginUser loginUser) {
-//
-//        Long userId = parseUserId(loginUser);
-////        Long userId = 1L;
-//        if (userId == null) {
-//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-//                    .body(new ErrorResponse("로그인 후 다시 시도해주세요."));
-//        }
-//
-//        String defaultUrl = profileImageService.resetToDefaultImage(userId);
-//
-//        return ResponseEntity.ok().body(new ProfileImageResponse(defaultUrl));
-//    }
 
     // 회원 탈퇴
 //    @DeleteMapping("/withdraw")
 
     // 내 정보 조회
     @GetMapping("/account")
-    public ResponseEntity<?> getAccountInfo(@AuthenticationPrincipal LoginUser loginUser) {
+    public ResponseEntity<?> getAccountInfo(@AuthenticationPrincipal LoginUser loginUser, Model model) {
 
         Long userId = parseUserId(loginUser);
 //        Long userId = 1L;
@@ -127,6 +136,8 @@ public class MyPageAccountController {
                     .body(new ErrorResponse("로그인 후 다시 시도해주세요."));
         }
         MyPageAccountResponse response = myPageService.getAccountInfo(userId);
+
+
         return ResponseEntity.ok(response);
     }
 

@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>프로필 이미지 변경</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet" />
     <style>
         body {
             font-family: 'Pretendard', sans-serif;
@@ -18,13 +19,9 @@
             padding: 2rem;
             text-align: center;
         }
-        input[type="text"] {
-            width: 100%;
-            padding: 0.5rem;
-            font-size: 1rem;
-            margin-bottom: 1rem;
-            border: 1px solid #ccc;
-            border-radius: 8px;
+        .preview-img {
+            max-width: 100%;
+            margin-top: 1rem;
         }
         button {
             padding: 0.5rem 1.5rem;
@@ -54,56 +51,85 @@
 <div class="container">
     <h2>프로필 이미지 변경</h2>
 
-    <input type="text" id="imageUrl" placeholder="이미지 URL 입력" />
-
+    <input type="file" id="imageInput" accept="image/*" />
     <div>
-        <button class="save-btn" onclick="updateImageUrl()">이미지 저장</button>
+        <img id="preview" class="preview-img" />
+    </div>
+    <div>
+        <button class="save-btn" onclick="cropAndUpload()">이미지 저장</button>
         <button class="delete-btn" onclick="resetToDefault()">이미지 삭제</button>
     </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 <script>
-    const DEFAULT_PROFILE_IMAGE_URL ="http://localhost:8080/images/default-profile.png";
-    function updateImageUrl() {
-        const url = document.getElementById("imageUrl").value.trim();
-        if (!url) {
-            alert("이미지 URL을 입력해주세요.");
+    const DEFAULT_PROFILE_IMAGE_URL = "http://localhost:8080/images/default-profile.png";
+    let cropper;
+
+    document.getElementById("imageInput").addEventListener("change", function (e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const preview = document.getElementById("preview");
+        preview.src = URL.createObjectURL(file);
+
+        preview.onload = () => {
+            if (cropper) cropper.destroy();
+            cropper = new Cropper(preview, {
+                aspectRatio: 1,
+                viewMode: 1
+            });
+        };
+    });
+
+    function cropAndUpload() {
+        if (!cropper) {
+            alert("이미지를 선택해주세요.");
             return;
         }
 
-        sendProfileImageUpdate(url);
+        cropper.getCroppedCanvas({
+            width: 300,
+            height: 300
+        }).toBlob((blob) => {
+            const formData = new FormData();
+            formData.append("profileImage", blob, "profile.jpg");
+
+            const token = "Bearer " + localStorage.getItem("accessToken");
+
+            fetch("/mypage/profile-image", {
+                method: "POST",
+                headers: {
+                    "Authorization": token
+                },
+                body: formData
+            })
+                .then(res => {
+                    if (res.ok) {
+                        alert("프로필 이미지가 변경되었습니다.");
+                        location.href = "/mypage/account/view";
+                    } else {
+                        res.json().then(err => alert(err.message || "업로드 실패"));
+                    }
+                })
+                .catch(() => alert("서버와 연결할 수 없습니다."));
+        }, "image/jpeg");
     }
 
     function resetToDefault() {
         if (!confirm("기본 이미지로 초기화하시겠습니까?")) return;
-        document.getElementById("imageUrl").value = DEFAULT_PROFILE_IMAGE_URL;
-        sendProfileImageUpdate(DEFAULT_PROFILE_IMAGE_URL);
-    }
 
-    function sendProfileImageUpdate(imageUrl) {
         const token = "Bearer " + localStorage.getItem("accessToken");
 
-        fetch("/mypage/profile-image", {
+        fetch("/mypage/profile-image/reset", {
             method: "PATCH",
-            headers: {
-                "Content-Type": "application/json"
-                , "Authorization": token
-            },
-            body: JSON.stringify({ profileImageUrl: imageUrl })
+            headers: { "Authorization": token }
         })
-            .then(res => {
-                if (res.ok) {
-                    alert("프로필 이미지가 변경되었습니다.");
-                    location.href = "/mypage/account/view";
-                } else {
-                    return res.json().then(err => {
-                        alert(err.message || "이미지 변경 실패");
-                    });
-                }
-            })
-            .catch(() => {
-                alert("서버와 연결할 수 없습니다.");
-            });
+            .then(res => res.ok
+                ? location.href = "/mypage/account/view"
+                : res.json().then(err => alert(err.message || "초기화 실패"))
+            )
+            .catch(() => alert("서버와 연결할 수 없습니다."));
     }
 </script>
 </body>

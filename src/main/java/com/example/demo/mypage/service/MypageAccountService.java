@@ -19,10 +19,15 @@ public class MypageAccountService {
         UserInfo user = userInfoRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("사용자 정보를 찾을 수 없습니다."));
 
+        String imageUrl = user.getProfileImage();
+        if (imageUrl == null || imageUrl.isBlank()) {
+            imageUrl = "/images/default-profile.png";
+        }
+
         return MyPageAccountResponse.builder()
                 .email(user.getEmail())
                 .nickname(user.getNickname())
-                .profileImageUrl(user.getProfileImage())
+                .profileImageUrl(imageUrl)
                 .build();
     }
 }
