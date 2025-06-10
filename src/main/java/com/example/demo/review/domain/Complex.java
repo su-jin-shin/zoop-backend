@@ -1,7 +1,7 @@
 package com.example.demo.review.domain;
 
 
-import com.example.demo.reviewSummary.domain.ReviewSummary;
+
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.persistence.*;
 import lombok.Getter;
