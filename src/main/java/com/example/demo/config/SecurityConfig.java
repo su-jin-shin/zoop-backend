@@ -1,5 +1,4 @@
 package com.example.demo.config;
-
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -11,28 +10,44 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @RequiredArgsConstructor
-@SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "Spring DI로 주입된 Bean은 안전하게 관리됩니다.")
+@SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "JwtAuthFilter는 Spring DI로 주입되며, 외부 변경 위험이 없습니다.")
 public class SecurityConfig {
-
     private final JwtAuthFilter jwtAuthFilter;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-
         http
                 .csrf(csrf -> csrf.disable())
-                .sessionManagement(sm ->
-                        sm.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/api-docs", "/api-docs/**", "/v3/api-docs/**",
-                                "/swagger-ui/**", "/swagger-ui.html",
-                                "/css/**", "/js/**", "/images/**", "/favicon.ico"
-                        ).permitAll()
-                        .requestMatchers("/users/auth/**").permitAll()
-                        .anyRequest().authenticated())
+                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())  // 전체 허용
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
-
         return http.build();
     }
 }
+//@Configuration
+//@RequiredArgsConstructor
+//@SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "Spring DI로 주입된 Bean은 안전하게 관리됩니다.")
+//public class SecurityConfig {
+//
+//    private final JwtAuthFilter jwtAuthFilter;
+//
+//    @Bean
+//    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+//
+//        http
+//                .csrf(csrf -> csrf.disable())
+//                .sessionManagement(sm ->
+//                        sm.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+//                .authorizeHttpRequests(auth -> auth
+//                        .requestMatchers(
+//                                "/api-docs", "/api-docs/**", "/v3/api-docs/**",
+//                                "/swagger-ui/**", "/swagger-ui.html",
+//                                "/css/**", "/js/**", "/images/**", "/favicon.ico"
+//                        ).permitAll()
+//                        .requestMatchers("/users/auth/**").permitAll()
+//                        .anyRequest().authenticated())
+//                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+//
+//        return http.build();
+//    }
+//}
