@@ -8,6 +8,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -15,6 +16,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
@@ -37,6 +39,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                         principal, null, principal.getAuthorities());
                 SecurityContextHolder.getContext().setAuthentication(auth); // ④ 세팅
             });
+        } else {
+            log.warn("🔒 유효하지 않거나 만료된 토큰: {}", token);
         }
         chain.doFilter(req, res);                        // ⑤ 필터 체인 진행
     }
