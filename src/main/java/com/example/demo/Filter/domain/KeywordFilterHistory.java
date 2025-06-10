@@ -26,7 +26,6 @@ public class KeywordFilterHistory {
     private Long keywordFilterHistoryId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @Getter(lombok.AccessLevel.NONE)
     private UserInfo userInfo;                // 유저인포 테이블과 관계 맺기
 
     @ManyToOne(fetch = FetchType.LAZY)

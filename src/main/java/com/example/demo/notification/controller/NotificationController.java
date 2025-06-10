@@ -10,10 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.List;
@@ -51,5 +48,13 @@ public class NotificationController {
         Long userId = Long.valueOf(loginUser.getUsername());
 
         return ResponseEntity.ok(sseEmitterService.subscribe(userId, lastEventId));
+    }
+
+    @PatchMapping("/{notificationId}")
+    public ResponseEntity<?> read(@AuthenticationPrincipal LoginUser loginUser, @PathVariable Long notificationId) {
+        Long userId = Long.valueOf(loginUser.getUsername());
+        notificationService.read(userId, notificationId);
+
+        return ResponseEntity.ok().build();
     }
 }
