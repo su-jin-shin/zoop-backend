@@ -2,14 +2,16 @@ package com.example.demo.property.domain;
 
 import com.example.demo.property.domain.enums.ImageType;
 import com.example.demo.review.domain.Complex;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
+@SuppressFBWarnings(
+        value = { "EI_EXPOSE_REP", "EI_EXPOSE_REP2" },
+        justification = "Complex는 JPA 연관 엔티티이며, LAZY 로딩 및 setter 없이 관리되므로 외부 변경 위험이 없습니다."
+)
 @Getter
 @Builder
 @NoArgsConstructor
@@ -25,6 +27,7 @@ public class Image {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "property_id")
     private Property property; //매물 (외래키)
+
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "complex_id")
@@ -42,6 +45,8 @@ public class Image {
     private LocalDateTime createdAt; //등록일
     private LocalDateTime updatedAt; //수정일
     private LocalDateTime deletedAt; //삭제일
+
+
 }
 
 

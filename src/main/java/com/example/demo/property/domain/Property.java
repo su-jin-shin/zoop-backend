@@ -3,6 +3,7 @@ package com.example.demo.property.domain;
 
 import com.example.demo.property.converter.JsonStringListConverter;
 import com.example.demo.review.domain.Complex;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,6 +13,11 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+
+@SuppressFBWarnings(
+        value = { "EI_EXPOSE_REP", "EI_EXPOSE_REP2" },
+        justification = "Property 클래스의 복합 필드는 JPA 관리 하에 있으며, 외부에서 수정되지 않도록 안전하게 사용됩니다."
+)
 
 @Entity
 @Table(name = "property", uniqueConstraints = {
@@ -86,15 +92,16 @@ public class Property {
     private String directionBaseTypeName; //기준방향명
     private String entranceTypeName; //현관형태명
 
+    @ElementCollection
     @Column(name = "life_facilities", columnDefinition = "jsonb")
     @Convert(converter = JsonStringListConverter.class)
     private List<String> lifeFacilities; //생활시설
 
-
+    @ElementCollection
     @Column(name ="security_facilities", columnDefinition = "jsonb")
     @Convert(converter = JsonStringListConverter.class)
     private List<String> securityFacilities; //보안시설
-
+    @ElementCollection
     @Column(name = "etc_facilities", columnDefinition = "jsonb")
     @Convert(converter = JsonStringListConverter.class)
     private List<String> etcFacilities; //기타시설
@@ -126,7 +133,7 @@ public class Property {
     private BigDecimal financePrice; //융자가격
     private BigDecimal etcFeeAmount; //관리비(기타비용)
 
-
+    @ElementCollection
     @Column(name = "tag_list", columnDefinition = "jsonb")
     @Convert(converter = JsonStringListConverter.class)
     private List<String> tagList; //태그

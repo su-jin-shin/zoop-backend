@@ -3,6 +3,7 @@ package com.example.demo.property.dto;
 import com.example.demo.property.domain.Image;
 import com.example.demo.property.domain.Property;
 import com.example.demo.property.domain.PropertySummary;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,6 +15,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@SuppressFBWarnings(
+        value = { "EI_EXPOSE_REP", "EI_EXPOSE_REP2" },
+        justification = "DTO 클래스이며, 외부로부터 받은 리스트는 변경하지 않고 읽기 전용으로 사용됩니다."
+)
 @Data
 @Builder
 @NoArgsConstructor
@@ -79,8 +84,8 @@ public class PropertyBasicInfoResponseDto {
                 .parkingPossibleYN(p.getParkingPossibleYN())
                 .isBookmarked(false) //찜 기능 생성시 추후 다시 구현
                 .exposeStartYMD(p.getExposeStartYMD())
-                .summary(convertSummary(summary))
-                .images(convertImages(images))
+                .summary(List.copyOf(convertSummary(summary)))
+                .images(List.copyOf(convertImages(images)))
                 .build();
     }
 
