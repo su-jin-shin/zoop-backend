@@ -25,7 +25,10 @@ public class FileUploader {
 
         File dir = new File(UPLOAD_DIR);
         if (!dir.exists()) {
-            dir.mkdirs();
+            boolean created = dir.mkdirs();
+            if (!created) {
+                throw new RuntimeException("업로드 디렉토리 생성 실패: " + UPLOAD_DIR);
+            }
         }
 
         File dest = new File(dir, storedFileName);
