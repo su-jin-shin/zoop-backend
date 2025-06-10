@@ -4,12 +4,17 @@ import com.example.demo.auth.dto.LoginUser;
 import com.example.demo.notification.domain.Notification;
 import com.example.demo.notification.dto.NotificationResponseDto;
 import com.example.demo.notification.service.NotificationService;
+import com.example.demo.notification.service.SseEmitterService;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.List;
 
@@ -19,6 +24,11 @@ import java.util.List;
 public class NotificationController {
 
     private final NotificationService notificationService;
+    private final SseEmitterService sseEmitterService;
+
+    private static final String X_ACCEL_BUFFERING = "X-Accel-Buffering";
+    private static final String LAST_EVENT_ID = "Last-Event-ID";
+    private static final String X_ACCEL_BUFFERING_VALUE = "no";
 
     @GetMapping()
     public ResponseEntity<List<NotificationResponseDto>> getAllNotifications(@AuthenticationPrincipal LoginUser loginUser) {
@@ -31,5 +41,15 @@ public class NotificationController {
 
         return ResponseEntity.ok(notifications);
 
+    }
+
+    @GetMapping(value = "/connect", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public ResponseEntity<SseEmitter> connect(@AuthenticationPrincipal LoginUser loginUser,
+    HttpServletResponse response,
+    @RequestHeader(value = LAST_EVENT_ID, required = false, defaultValue = "") String lastEventId) {
+        response.setHeader(X_ACCEL_BUFFERING, X_ACCEL_BUFFERING_VALUE);
+        Long userId = Long.valueOf(loginUser.getUsername());
+
+        return ResponseEntity.ok(sseEmitterService.subscribe(userId, lastEventId));
     }
 }
