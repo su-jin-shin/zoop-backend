@@ -4,6 +4,7 @@ import com.example.demo.auth.domain.UserInfo;
 import com.example.demo.mypage.repository.MypageUserInfoRepository;
 import com.example.demo.mypage.service.ProfileImageService;
 import com.example.demo.mypage.util.FileUploader;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -13,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 
 @Service
+@SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "fileUploader는 내부에서만 사용됨")
 @RequiredArgsConstructor
 public class ProfileImageServiceImpl implements ProfileImageService {
 

@@ -17,6 +17,9 @@ public class FileUploader {
         }
 
         String originalFilename = file.getOriginalFilename();
+        if (originalFilename == null) {
+            throw new IllegalArgumentException("파일 이름이 없습니다.");
+        }
         String extension = getExtension(originalFilename);
         String storedFileName = UUID.randomUUID() + "." + extension;
 
@@ -45,8 +48,8 @@ public class FileUploader {
 
     public void delete(String filePath) {
         File file = new File(System.getProperty("user.dir") + filePath);
-        if (file.exists()) {
-            file.delete(); // 실패해도 예외 던지지 않음 (성공 여부 boolean 반환)
+        if (file.exists() && !file.delete()) {
+            throw new RuntimeException("로컬 파일 삭제 실패: " + filePath);
         }
     }
 
