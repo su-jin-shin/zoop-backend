@@ -11,12 +11,12 @@ import java.util.Collections;
 import java.util.List;
 
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "user_info")
 @Getter
 @NoArgsConstructor
-@SuppressFBWarnings(value = "UWF_UNWRITTEN_FIELD",
-        justification = "withdrawReason과 deletedAt은 미래에 사용될 가능성이 있어 SpotBugs 무시")
 public class UserInfo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,11 +27,12 @@ public class UserInfo {
 
     private String email;
 
-//    @Column(nullable = false, unique = true)
+    @Column(unique = true)
     private String nickname;
 
     @Column(columnDefinition = "TEXT")
     private String profileImage;
+
     private String withdrawReason;
 
     private LocalDateTime lastLoginAt;
@@ -41,6 +42,15 @@ public class UserInfo {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<LoginHistory> loginHistories = new ArrayList<>();
+
+    /* --- 탈퇴 전용 도메인 메서드 --- */
+    public void withdraw(String reason) {
+        if (this.deletedAt != null) {           // 이미 탈퇴 처리된 계정이면 예외 던져도 OK
+            throw new IllegalStateException("이미 탈퇴 처리된 회원입니다.");
+        }
+        this.withdrawReason = reason;
+        this.deletedAt = LocalDateTime.now();   // 소프트 삭제 ― deleted_at 세팅
+    }
 
     @PrePersist
     void prePersist() {
@@ -77,4 +87,9 @@ public class UserInfo {
     public void setLoginHistories(List<LoginHistory> histories) {
         this.loginHistories = new ArrayList<>(histories);
     }
+
+
+
+
+
 }
