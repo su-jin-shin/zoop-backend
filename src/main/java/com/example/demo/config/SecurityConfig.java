@@ -1,51 +1,58 @@
 package com.example.demo.config;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
 
 @Configuration
+@RequiredArgsConstructor
 public class SecurityConfig {
 
+    private final JwtAuthFilter jwtAuthFilter;
 
-    // 전체허용
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+
         http
                 .csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests(auth -> auth
-                        .anyRequest().permitAll()  // 모든 요청 허가
-                );
-
-
-//    @Bean
-//    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-//        http
-//                .csrf(csrf -> csrf.disable())
-//                .authorizeHttpRequests(auth -> auth
-//                        .requestMatchers(
-//                                "/api-docs",
-//                                "/api-docs/**",    // prefix match
-//                                "/v3/api-docs/**",
-//                                "/swagger-ui/**",
-//                                "/swagger-ui.html",
-//                                "/users/**",
-//                                "/login.html",
-//                                "/css/**",      // CSS 경로 (예: /css/style.css)
-//                                "/js/**",       // JS 경로 (예: /js/app.js)
-//                                "/images/**",   // 이미지 경로 (예: /images/logo.png)
-//                                "/favicon.ico"
-//                        ).permitAll()
-//                        // 로그인/회원가입만 열어두기
-//                        .requestMatchers("/users/auth/**").permitAll()
-//                        // 나머지는 로그인된 사용자만
-//                        .anyRequest().authenticated()
-//                );
-
-
-
+                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())  // 전체 허용
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 }
+
+//@Configuration
+//@RequiredArgsConstructor
+//@SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "Spring DI로 주입된 Bean은 안전하게 관리됩니다.")
+//public class SecurityConfig {
+//
+//    private final JwtAuthFilter jwtAuthFilter;
+//
+//    @Bean
+//    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+//
+//        http
+//                .csrf(csrf -> csrf.disable())
+//                .sessionManagement(sm ->
+//                        sm.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+//                .authorizeHttpRequests(auth -> auth
+//                        .requestMatchers(
+//                                "/api-docs", "/api-docs/**", "/v3/api-docs/**",
+//                                "/swagger-ui/**", "/swagger-ui.html",
+//                                "/css/**", "/js/**", "/images/**", "/favicon.ico"
+//                        ).permitAll()
+//                        .requestMatchers("/users/auth/**").permitAll()
+//                        .anyRequest().authenticated())
+//                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+//
+//        return http.build();
+//    }
+//}
