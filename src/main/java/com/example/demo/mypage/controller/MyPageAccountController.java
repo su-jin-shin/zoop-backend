@@ -127,7 +127,7 @@ public class MyPageAccountController {
 
     // 내 정보 조회
     @GetMapping("/account")
-    public ResponseEntity<?> getAccountInfo(@AuthenticationPrincipal LoginUser loginUser, Model model) {
+    public ResponseEntity<?> getAccountInfo(@AuthenticationPrincipal LoginUser loginUser) {
 
         Long userId = parseUserId(loginUser);
 //        Long userId = 1L;

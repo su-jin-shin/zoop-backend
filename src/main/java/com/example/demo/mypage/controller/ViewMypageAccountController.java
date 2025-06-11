@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
 @RequiredArgsConstructor
-public class ViewController {
+public class ViewMypageAccountController {
 
     private final MypageAccountService myPageService;
 
@@ -34,13 +34,13 @@ public class ViewController {
     }
 
     @GetMapping("/mypage/account/view")
-    public String accountView(Model model /*, @AuthenticationPrincipal LoginUser loginUser*/) {
+    public String accountView(Model model , @AuthenticationPrincipal LoginUser loginUser) {
 //        if (loginUser == null) {
 //            return "redirect:/login.html"; // 인증 안 된 경우 처리
 //        }
 //
-//        Long userId = parseUserId(loginUser);
-        Long userId = 1L; // 테스트용 하드코딩
+        Long userId = parseUserId(loginUser);
+//        Long userId = 1L; // 테스트용 하드코딩
         MyPageAccountResponse response = myPageService.getAccountInfo(userId);
 
         String profileImageUrl = response.getProfileImageUrl();

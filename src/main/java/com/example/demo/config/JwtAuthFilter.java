@@ -5,6 +5,7 @@ import com.example.demo.auth.repository.UserInfoRepository;
 import com.example.demo.auth.util.JwtUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +35,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             String email = jwtUtil.getSubject(token);    // ② 이메일 꺼내기
 
             userRepo.findByEmail(email).ifPresent(userInfo -> {
-                LoginUser principal = new LoginUser(userInfo);   // ③ LoginUser 래핑
+                LoginUser principal = new LoginUser(userInfo);// ③ LoginUser 래핑
+                log.info("🔒 userInfo.getUserId() 값: "+userInfo.getUserId());
                 var auth = new UsernamePasswordAuthenticationToken(
                         principal, null, principal.getAuthorities());
                 SecurityContextHolder.getContext().setAuthentication(auth); // ④ 세팅
@@ -49,6 +51,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         String h = req.getHeader("Authorization");
         if (h != null && h.startsWith("Bearer ")) {
             return h.substring(7);
+        }
+        if (req.getCookies() != null) {
+            for (Cookie cookie : req.getCookies()) {
+                if ("access_token".equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
         }
         return null;
     }
