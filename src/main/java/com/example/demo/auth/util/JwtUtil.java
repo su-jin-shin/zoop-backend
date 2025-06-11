@@ -17,8 +17,8 @@ public class JwtUtil {
     @Value("${jwt.secret}")
     private String secretKey;
 
-    private static final long ACCESS_EXP  = 60 * 60 * 1000;        // 1 h
-    private static final long REFRESH_EXP = 14L * 24 * 60 * 60 * 1000; // 14 d
+    private static final long ACCESS_EXP  = 30L * 24 * 60 * 60 * 1000;        // 30 d
+    private static final long REFRESH_EXP = 90L * 24 * 60 * 60 * 1000; // 90 d
 
     /* ---------------- 헬퍼 ---------------- */
     private byte[] keyBytes() {

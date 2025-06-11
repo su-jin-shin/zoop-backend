@@ -4,6 +4,8 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 import java.time.LocalDateTime;
 
@@ -11,6 +13,8 @@ import java.time.LocalDateTime;
 @Table(name = "user_info")
 @Getter
 @NoArgsConstructor
+@SQLDelete(sql = "UPDATE user_info SET deleted_at = NOW() WHERE user_id = ?")
+@Where(clause = "deleted_at IS NULL")      // 조회 시 자동 필터
 public class UserInfo {
 
     @Id
@@ -57,19 +61,9 @@ public class UserInfo {
     }
 
     /* ---------- 필요한 Setter들만 수동으로 ---------- */
-    public void setKakaoId(Long kakaoId) {
-        this.kakaoId = kakaoId;
-    }
-    public void setEmail(String email) {
-        this.email = email;
-    }
-    public void setProfileImage(String profileImage) {
-        this.profileImage = profileImage;
-    }
-    public void setLastLoginAt(LocalDateTime lastLoginAt) {
-        this.lastLoginAt = lastLoginAt;
-    }
-    public void setNickname(String nickname) {
-        this.nickname = nickname;
-    }
+    public void setKakaoId(Long kakaoId)       { this.kakaoId   = kakaoId; }
+    public void setEmail(String email)         { this.email     = email; }
+    public void setProfileImage(String img)    { this.profileImage = img; }
+    public void setLastLoginAt(LocalDateTime t){ this.lastLoginAt = t; }
+    public void setNickname(String nickname)   { this.nickname  = nickname; }
 }
