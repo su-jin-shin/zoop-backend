@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -16,17 +18,24 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "realty")
+@Table(name = "realty",
+        uniqueConstraints = {
+                @UniqueConstraint(name = "unique_establish_registration_no", columnNames = {"establish_registration_no"})
+        }
+)
 public class Realty {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long realtyId; // 부동산 아이디 (인조)
 
-    private String establishRegistrationNo; //개설등록번호
+    private String realtorAccountId;
+    @Column(name = "establish_registration_no", nullable = false)
+    private String establishRegistrationNo; //개설등록번호 //이따 수정
     private String realtorName; //중개사이름
     private String representativeName; //대표자이름
     private String address; //중개사주소
+
     private String representativeTelNo; //대표전화번호
     private String cellPhoneNo; //휴대전화번호
     private Integer dealCount; //매매건수
@@ -36,7 +45,11 @@ public class Realty {
     private BigDecimal brokerFee; //중개보수
 
 
-    private LocalDateTime createdAt; //등록일
-    private LocalDateTime updatedAt; //수정일
-    private LocalDateTime deletedAt; //삭제일
+    @CreationTimestamp
+    @Column(updatable = false)
+    private LocalDateTime createdAt;   // 지역 추가 시각
+
+    @UpdateTimestamp
+    private LocalDateTime updatedAt;   // 지역 수정 시각
+    private LocalDateTime deletedAt;   // 지역 삭제 시각
 }

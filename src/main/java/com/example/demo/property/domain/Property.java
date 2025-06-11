@@ -9,6 +9,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -59,7 +61,6 @@ public class Property {
     private String tradeTypeName; //거래유형명
     private String cityName; //도시이름
     private String divisionName; //구군명
-
     private String sectionName; //동이름
     private String walkingTimeToNearSubway; //지하철 도보시간
     private String roomCount; //방개수
@@ -92,16 +93,16 @@ public class Property {
     private String directionBaseTypeName; //기준방향명
     private String entranceTypeName; //현관형태명
 
-    @ElementCollection
+
     @Column(name = "life_facilities", columnDefinition = "jsonb")
     @Convert(converter = JsonStringListConverter.class)
     private List<String> lifeFacilities; //생활시설
 
-    @ElementCollection
+
     @Column(name ="security_facilities", columnDefinition = "jsonb")
     @Convert(converter = JsonStringListConverter.class)
     private List<String> securityFacilities; //보안시설
-    @ElementCollection
+
     @Column(name = "etc_facilities", columnDefinition = "jsonb")
     @Convert(converter = JsonStringListConverter.class)
     private List<String> etcFacilities; //기타시설
@@ -133,14 +134,18 @@ public class Property {
     private BigDecimal financePrice; //융자가격
     private BigDecimal etcFeeAmount; //관리비(기타비용)
 
-    @ElementCollection
+
     @Column(name = "tag_list", columnDefinition = "jsonb")
     @Convert(converter = JsonStringListConverter.class)
     private List<String> tagList; //태그
 
-    private LocalDateTime createdAt; //등록일
-    private LocalDateTime updatedAt; //수정일
-    private LocalDateTime deletedAt; //삭제일
+    @CreationTimestamp
+    @Column(updatable = false)
+    private LocalDateTime createdAt;   // 지역 추가 시각
+
+    @UpdateTimestamp
+    private LocalDateTime updatedAt;   // 지역 수정 시각
+    private LocalDateTime deletedAt;   // 지역 삭제 시각
 
 
 }

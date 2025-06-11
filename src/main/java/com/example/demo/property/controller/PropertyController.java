@@ -1,6 +1,7 @@
 package com.example.demo.property.controller;
 
 import com.example.demo.property.dto.PropertyBasicInfoResponseDto;
+import com.example.demo.property.dto.PropertyDescriptionResponseDto;
 import com.example.demo.property.service.PropertyService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -22,8 +23,20 @@ public class PropertyController {
 
      if(propertyBasicInfoResponseDto == null) {
          return ResponseEntity.notFound().build();
-     } //예외처리 추후 수정
+     } //예외처리 추후 수정 (전역)
          return ResponseEntity.ok(propertyBasicInfoResponseDto); // 정상응답 200
+    }
+
+
+    //매물 상세 조회 (상세설명) API
+    @GetMapping("/{propertyId}/description")
+    public ResponseEntity<PropertyDescriptionResponseDto> getDescription(@PathVariable Long propertyId){
+        PropertyDescriptionResponseDto propertyDescriptionResponseDto = propertyService.getPropertyDescription(propertyId);
+
+        if(propertyDescriptionResponseDto == null){
+          return ResponseEntity.notFound().build();
+        }//예외처리 추후 수정 (전역)
+        return ResponseEntity.ok(propertyDescriptionResponseDto); //정상응답 200
     }
 
 }

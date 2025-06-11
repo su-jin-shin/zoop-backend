@@ -45,6 +45,10 @@ public class PropertyServiceImpl implements PropertyService{
     //매물 상세조회 (상세 설명)
     @Override
     public PropertyDescriptionResponseDto getPropertyDescription(Long propertyId) {
-        return null;
+        Property property = propertyRepository.findById(propertyId).orElse(null); //null허용
+        if(property == null){
+            return  null;
+        }
+        return PropertyDescriptionResponseDto.of(property);
     }
 }
