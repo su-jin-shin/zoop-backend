@@ -47,7 +47,7 @@ public class ViewReviewCommentController {
         return "mypage/myReviewList";
     }
 
-    @GetMapping("mypage/comment/view")
+    @GetMapping("mypage/comments/view")
     public String getMyCommentPage(Model model, @AuthenticationPrincipal LoginUser loginUser) {
 //        Long userId = 1L;
 

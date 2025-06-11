@@ -21,24 +21,24 @@ public class MyCommentService {
     }
 
     private MyCommentResponse convertToDto(MyCommentQueryDto q) {
-        MyCommentResponse dto = new MyCommentResponse();
-        dto.setCommentId(q.getCommentId());
-        dto.setContent(q.getContent());
-        dto.setCreatedAt(q.getCreatedAt());
-        dto.setLikeCount(q.getLikeCount());
+        MyCommentResponse.Item item = new MyCommentResponse.Item(
+                q.getComplexId(),
+                q.getPropertyId(),
+                q.getArticleName()
+        );
 
-        MyCommentResponse.Review review = new MyCommentResponse.Review();
-        review.setReviewId(q.getReviewId());
-        review.setContent(q.getReviewContent());
+        MyCommentResponse.Review review = new MyCommentResponse.Review(
+                q.getReviewId(),
+                q.getReviewContent(),
+                item
+        );
 
-        MyCommentResponse.Item item = new MyCommentResponse.Item();
-        item.setComplexId(q.getComplexId());
-        item.setPropertyId(q.getPropertyId());
-        item.setArticleName(q.getArticleName());
-
-        review.setItem(item);
-        dto.setReview(review);
-
-        return dto;
+        return new MyCommentResponse(
+                q.getCommentId(),
+                q.getContent(),
+                q.getCreatedAt(),
+                q.getLikeCount(),
+                review
+        );
     }
 }
