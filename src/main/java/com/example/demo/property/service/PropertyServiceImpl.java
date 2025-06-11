@@ -1,10 +1,13 @@
 package com.example.demo.property.service;
 
+import com.example.demo.common.exception.InvalidRequestException;
+import com.example.demo.common.exception.NotFoundException;
 import com.example.demo.property.domain.Image;
 import com.example.demo.property.domain.Property;
 import com.example.demo.property.domain.PropertySummary;
 import com.example.demo.property.dto.PropertyBasicInfoResponseDto;
 import com.example.demo.property.dto.PropertyDescriptionResponseDto;
+import com.example.demo.property.dto.PropertyFacilitiesResponseDto;
 import com.example.demo.property.repository.ImageRepository;
 import com.example.demo.property.repository.PropertyRepository;
 import com.example.demo.property.repository.PropertySummaryRepository;
@@ -16,6 +19,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class PropertyServiceImpl implements PropertyService{
+
     private final PropertyRepository propertyRepository;
     private final PropertySummaryRepository summaryRepository;
     private final ImageRepository imageRepository;
@@ -45,10 +49,16 @@ public class PropertyServiceImpl implements PropertyService{
     //매물 상세조회 (상세 설명)
     @Override
     public PropertyDescriptionResponseDto getPropertyDescription(Long propertyId) {
-        Property property = propertyRepository.findById(propertyId).orElse(null); //null허용
-        if(property == null){
-            return  null;
-        }
+        Property property = propertyRepository.findById(propertyId).orElseThrow(NotFoundException::new);
+
         return PropertyDescriptionResponseDto.of(property);
+    }
+
+    //매물 상세조회(시설정보)
+    @Override
+    public PropertyFacilitiesResponseDto getPropertyFacilities(Long propertyId) {
+        Property property = propertyRepository.findById(propertyId).orElseThrow(NotFoundException::new);
+
+        return PropertyFacilitiesResponseDto.of(property);
     }
 }
