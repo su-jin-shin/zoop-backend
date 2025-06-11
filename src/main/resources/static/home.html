@@ -21,17 +21,20 @@
 <button id="refresh-btn">액세스 토큰 재발급</button>
 <button id="logout-btn">로그아웃</button>
 
+<!-- 🔥 새로 추가된 탈퇴 버튼과 탈퇴 사유 입력 -->
+<h3>회원탈퇴</h3>
+<textarea id="withdraw-reason" placeholder="탈퇴사유를 입력하세요"></textarea><br>
+<button id="withdraw-btn">탈퇴하기</button>
+
 <script>
     const accessTokenDiv = document.getElementById('access-token');
     const refreshTokenDiv = document.getElementById('refresh-token');
 
-    // 화면에 출력
     function renderTokens() {
         accessTokenDiv.textContent = localStorage.getItem('accessToken') || '';
         refreshTokenDiv.textContent = localStorage.getItem('refreshToken') || '';
     }
 
-    // 처음 페이지 로드될 때 URL 파라미터에서 토큰들 localStorage에 저장
     window.onload = () => {
         const urlParams = new URLSearchParams(window.location.search);
         const accessToken = urlParams.get('accessToken');
@@ -87,6 +90,40 @@
             window.location.href = '/login.html';
         } else {
             alert('로그아웃 실패');
+        }
+    };
+
+    // 🔥 탈퇴하기
+    document.getElementById('withdraw-btn').onclick = async () => {
+        const reason = document.getElementById('withdraw-reason').value;
+        if (!reason) {
+            alert('탈퇴 사유를 입력해주세요.');
+            return;
+        }
+
+        const accessToken = localStorage.getItem('accessToken');
+        if (!accessToken) {
+            alert('로그인이 필요합니다.');
+            return;
+        }
+
+        const res = await fetch('/mypage/withdraw', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + accessToken
+            },
+            body: JSON.stringify({ withdrawReason: reason })
+        });
+
+        if (res.ok) {
+            const msg = await res.text();
+            alert(msg); // "탈퇴가 정상적으로 처리되었습니다."
+            localStorage.clear();
+            window.location.href = '/login.html';
+        } else {
+            const error = await res.text();
+            alert('탈퇴 실패: ' + error);
         }
     };
 </script>
