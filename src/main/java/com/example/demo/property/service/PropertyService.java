@@ -9,4 +9,5 @@ public interface PropertyService {
 
     //매물 상세조회 (상세 설명)
     PropertyDescriptionResponseDto getPropertyDescription(Long propertyId);
+
 }
