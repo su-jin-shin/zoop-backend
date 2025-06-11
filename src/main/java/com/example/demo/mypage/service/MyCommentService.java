@@ -1,0 +1,44 @@
+package com.example.demo.mypage.service;
+
+import com.example.demo.mypage.dto.MyCommentQueryDto;
+import com.example.demo.mypage.dto.MyCommentResponse;
+import com.example.demo.mypage.repository.ReviewCommentRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class MyCommentService {
+
+    private final ReviewCommentRepository reviewCommentRepository;
+
+    public List<MyCommentResponse> getMyComments(Long userId) {
+        return reviewCommentRepository.findMyComments(userId).stream()
+                .map(this::convertToDto)
+                .toList();
+    }
+
+    private MyCommentResponse convertToDto(MyCommentQueryDto q) {
+        MyCommentResponse.Item item = new MyCommentResponse.Item(
+                q.getComplexId(),
+                q.getPropertyId(),
+                q.getArticleName()
+        );
+
+        MyCommentResponse.Review review = new MyCommentResponse.Review(
+                q.getReviewId(),
+                q.getReviewContent(),
+                item
+        );
+
+        return new MyCommentResponse(
+                q.getCommentId(),
+                q.getContent(),
+                q.getCreatedAt(),
+                q.getLikeCount(),
+                review
+        );
+    }
+}

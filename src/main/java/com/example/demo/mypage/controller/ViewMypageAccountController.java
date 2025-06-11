@@ -40,6 +40,7 @@ public class ViewMypageAccountController {
 //        }
 //
         Long userId = parseUserId(loginUser);
+        System.out.println("😀userId: "+userId);
 //        Long userId = 1L; // 테스트용 하드코딩
         MyPageAccountResponse response = myPageService.getAccountInfo(userId);
 
