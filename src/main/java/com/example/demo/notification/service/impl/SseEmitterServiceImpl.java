@@ -4,12 +4,14 @@ import com.example.demo.notification.repository.SseEmitterRepository;
 import com.example.demo.notification.service.SseEmitterService;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
 import java.util.Map;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @SuppressFBWarnings("EI_EXPOSE_REP2")
@@ -36,18 +38,20 @@ public class SseEmitterServiceImpl implements SseEmitterService {
 
         // Emitter가 완료되었을 때 (클라이언트 연결 종료 시)
         emitter.onCompletion(() -> {
+            log.info("Emitter 완료됨: {}", emitterId);
             sseEmitterRepository.deleteById(emitterId); // 레포지토리에서 해당 emitter 삭제
         });
 
         // Emitter 타임아웃 발생 시
         emitter.onTimeout(() -> {
+            log.warn("Emitter 타임아웃 발생: {}", emitterId);
             sseEmitterRepository.deleteById(emitterId); // 레포지토리에서 해당 emitter 삭제
             emitter.complete(); // emitter 완료 처리
         });
 
         // Emitter 에러 발생 시
         emitter.onError(throwable -> {
-
+            log.error("Emitter 에러 발생: {} - {}", emitterId, throwable.getMessage(), throwable);
             sseEmitterRepository.deleteById(emitterId); // 레포지토리에서 해당 emitter 삭제
             emitter.complete(); // emitter 완료 처리
         });
@@ -71,8 +75,12 @@ public class SseEmitterServiceImpl implements SseEmitterService {
                     .id(emitterId)
                     .data(data));
             saveEventCache(emitterId, data);
-        } catch (IOException exception) {
+        } catch (IOException | IllegalStateException ex) {
+            log.warn("클라이언트 전송 실패 또는 연결 끊김: {} - {}", emitterId, ex.getMessage(), ex);
             // 알림 전송 중 에러 발생 시 해당 emitter 삭제
+            sseEmitterRepository.deleteById(emitterId);
+        } catch(Exception ex){
+            log.error("알 수 없는 오류 발생 ({}): {}", emitterId, ex.getMessage(), ex);
             sseEmitterRepository.deleteById(emitterId);
         }
     }
