@@ -30,28 +30,24 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                                     HttpServletResponse res,
                                     FilterChain chain) throws ServletException, IOException {
 
-        String token = resolveAccessToken(req);          // ① 토큰 추출
+        String token = resolveAccessToken(req); // 🔑 쿠키에서 JWT 추출
         if (token != null && !jwtUtil.isExpired(token)) {
-            String email = jwtUtil.getSubject(token);    // ② 이메일 꺼내기
+            String email = jwtUtil.getSubject(token);
 
             userRepo.findByEmail(email).ifPresent(userInfo -> {
-                LoginUser principal = new LoginUser(userInfo);// ③ LoginUser 래핑
-                log.info("🔒 userInfo.getUserId() 값: "+userInfo.getUserId());
+                LoginUser principal = new LoginUser(userInfo);
                 var auth = new UsernamePasswordAuthenticationToken(
                         principal, null, principal.getAuthorities());
-                SecurityContextHolder.getContext().setAuthentication(auth); // ④ 세팅
+                SecurityContextHolder.getContext().setAuthentication(auth);
+                log.debug(" JWT 인증 완료 - userId: {}", userInfo.getUserId());
             });
-        } else {
-            log.warn("🔒 유효하지 않거나 만료된 토큰: {}", token);
         }
-        chain.doFilter(req, res);                        // ⑤ 필터 체인 진행
+
+        // 토큰이 없거나 만료된 경우에도 인증 없이 계속 진행
+        chain.doFilter(req, res);
     }
 
     private String resolveAccessToken(HttpServletRequest req) {
-        String h = req.getHeader("Authorization");
-        if (h != null && h.startsWith("Bearer ")) {
-            return h.substring(7);
-        }
         if (req.getCookies() != null) {
             for (Cookie cookie : req.getCookies()) {
                 if ("access_token".equals(cookie.getName())) {
