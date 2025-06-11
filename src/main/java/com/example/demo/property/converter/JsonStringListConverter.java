@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 
+import java.util.Collections;
 import java.util.List;
 
 
@@ -31,10 +32,14 @@ public class JsonStringListConverter implements AttributeConverter<List<String>,
     //DB에서 읽어온 json 문자열 자바 객체로 변환할 때 호출
     @Override
     public List<String> convertToEntityAttribute(String dbData) {
-        try{
-            return objectMapper.readValue(dbData, new TypeReference<>() {});
-        }catch (Exception e){
-            throw new IllegalArgumentException("Json 변환 실패",e);
+        try {
+            if (dbData == null || dbData.isBlank()) {
+                return Collections.emptyList();
+            }
+            return objectMapper.readValue(dbData, new TypeReference<List<String>>() {});
+        } catch (Exception e) {
+            throw new IllegalArgumentException("JSON 역변환 실패", e);
         }
     }
+
 }

@@ -5,6 +5,8 @@ import com.example.demo.review.domain.Complex;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -12,11 +14,17 @@ import java.time.LocalDateTime;
         value = { "EI_EXPOSE_REP", "EI_EXPOSE_REP2" },
         justification = "Complex는 JPA 연관 엔티티이며, LAZY 로딩 및 setter 없이 관리되므로 외부 변경 위험이 없습니다."
 )
+@Entity
+@Table(name = "image",
+        uniqueConstraints = {
+                @UniqueConstraint(name = "property_unique_image", columnNames = {"property_id", "image_type", "image_order"}),
+                @UniqueConstraint(name = "complex_unique_image", columnNames = {"complex_id", "image_type", "image_order"})
+        }
+)
 @Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
 public class Image {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -42,11 +50,13 @@ public class Image {
     private Integer imageOrder; //이미지 순서
     private Boolean isMain; //대표이미지 여부
 
-    private LocalDateTime createdAt; //등록일
-    private LocalDateTime updatedAt; //수정일
-    private LocalDateTime deletedAt; //삭제일
+    @CreationTimestamp
+    @Column(updatable = false)
+    private LocalDateTime createdAt;   // 지역 추가 시각
+
+    @UpdateTimestamp
+    private LocalDateTime updatedAt;   // 지역 수정 시각
+    private LocalDateTime deletedAt;   // 지역 삭제 시각
 
 
 }
-
-

@@ -6,3 +6,4 @@ public enum ImageType {
     PROPERTY, //매물
     STRUCTURE //평면도
 }
+

@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -26,7 +28,11 @@ public class PropertySummary {
 
     private String summary; //매물 요약
 
-    private LocalDateTime createdAt; //등록일
-    private LocalDateTime updatedAt; //수정일
-    private LocalDateTime deletedAt; //삭제일
+    @CreationTimestamp
+    @Column(updatable = false)
+    private LocalDateTime createdAt;   // 지역 추가 시각
+
+    @UpdateTimestamp
+    private LocalDateTime updatedAt;   // 지역 수정 시각
+    private LocalDateTime deletedAt;   // 지역 삭제 시각
 }
