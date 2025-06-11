@@ -34,7 +34,7 @@ public class Region {
 
     private Double centerLat;        // 위도
 
-    private Double cortarLon;        // 경도
+    private Double centerLon;        // 경도
 
     private String fullCortarName;   // 풀지역명
 
