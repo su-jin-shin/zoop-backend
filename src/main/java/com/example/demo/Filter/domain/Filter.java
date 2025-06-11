@@ -22,7 +22,10 @@ public class Filter {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long filterId;
 
-    private String cortarNo;          // 지역 코드
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "region_id", nullable = false)
+    private Region region;
+
     private String filterTitle;       // 필터 제목
 
     @Enumerated(EnumType.STRING)
