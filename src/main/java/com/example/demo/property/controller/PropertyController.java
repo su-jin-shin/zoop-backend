@@ -4,8 +4,10 @@ import com.example.demo.property.domain.Property;
 import com.example.demo.property.dto.PropertyBasicInfoResponseDto;
 import com.example.demo.property.dto.PropertyDescriptionResponseDto;
 import com.example.demo.property.dto.PropertyFacilitiesResponseDto;
+import com.example.demo.property.dto.PropertyLocationResponseDto;
 import com.example.demo.property.service.PropertyService;
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -45,7 +47,15 @@ public class PropertyController {
         PropertyFacilitiesResponseDto propertyFacilitiesResponseDto = propertyService.getPropertyFacilities(propertyId);
         
 
-        return ResponseEntity.ok(propertyFacilitiesResponseDto); //정상 응답
+        return ResponseEntity.ok(propertyFacilitiesResponseDto); //정상 응답 200
+    }
+
+    //매물 상세조회 (위치정보) API
+    @GetMapping("/{propertyId}/location")
+    public ResponseEntity<PropertyLocationResponseDto> getLocation(@PathVariable Long propertyId){
+        PropertyLocationResponseDto propertyLocationResponseDto = propertyService.getPropertyLocation(propertyId);
+
+        return ResponseEntity.ok(propertyLocationResponseDto); //정상 응답 200
     }
 
 }

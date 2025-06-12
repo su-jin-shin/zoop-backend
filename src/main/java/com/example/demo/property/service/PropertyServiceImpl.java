@@ -8,6 +8,7 @@ import com.example.demo.property.domain.PropertySummary;
 import com.example.demo.property.dto.PropertyBasicInfoResponseDto;
 import com.example.demo.property.dto.PropertyDescriptionResponseDto;
 import com.example.demo.property.dto.PropertyFacilitiesResponseDto;
+import com.example.demo.property.dto.PropertyLocationResponseDto;
 import com.example.demo.property.repository.ImageRepository;
 import com.example.demo.property.repository.PropertyRepository;
 import com.example.demo.property.repository.PropertySummaryRepository;
@@ -54,11 +55,19 @@ public class PropertyServiceImpl implements PropertyService{
         return PropertyDescriptionResponseDto.of(property);
     }
 
-    //매물 상세조회(시설정보)
+    //매물 상세조회 (시설정보)
     @Override
     public PropertyFacilitiesResponseDto getPropertyFacilities(Long propertyId) {
         Property property = propertyRepository.findById(propertyId).orElseThrow(NotFoundException::new);
 
         return PropertyFacilitiesResponseDto.of(property);
+    }
+
+    //매물 상세조회 (위치정보)
+    @Override
+    public PropertyLocationResponseDto getPropertyLocation(Long propertyId) {
+        Property property = propertyRepository.findById(propertyId).orElseThrow(NotFoundException::new);
+
+        return PropertyLocationResponseDto.of(property);
     }
 }
