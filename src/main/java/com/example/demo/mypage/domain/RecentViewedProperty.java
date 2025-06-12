@@ -2,6 +2,7 @@ package com.example.demo.mypage.domain;
 
 import com.example.demo.auth.domain.UserInfo;
 import com.example.demo.property.domain.Property;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -22,8 +23,10 @@ public class RecentViewedProperty {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long RecentViewedPropertyId;
+    @Column(name = "recent_viewed_property_id")
+    private Long recentViewedPropertyId;
 
+    @SuppressFBWarnings(value = {"EI_EXPOSE_REP", "EI_EXPOSE_REP2"}, justification = "UserInfo is managed entity and lifecycle is controlled by JPA")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private UserInfo user;

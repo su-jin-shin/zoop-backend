@@ -108,7 +108,7 @@ public class RecentViewedPropertyServiceImpl implements RecentViewedPropertyServ
                             .rentPrice(p.getRentPrice())
                             .warrantPrice(p.getWarrantPrice())
                             .dealPrice(p.getDealPrice())
-                            .summary(p.getTagList())
+                            .summary(p.getTagList() == null ? List.of() : List.copyOf(p.getTagList()))
                             .area1(p.getArea1())
                             .isBookmarked(bookmarkedPropertyIds.contains(pid))
                             .isActive(!"Y".equalsIgnoreCase(p.getTradeCompleteYN()))
