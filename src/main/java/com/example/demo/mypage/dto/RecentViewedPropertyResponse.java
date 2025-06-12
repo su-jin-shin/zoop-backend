@@ -40,4 +40,11 @@ public class RecentViewedPropertyResponse {
     public void setSummary(List<String> summary) {
         this.summary = summary == null ? null : new ArrayList<>(summary);
     }
+
+    public static class RecentViewedPropertyResponseBuilder {
+        public RecentViewedPropertyResponseBuilder summary(List<String> summary) {
+            this.summary = summary == null ? null : new ArrayList<>(summary);
+            return this;
+        }
+    }
 }
