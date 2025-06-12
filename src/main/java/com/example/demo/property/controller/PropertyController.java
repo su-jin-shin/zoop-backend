@@ -1,10 +1,7 @@
 package com.example.demo.property.controller;
 
 import com.example.demo.property.domain.Property;
-import com.example.demo.property.dto.PropertyBasicInfoResponseDto;
-import com.example.demo.property.dto.PropertyDescriptionResponseDto;
-import com.example.demo.property.dto.PropertyFacilitiesResponseDto;
-import com.example.demo.property.dto.PropertyLocationResponseDto;
+import com.example.demo.property.dto.*;
 import com.example.demo.property.service.PropertyService;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.Response;
@@ -56,6 +53,14 @@ public class PropertyController {
         PropertyLocationResponseDto propertyLocationResponseDto = propertyService.getPropertyLocation(propertyId);
 
         return ResponseEntity.ok(propertyLocationResponseDto); //정상 응답 200
+    }
+
+    //매물 상세조회 (거래정보) API
+    @GetMapping("/{propertyId}/transaction")
+    public ResponseEntity<PropertyTransactionResponseDto> getTransaction(@PathVariable Long propertyId){
+        PropertyTransactionResponseDto propertyTransactionResponseDto = propertyService .getPropertyTransaction(propertyId);
+
+        return ResponseEntity.ok(propertyTransactionResponseDto); //정상 응답 200
     }
 
 }

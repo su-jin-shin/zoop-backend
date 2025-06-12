@@ -5,13 +5,11 @@ import com.example.demo.common.exception.NotFoundException;
 import com.example.demo.property.domain.Image;
 import com.example.demo.property.domain.Property;
 import com.example.demo.property.domain.PropertySummary;
-import com.example.demo.property.dto.PropertyBasicInfoResponseDto;
-import com.example.demo.property.dto.PropertyDescriptionResponseDto;
-import com.example.demo.property.dto.PropertyFacilitiesResponseDto;
-import com.example.demo.property.dto.PropertyLocationResponseDto;
+import com.example.demo.property.dto.*;
 import com.example.demo.property.repository.ImageRepository;
 import com.example.demo.property.repository.PropertyRepository;
 import com.example.demo.property.repository.PropertySummaryRepository;
+import com.fasterxml.jackson.databind.annotation.JsonAppend;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -19,7 +17,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class PropertyServiceImpl implements PropertyService{
+public class PropertyServiceImpl  implements PropertyService{
 
     private final PropertyRepository propertyRepository;
     private final PropertySummaryRepository summaryRepository;
@@ -69,5 +67,13 @@ public class PropertyServiceImpl implements PropertyService{
         Property property = propertyRepository.findById(propertyId).orElseThrow(NotFoundException::new);
 
         return PropertyLocationResponseDto.of(property);
+    }
+
+    //매물 상세조회 (거래 정보)
+    @Override
+    public PropertyTransactionResponseDto getPropertyTransaction(Long propertyId) {
+        Property property = propertyRepository.findById(propertyId).orElseThrow(NotFoundException::new);
+
+        return  PropertyTransactionResponseDto.of(property);
     }
 }
