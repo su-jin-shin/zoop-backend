@@ -19,12 +19,12 @@ public class PropertyLocationResponseDto {
     private Double longitude; //경도
 
     //빌더
-    public static PropertyLocationResponseDto of(Property p){
+    public static PropertyLocationResponseDto of(Property property){
         return PropertyLocationResponseDto.builder()
-                .propertyId(p.getPropertyId())
-                .exposureAddress(p.getExposureAddress())
-                .latitude(p.getLatitude())
-                .longitude(p.getLongitude())
+                .propertyId(property.getPropertyId())
+                .exposureAddress(property.getExposureAddress())
+                .latitude(property.getLatitude())
+                .longitude(property.getLongitude())
                 .build();
     }
 

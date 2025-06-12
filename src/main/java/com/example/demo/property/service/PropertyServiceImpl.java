@@ -76,4 +76,11 @@ public class PropertyServiceImpl  implements PropertyService{
 
         return  PropertyTransactionResponseDto.of(property);
     }
+
+    @Override
+    public PropertyAgentResponseDto getPropertyAgent(Long propertyId) {
+        Property property = propertyRepository.findById(propertyId).orElseThrow(NotFoundException::new);
+
+        return PropertyAgentResponseDto.of(property);
+    }
 }

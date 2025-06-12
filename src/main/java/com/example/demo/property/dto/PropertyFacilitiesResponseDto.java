@@ -28,13 +28,13 @@ public class PropertyFacilitiesResponseDto {
 
 
     //빌더
-    public static  PropertyFacilitiesResponseDto of(Property p){
+    public static  PropertyFacilitiesResponseDto of(Property property){
         return  PropertyFacilitiesResponseDto.builder()
-                .propertyId(p.getPropertyId())
-                .heatMethodTypeName(p.getHeatMethodTypeName())
-                .lifeFacilities(safeList(p.getLifeFacilities()))
-                .securityFacilities(safeList(p.getSecurityFacilities()))
-                .etcFacilities(safeList(p.getEtcFacilities()))
+                .propertyId(property.getPropertyId())
+                .heatMethodTypeName(property.getHeatMethodTypeName())
+                .lifeFacilities(safeList(property.getLifeFacilities()))
+                .securityFacilities(safeList(property.getSecurityFacilities()))
+                .etcFacilities(safeList(property.getEtcFacilities()))
                 .build();
     }
 

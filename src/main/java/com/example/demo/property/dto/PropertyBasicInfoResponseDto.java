@@ -67,23 +67,23 @@ public class PropertyBasicInfoResponseDto {
 
 
      //빌더
-    public static PropertyBasicInfoResponseDto of(Property p, PropertySummary summary, List<Image> images){
+    public static PropertyBasicInfoResponseDto of(Property property, PropertySummary summary, List<Image> images){
         return PropertyBasicInfoResponseDto.builder()
-                .propertyId(p.getPropertyId())
-                .tradeTypeName(p.getTradeTypeName())
-                .articleName(p.getArticleName())
-                .dealPrice(p.getDealPrice())
-                .warrantPrice(p.getWarrantPrice())
-                .rentPrice(p.getRentPrice())
-                .dealOrWarrantPrc(p.getDealOrWarrantPrc())
-                .articleFeatureDesc(p.getArticleFeatureDesc())
+                .propertyId(property.getPropertyId())
+                .tradeTypeName(property.getTradeTypeName())
+                .articleName(property.getArticleName())
+                .dealPrice(property.getDealPrice())
+                .warrantPrice(property.getWarrantPrice())
+                .rentPrice(property.getRentPrice())
+                .dealOrWarrantPrc(property.getDealOrWarrantPrc())
+                .articleFeatureDesc(property.getArticleFeatureDesc())
                // .realestateTypeName(p.getRealestateTypeName())
                // .buildingTypeName(p.getBuildingTypeName())
-                .area2(p.getArea2())
-                .correspondingFloorCount(p.getCorrespondingFloorCount())
-                .parkingPossibleYN(p.getParkingPossibleYN())
+                .area2(property.getArea2())
+                .correspondingFloorCount(property.getCorrespondingFloorCount())
+                .parkingPossibleYN(property.getParkingPossibleYN())
                 .isBookmarked(false) //찜 기능 생성시 추후 다시 구현
-                .exposeStartYMD(p.getExposeStartYMD())
+                .exposeStartYMD(property.getExposeStartYMD())
                 .summary(List.copyOf(convertSummary(summary)))
                 .images(List.copyOf(convertImages(images)))
                 .build();

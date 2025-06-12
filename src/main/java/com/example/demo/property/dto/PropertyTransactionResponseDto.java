@@ -25,17 +25,17 @@ public class PropertyTransactionResponseDto {
     private BigDecimal rentPrice; //월세
 
     //빌더
-    public static PropertyTransactionResponseDto of(Property p){
+    public static PropertyTransactionResponseDto of(Property property){
         return PropertyTransactionResponseDto.builder()
-                .propertyId(p.getPropertyId())
-                .tradeTypeName(p.getTradeTypeName())
-                .warrantPrice(p.getWarrantPrice())
-                .dealOrWarrantPrc(p.getDealOrWarrantPrc())
-                .etcFeeAmount(p.getEtcFeeAmount())
-                .financePrice(p.getFinancePrice())
-                .moveInPossibleYmd(p.getMoveInPossibleYmd())
-                .dealPrice(p.getDealPrice())
-                .rentPrice(p.getRentPrice())
+                .propertyId(property.getPropertyId())
+                .tradeTypeName(property.getTradeTypeName())
+                .warrantPrice(property.getWarrantPrice())
+                .dealOrWarrantPrc(property.getDealOrWarrantPrc())
+                .etcFeeAmount(property.getEtcFeeAmount())
+                .financePrice(property.getFinancePrice())
+                .moveInPossibleYmd(property.getMoveInPossibleYmd())
+                .dealPrice(property.getDealPrice())
+                .rentPrice(property.getRentPrice())
                 .build();
     }
 
