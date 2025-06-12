@@ -2,21 +2,22 @@ package com.example.demo.review.domain;
 
 import com.example.demo.auth.domain.UserInfo;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import jakarta.persistence.*;
 import org.hibernate.annotations.ColumnDefault;
 
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+
 
 
 @Entity
 @Table(name="review")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 @Getter
-@Setter
+@Builder
 @SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class Review {
 
@@ -41,10 +42,12 @@ public class Review {
     @Column(name = "rating",precision = 2, scale = 1, nullable = false)
     private BigDecimal rating;
 
+
     private String content;
 
     @Column(name = "like_count")
     @ColumnDefault("0")
+    @Builder.Default
     private Long likeCount = 0L;
 
     @Column(name = "has_children")
@@ -58,13 +61,6 @@ public class Review {
     private LocalDateTime deletedAt;
 
 
-
-
-
-    public boolean isMine(Long currentUserId){
-        return user != null && user.getUserId().equals(currentUserId);
-    }
-
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
@@ -75,5 +71,33 @@ public class Review {
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
+
+    /* 비즈니스 메서드 */
+
+    //본인 확인
+    public boolean isMine(UserInfo currentUser){
+        return user != null && user.getUserId().equals(currentUser.getUserId());
+    }
+
+    //리뷰 수정: 내용(content), 별점(rating)
+    public void updateContent(String content){
+        this.content = content;
+        onUpdate();
+    }
+    public void updateRating(BigDecimal rating){
+        this.rating = rating;
+        onUpdate();
+    }
+
+    // 리뷰 삭제
+    public void deleteReview() {
+        this.deletedAt = LocalDateTime.now();
+    }
+
+
+
+
+
+
 
 }

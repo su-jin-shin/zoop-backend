@@ -2,10 +2,10 @@ package com.example.demo.review.domain;
 
 import com.example.demo.auth.domain.UserInfo;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
 
 
@@ -13,7 +13,9 @@ import java.time.LocalDateTime;
 @Table(name = "review_comment_like",
                 uniqueConstraints = @UniqueConstraint(columnNames = {"comment_id","user_id"}))
 @Getter
-@Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
 @SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class ReviewCommentLike {
 
@@ -36,17 +38,23 @@ public class ReviewCommentLike {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    //토글형식이므로 deletedAt 제거
 
-    @PrePersist  //db insert 전 초기화
-    public void prePersist(){
+
+    @PrePersist
+    public void onCreate() {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
 
     @PreUpdate  //db update 전 업데이트
-    public void preUpdate(){
+    public void onUpdate(){
         this.updatedAt = LocalDateTime.now();
+    }
+
+    // 좋아요 등록/해제 
+    public void updateLikeStatus(boolean isLiked){
+        this.isLiked = isLiked;
+        onUpdate();
     }
 
 }
