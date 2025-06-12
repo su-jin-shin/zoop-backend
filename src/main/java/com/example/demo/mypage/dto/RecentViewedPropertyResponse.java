@@ -1,11 +1,16 @@
 package com.example.demo.mypage.dto;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.*;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.ArrayList;
 
+@SuppressFBWarnings(
+        value = "EI_EXPOSE_REP2",
+        justification = "방어적 복사 완료. 외부에 mutable list 노출 안 됨."
+)
 @Getter
 @Setter
 @Builder
