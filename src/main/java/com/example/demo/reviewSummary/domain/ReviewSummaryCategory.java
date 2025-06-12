@@ -1,7 +1,11 @@
-package com.example.demo.review.domain;
+package com.example.demo.reviewSummary.domain;
+
+import com.example.demo.review.domain.*;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.persistence.*;
+
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "review_summary_category")
@@ -20,7 +24,8 @@ public class ReviewSummaryCategory {
     @Enumerated(EnumType.STRING)
     private CategoryType type;  //'TRANSPORTATION','RESIDENTIAL','EDUCATION','FACILITIES'
 
-    private float rating;
+    @Column(name = "rating",precision = 2, scale = 1, nullable = false)
+    private BigDecimal rating;
 
     private String content;
 

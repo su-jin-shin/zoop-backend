@@ -1,4 +1,4 @@
-package com.example.demo.review.domain;
+package com.example.demo.reviewSummary.domain;
 
 public enum CategoryType {
     TRANSPORTATION,

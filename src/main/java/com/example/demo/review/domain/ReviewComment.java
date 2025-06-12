@@ -4,17 +4,19 @@ package com.example.demo.review.domain;
 import com.example.demo.auth.domain.UserInfo;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
+
+
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+
 
 @Entity
 @Table(name="review_comment")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 @Getter
-@Setter
+@Builder
 @SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class ReviewComment {
 
@@ -46,18 +48,32 @@ public class ReviewComment {
     private LocalDateTime deletedAt;
 
     @PrePersist
-    public void prePersist() {
+    public void onCreate() {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
 
     @PreUpdate
-    public void preUpdate() {
+    public void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
 
-    // 기본 false 반환 -> 서비스에서 실제 여부 판단
-    public boolean isLikedByMe(UserInfo currentUser) {
-        return false;
+
+    //본인 확인
+    public boolean isMine(UserInfo currentUser){
+        return user != null && user.getUserId().equals(currentUser.getUserId());
     }
+
+    //댓글 수정: 내용
+    public void updateContent(String content){
+        this.content = content;
+        onUpdate();
+    }
+
+
+    // 댓글 삭제
+    public void deleteReviewComment() {
+        this.deletedAt = LocalDateTime.now();
+    }
+
 }
