@@ -7,7 +7,7 @@ import java.time.LocalDate;
 
 @Getter
 @Builder
-public class MyReviewResponseDto {
+public class MyReviewResponse {
     private Long reviewId;
     private String content;
     private LocalDate createdAt;

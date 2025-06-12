@@ -2,7 +2,7 @@ package com.example.demo.mypage.dto;
 
 import java.time.LocalDate;
 
-public interface MyCommentQueryDto {
+public interface MyCommentQuery {
     Long getCommentId();
     String getContent();
     LocalDate getCreatedAt();

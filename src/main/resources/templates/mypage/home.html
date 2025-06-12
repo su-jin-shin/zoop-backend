@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>마이페이지</title>
+    <style>
+        body { font-family: 'Pretendard', sans-serif; background: #f5f5f5; margin: 0; }
+        .container { max-width: 400px; margin: 0 auto; padding: 16px; background: #fff; }
+        .tab { display: flex; border-bottom: 1px solid #ddd; }
+        .tab button { flex: 1; padding: 12px; font-weight: bold; border: none; border-bottom: 3px solid transparent; cursor: pointer; background: none; }
+        .tab button.active { border-color: #007aff; color: #007aff; }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .item { display: flex; gap: 12px; margin-bottom: 16px; border-bottom: 1px solid #eee; padding-bottom: 12px; }
+        .item img { width: 100px; height: 80px; border-radius: 8px; object-fit: cover; }
+        .info { flex: 1; }
+        .title { font-weight: bold; margin-bottom: 4px; }
+        .addr { color: #666; font-size: 13px; }
+        .meta { font-size: 12px; margin-top: 4px; color: #999; }
+        .heart { color: #007aff; font-size: 20px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>마이페이지</h2>
+    <div class="tab">
+        <button class="tab-btn" data-tab="liked">찜한 매물</button>
+        <button class="tab-btn active" data-tab="recent">최근 본 매물</button>
+    </div>
+
+    <div id="liked" class="tab-content">
+        <p>찜한 매물 리스트 (예시용)</p>
+    </div>
+
+    <div id="recent" class="tab-content active">
+        <div id="recent-list"></div>
+    </div>
+</div>
+
+<script>
+    const tabButtons = document.querySelectorAll(".tab-btn");
+    const tabContents = document.querySelectorAll(".tab-content");
+
+    tabButtons.forEach(button => {
+        button.addEventListener("click", () => {
+            const tab = button.dataset.tab;
+            tabButtons.forEach(btn => btn.classList.remove("active"));
+            button.classList.add("active");
+
+            tabContents.forEach(content => content.classList.remove("active"));
+            document.getElementById(tab).classList.add("active");
+
+            if (tab === "recent") {
+                loadRecentViewedProperties();
+            }
+        });
+    });
+
+    async function loadRecentViewedProperties() {
+        const listDiv = document.getElementById("recent-list");
+        listDiv.innerHTML = "<p>불러오는 중...</p>";
+
+        try {
+            const response = await fetch("/mypage/histories/recent-items");
+            const data = await response.json();
+            const items = data.recentViewedProperties;
+
+            if (!items || items.length === 0) {
+                listDiv.innerHTML = "<p>최근 본 매물이 없습니다.</p>";
+                return;
+            }
+
+            listDiv.innerHTML = ""; // 초기화
+            items.forEach(item => {
+                const el = document.createElement("div");
+                el.className = "item";
+                el.innerHTML = `
+          <img src="${item.thumbnailImage}" alt="매물 이미지" />
+          <div class="info">
+            <div class="title">${item.tradeTypeName} ${item.dealOrWarrantPrc}</div>
+            <div class="addr">${item.articleName} ${item.buildingName}</div>
+            <div class="meta">${item.realestateTypeName} · ${item.area1}㎡</div>
+          </div>
+          <div class="heart">${item.isBookmarked ? "💙" : "🤍"}</div>
+        `;
+                listDiv.appendChild(el);
+            });
+        } catch (e) {
+            listDiv.innerHTML = "<p>데이터를 불러오지 못했습니다.</p>";
+            console.error(e);
+        }
+    }
+
+    // 페이지 로드 시 한 번 실행
+    loadRecentViewedProperties();
+</script>
+</body>
+</html>

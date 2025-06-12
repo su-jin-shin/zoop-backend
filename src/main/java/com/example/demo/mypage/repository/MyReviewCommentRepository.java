@@ -1,6 +1,6 @@
 package com.example.demo.mypage.repository;
 
-import com.example.demo.mypage.dto.MyCommentQueryDto;
+import com.example.demo.mypage.dto.MyCommentQuery;
 import com.example.demo.review.domain.ReviewComment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -8,7 +8,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
-public interface ReviewCommentRepository extends JpaRepository<ReviewComment, Long> {
+public interface MyReviewCommentRepository extends JpaRepository<ReviewComment, Long> {
 
     @Query("""
     SELECT 
@@ -30,5 +30,5 @@ public interface ReviewCommentRepository extends JpaRepository<ReviewComment, Lo
     WHERE rc.user.userId = :userId AND rc.deletedAt IS NULL
     ORDER BY rc.createdAt DESC
 """)
-    List<MyCommentQueryDto> findMyComments(@Param("userId") Long userId);
+    List<MyCommentQuery> findMyComments(@Param("userId") Long userId);
 }

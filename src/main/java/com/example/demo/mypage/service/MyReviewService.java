@@ -1,6 +1,6 @@
 package com.example.demo.mypage.service;
 
-import com.example.demo.mypage.dto.MyReviewResponseDto;
+import com.example.demo.mypage.dto.MyReviewResponse;
 import com.example.demo.mypage.repository.MyReviewRepository;
 import com.example.demo.property.service.PropertyService;
 import com.example.demo.review.domain.Review;
@@ -17,7 +17,7 @@ public class MyReviewService {
     private final MyReviewRepository myReviewRepository;
     private final PropertyService propertyService;
 
-    public List<MyReviewResponseDto> getMyReviews(Long userId) {
+    public List<MyReviewResponse> getMyReviews(Long userId) {
         List<Review> reviews = myReviewRepository.findByUserUserId(userId);
 
         return reviews.stream().map(review -> {
@@ -36,13 +36,13 @@ public class MyReviewService {
                 propertyId = review.getPropertyId();
             }
 
-            return MyReviewResponseDto.builder()
+            return MyReviewResponse.builder()
                     .reviewId(review.getId())
                     .content(review.getContent())
                     .createdAt(review.getCreatedAt().toLocalDate())
                     .likeCount(review.getLikeCount().intValue())
                     .commentCount(commentCount)
-                    .item(MyReviewResponseDto.ItemDto.builder()
+                    .item(MyReviewResponse.ItemDto.builder()
                             .propertyId(propertyId)
                             .articleName(articleName)
                             .build())
