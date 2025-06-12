@@ -18,11 +18,11 @@ public class PropertyDescriptionResponseDto {
 
 
     //빌더
-    public static PropertyDescriptionResponseDto of(Property p){
+    public static PropertyDescriptionResponseDto of(Property property){
         return PropertyDescriptionResponseDto.builder()
-                .propertyId(p.getPropertyId())
-                .articleFeatureDescription(p.getArticleFeatureDescription())
-                .detailDescription(p.getDetailDescription())
+                .propertyId(property.getPropertyId())
+                .articleFeatureDescription(property.getArticleFeatureDescription())
+                .detailDescription(property.getDetailDescription())
                 .build();
     }
 

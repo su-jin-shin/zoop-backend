@@ -18,4 +18,7 @@ public interface PropertyService {
     //매물 상세 조회 (거래 정보)
     PropertyTransactionResponseDto getPropertyTransaction(Long propertyId);
 
+    //매물 상세 조회 (중개 정보)
+    PropertyAgentResponseDto getPropertyAgent(Long propertyId);
+
 }
