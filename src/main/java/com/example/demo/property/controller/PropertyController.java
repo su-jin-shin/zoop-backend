@@ -6,6 +6,7 @@ import com.example.demo.property.service.PropertyService;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.Response;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,7 +19,7 @@ public class PropertyController {
     private final PropertyService propertyService;
 
     //매물 상세 조회 (기본 정보) API
-    @GetMapping("/{propertyId}/basic-info")
+    @GetMapping("/{propertyId}/basic_info")
     public ResponseEntity<PropertyBasicInfoResponseDto> getBasicInfo(@PathVariable Long propertyId){
      PropertyBasicInfoResponseDto propertyBasicInfoResponseDto = propertyService.getPropertyBasicInfo(propertyId);
 
@@ -63,12 +64,20 @@ public class PropertyController {
         return ResponseEntity.ok(propertyTransactionResponseDto); //정상 응답 200
     }
 
-    //매물 상세조회 (중개번호)
+    //매물 상세조회 (중개번호) API
     @GetMapping("/{propertyId}/agent")
     public ResponseEntity<PropertyAgentResponseDto> getAgent(@PathVariable Long propertyId){
         PropertyAgentResponseDto propertyAgentResponseDto = propertyService.getPropertyAgent(propertyId);
 
         return  ResponseEntity.ok(propertyAgentResponseDto); //정상 응답 200
+    }
+
+    //매물 상세조회 (중개보수 및 세금정보)
+    @GetMapping("/{propertyId}/broker_fee")
+    public ResponseEntity<PropertyBrokerFeeResponseDto> getBroker(@PathVariable Long propertyId){
+        PropertyBrokerFeeResponseDto propertyBrokerFeeResponseDto = propertyService.getBrokerFee(propertyId);
+
+        return ResponseEntity.ok(propertyBrokerFeeResponseDto); //정상 응답 200
     }
 
 }

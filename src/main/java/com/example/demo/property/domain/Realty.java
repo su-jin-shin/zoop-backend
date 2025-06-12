@@ -31,7 +31,7 @@ public class Realty {
 
     private String realtorAccountId;
     @Column(name = "establish_registration_no", nullable = false)
-    private String establishRegistrationNo; //개설등록번호 //이따 수정
+    private String establishRegistrationNo; //개설등록번호
     private String realtorName; //중개사이름
     private String representativeName; //대표자이름
     private String address; //중개사주소
