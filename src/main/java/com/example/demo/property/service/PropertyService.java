@@ -3,6 +3,7 @@ package com.example.demo.property.service;
 import com.example.demo.property.dto.*;
 
 public interface PropertyService {
+
     //매물 상세조회 (기본 정보)
     PropertyBasicInfoResponseDto getPropertyBasicInfo(Long propertyId);
 
@@ -21,4 +22,6 @@ public interface PropertyService {
     //매물 상세 조회 (중개 정보)
     PropertyAgentResponseDto getPropertyAgent(Long propertyId);
 
+    //매물 상세 조회 (중개 보수 및 세금정보)
+    PropertyBrokerFeeResponseDto getBrokerFee(Long propertyId);
 }

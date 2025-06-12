@@ -77,10 +77,19 @@ public class PropertyServiceImpl  implements PropertyService{
         return  PropertyTransactionResponseDto.of(property);
     }
 
+    //매물 상세조회 (중개 정보)
     @Override
     public PropertyAgentResponseDto getPropertyAgent(Long propertyId) {
         Property property = propertyRepository.findById(propertyId).orElseThrow(NotFoundException::new);
 
         return PropertyAgentResponseDto.of(property);
+    }
+
+    //매물 상세조회 (중개보수 및 세금정보)
+    @Override
+    public PropertyBrokerFeeResponseDto getBrokerFee(Long propertyId) {
+        Property property = propertyRepository.findById(propertyId).orElseThrow(NotFoundException::new);
+
+        return PropertyBrokerFeeResponseDto.of(property);
     }
 }
