@@ -1,5 +1,6 @@
 package com.example.demo.review.dto.ReviewComment;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.Builder;
 import lombok.Data;
 
@@ -7,6 +8,7 @@ import lombok.Data;
 
 @Data
 @Builder
+@SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class ReviewCommentLikeResponse {
 
     private Long reviewId;

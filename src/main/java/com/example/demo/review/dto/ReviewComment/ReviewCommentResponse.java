@@ -1,5 +1,6 @@
 package com.example.demo.review.dto.ReviewComment;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.Builder;
 import lombok.Data;
 
@@ -8,6 +9,7 @@ import java.time.LocalDateTime;
 // 리뷰 댓글 단건 Response용 DTO  -> 나중에 Mapper랑 합치던지...
 @Data
 @Builder
+@SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class ReviewCommentResponse {
 
     private Long commentId;

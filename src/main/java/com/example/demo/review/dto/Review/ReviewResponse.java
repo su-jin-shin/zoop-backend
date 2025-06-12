@@ -1,5 +1,6 @@
 package com.example.demo.review.dto.Review;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.Builder;
 import lombok.Data;
 
@@ -9,6 +10,7 @@ import java.time.LocalDateTime;
 //개별 리뷰 정보 DTO
 @Data
 @Builder
+@SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class ReviewResponse {
     private Long reviewId;
 
