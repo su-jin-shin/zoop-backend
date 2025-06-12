@@ -3,6 +3,7 @@ package com.example.demo.mypage.dto;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -18,4 +19,12 @@ public class RecentViewedGroupResponse {
     private String rentCount;
     private String representativeName;
     private List<RecentViewedPropertyResponse> propertie;
+
+    public List<RecentViewedPropertyResponse> getPropertie() {
+        return propertie == null ? null : new ArrayList<>(propertie);
+    }
+
+    public void setPropertie(List<RecentViewedPropertyResponse> propertie) {
+        this.propertie = propertie == null ? null : new ArrayList<>(propertie);
+    }
 }

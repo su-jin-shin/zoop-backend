@@ -4,6 +4,7 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.ArrayList;
 
 @Getter
 @Setter
@@ -19,7 +20,9 @@ public class RecentViewedPropertyResponse {
     private BigDecimal warrantPrice;
     private BigDecimal dealPrice;
     private String dealOrWarrantPrc;
+
     private List<String> summary;
+
     private String articleName;
     private String aptName;
     private String buildingName;
@@ -29,4 +32,12 @@ public class RecentViewedPropertyResponse {
     private Boolean isActive;
     private Boolean isBookmarked;
     private String thumbnailImage;
+
+    public List<String> getSummary() {
+        return summary == null ? null : new ArrayList<>(summary);
+    }
+
+    public void setSummary(List<String> summary) {
+        this.summary = summary == null ? null : new ArrayList<>(summary);
+    }
 }
