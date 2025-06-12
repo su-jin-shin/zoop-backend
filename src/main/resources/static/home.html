@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <title>홈</title>
+    <style>
+        body { font-family: sans-serif; margin: 2rem; }
+        .token { word-break: break-all; background: #eee; padding: 0.5rem; margin-bottom: 1rem; }
+        button { margin: 1rem 0; }
+    </style>
+</head>
+<body>
+<h1>홈</h1>
+
+<h3>액세스 토큰</h3>
+<div class="token" id="access-token"></div>
+
+<h3>리프레시 토큰</h3>
+<div class="token" id="refresh-token"></div>
+
+<button id="refresh-btn">액세스 토큰 재발급</button>
+<button id="logout-btn">로그아웃</button>
+
+<!-- 🔥 새로 추가된 탈퇴 버튼과 탈퇴 사유 입력 -->
+<h3>회원탈퇴</h3>
+<textarea id="withdraw-reason" placeholder="탈퇴사유를 입력하세요"></textarea><br>
+<button id="withdraw-btn">탈퇴하기</button>
+
+<script>
+    const accessTokenDiv = document.getElementById('access-token');
+    const refreshTokenDiv = document.getElementById('refresh-token');
+
+    function renderTokens() {
+        accessTokenDiv.textContent = localStorage.getItem('accessToken') || '';
+        refreshTokenDiv.textContent = localStorage.getItem('refreshToken') || '';
+    }
+
+    window.onload = () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const accessToken = urlParams.get('accessToken');
+        const refreshToken = urlParams.get('refreshToken');
+
+        if (accessToken && refreshToken) {
+            localStorage.setItem('accessToken', accessToken);
+            localStorage.setItem('refreshToken', refreshToken);
+        }
+
+        renderTokens();
+    };
+
+    // 액세스 토큰 재발급
+    document.getElementById('refresh-btn').onclick = async () => {
+        const refresh = localStorage.getItem('refreshToken');
+        if (!refresh) return alert('리프레시 토큰 없음');
+
+        const res = await fetch('/users/auth/refresh', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ refreshToken: refresh })
+        });
+
+        if (res.status === 200) {
+            const data = await res.json();
+            localStorage.setItem('accessToken', data.accessToken);
+            renderTokens();
+            alert('새로운 액세스 토큰 발급 완료');
+        } else {
+            alert('리프레시 만료! 다시 로그인 필요');
+            localStorage.clear();
+            window.location.href = '/login.html';
+        }
+    };
+
+    // 로그아웃
+    document.getElementById('logout-btn').onclick = async () => {
+        const kakaoAccess = localStorage.getItem('accessToken');
+        if (!kakaoAccess) return alert('먼저 로그인하세요');
+
+        const res = await fetch('/users/auth/logout', {
+            method: 'POST',
+            headers: {
+                'Kakao-Access': kakaoAccess,
+                'Authorization': 'Bearer ' + kakaoAccess
+            }
+        });
+
+        if (res.status === 204) {
+            alert('로그아웃 완료');
+            localStorage.clear();
+            window.location.href = '/login.html';
+        } else {
+            alert('로그아웃 실패');
+        }
+    };
+
+    // 🔥 탈퇴하기
+    document.getElementById('withdraw-btn').onclick = async () => {
+        const reason = document.getElementById('withdraw-reason').value;
+        if (!reason) {
+            alert('탈퇴 사유를 입력해주세요.');
+            return;
+        }
+
+        const accessToken = localStorage.getItem('accessToken');
+        if (!accessToken) {
+            alert('로그인이 필요합니다.');
+            return;
+        }
+
+        const res = await fetch('/mypage/withdraw', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + accessToken
+            },
+            body: JSON.stringify({ withdrawReason: reason })
+        });
+
+        if (res.ok) {
+            const msg = await res.text();
+            alert(msg); // "탈퇴가 정상적으로 처리되었습니다."
+            localStorage.clear();
+            window.location.href = '/login.html';
+        } else {
+            const error = await res.text();
+            alert('탈퇴 실패: ' + error);
+        }
+    };
+</script>
+</body>
+</html>

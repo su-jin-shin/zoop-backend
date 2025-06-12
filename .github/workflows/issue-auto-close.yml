@@ -1,0 +1,25 @@
+name: Link and Close Issues via PR
+
+on:
+  pull_request:
+    types:
+      - opened
+      - edited
+      - closed
+
+jobs:
+  link-and-close-issue:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Close linked issues
+        uses: peter-evans/close-issue@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          comment: |
+            이 PR이 병합되어 관련 이슈를 자동으로 닫습니다.
+        continue-on-error: true

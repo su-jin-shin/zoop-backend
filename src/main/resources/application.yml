@@ -1,12 +1,109 @@
 spring:
+  profiles:
+    active: blue
+    group:
+      local: local,common
+      blue: blue,common
+      green: green,common
+
+server:
+  env: blue
+
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: local
+
+kakao:
+  redirect-uri: http://localhost:8080/users/auth/kakao/callback
+
+
+server:
+  port: 8080
+  serverAddress: localhost
+
+serverName: local_server
+
+
+---
+
+
+
+spring:
+  config:
+    activate:
+      on-profile: blue
+
+
+kakao:
+  redirect-uri: http://43.201.121.201/users/auth/kakao/callback
+
+
+server:
+  port: 8080
+  serverAddress: 43.201.121.201
+
+serverName: blue_server
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: green
+
+
+kakao:
+  redirect-uri: http://43.201.121.201/users/auth/kakao/callback
+
+
+server:
+  port: 8081
+  serverAddress: green
+
+serverName: green_server
+
+---
+
+
+spring:
+  config:
+    activate:
+      on-profile: common
   datasource:
     url: jdbc:postgresql://localhost:5432/mydb
-    username: ${POSTGRES_USER:myuser}
-    password: ${POSTGRES_PASSWORD:mypass}
-
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+        show_sql: true
   flyway:
     enabled: true
     locations: classpath:db/migration
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    url: /api-docs
+    operations-sorter: method
+    tags-sorter: alpha
+    doc-expansion: none
+
+jwt:
+  secret: ${JWT_SECRET_KEY}
+
+kakao:
+  client-id: ${KAKAO_CLIENT_ID}
