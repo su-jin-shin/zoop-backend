@@ -31,7 +31,7 @@ public class AuthController {
     private final JwtUtil jwtUtil;
     private final UserInfoRepository userRepo;
 
-    
+
     @Value("${kakao.client-id}")
     private String kakaoClientId;
 
@@ -73,12 +73,15 @@ public class AuthController {
         LoginResponseDto res = loginService.kakaoLogin(code, clientIp, request);
 
         String redirect;
+
         if (res.getNeedsNickname()) {
             redirect = UriComponentsBuilder.fromUriString("/nickname.html")
                     .queryParam("email", jwtUtil.getSubject(res.getAccessToken()))
-                    .build()
-                    .encode()
-                    .toUriString();
+                    .queryParam("accessToken", res.getAccessToken())
+                    .queryParam("refreshToken", res.getRefreshToken())
+                    .build().encode().toUriString();
+
+
         } else {
             redirect = UriComponentsBuilder.fromUriString("/home.html")
                     .queryParam("accessToken", res.getAccessToken())
