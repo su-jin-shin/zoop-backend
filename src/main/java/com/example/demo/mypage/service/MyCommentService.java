@@ -1,6 +1,6 @@
 package com.example.demo.mypage.service;
 
-import com.example.demo.mypage.dto.MyCommentQueryDto;
+import com.example.demo.mypage.dto.MyCommentQuery;
 import com.example.demo.mypage.dto.MyCommentResponse;
 import com.example.demo.mypage.repository.ReviewCommentRepository;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +20,7 @@ public class MyCommentService {
                 .toList();
     }
 
-    private MyCommentResponse convertToDto(MyCommentQueryDto q) {
+    private MyCommentResponse convertToDto(MyCommentQuery q) {
         MyCommentResponse.Item item = new MyCommentResponse.Item(
                 q.getComplexId(),
                 q.getPropertyId(),

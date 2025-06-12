@@ -1,0 +1,40 @@
+package com.example.demo.mypage.domain;
+
+import com.example.demo.auth.domain.UserInfo;
+import com.example.demo.property.domain.Property;
+import jakarta.persistence.*;
+import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "recent_viewed_property", uniqueConstraints = {
+        @UniqueConstraint(name = "uniq_user_property", columnNames = {"user_id", "property_id"})
+})
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class RecentViewedProperty {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long RecentViewedPropertyId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private UserInfo user;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "property_id")
+    private Property property;
+
+    @UpdateTimestamp
+    @Column(name = "viewed_at", nullable = false)
+    private LocalDateTime viewedAt;
+
+    private LocalDateTime deletedAt; // 확장 고려한 컬럼
+}

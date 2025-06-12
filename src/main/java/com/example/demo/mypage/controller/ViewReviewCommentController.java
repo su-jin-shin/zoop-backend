@@ -2,14 +2,12 @@ package com.example.demo.mypage.controller;
 
 import com.example.demo.auth.dto.LoginUser;
 import com.example.demo.mypage.dto.MyCommentResponse;
-import com.example.demo.mypage.dto.MyReviewResponseDto;
+import com.example.demo.mypage.dto.MyReviewResponse;
 import com.example.demo.mypage.service.MyCommentService;
 import com.example.demo.mypage.service.MyReviewService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -42,7 +40,7 @@ public class ViewReviewCommentController {
 //        log.info("🎯 principal: {}", principal);
 //        System.out.println("🔎🔎🔎🔎🔎로그인 유저 id: " + userId);
 
-        List<MyReviewResponseDto> reviews = myReviewService.getMyReviews(userId);
+        List<MyReviewResponse> reviews = myReviewService.getMyReviews(userId);
         model.addAttribute("reviews", reviews);
         return "mypage/myReviewList";
     }
