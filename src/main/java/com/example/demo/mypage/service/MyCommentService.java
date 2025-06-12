@@ -2,7 +2,7 @@ package com.example.demo.mypage.service;
 
 import com.example.demo.mypage.dto.MyCommentQuery;
 import com.example.demo.mypage.dto.MyCommentResponse;
-import com.example.demo.mypage.repository.ReviewCommentRepository;
+import com.example.demo.mypage.repository.MyReviewCommentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -12,7 +12,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MyCommentService {
 
-    private final ReviewCommentRepository reviewCommentRepository;
+    private final MyReviewCommentRepository reviewCommentRepository;
 
     public List<MyCommentResponse> getMyComments(Long userId) {
         return reviewCommentRepository.findMyComments(userId).stream()

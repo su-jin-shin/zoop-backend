@@ -8,7 +8,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
-public interface ReviewCommentRepository extends JpaRepository<ReviewComment, Long> {
+public interface MyReviewCommentRepository extends JpaRepository<ReviewComment, Long> {
 
     @Query("""
     SELECT 
