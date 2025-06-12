@@ -40,4 +40,12 @@ public class RecentViewedProperty {
     private LocalDateTime viewedAt;
 
     private LocalDateTime deletedAt; // 확장 고려한 컬럼
+
+    public static class RecentViewedPropertyBuilder {
+        @SuppressFBWarnings(value = {"EI_EXPOSE_REP2"}, justification = "UserInfo는 JPA 관리 객체로 안전하게 공유 가능")
+        public RecentViewedProperty.RecentViewedPropertyBuilder user(UserInfo user) {
+            this.user = user;
+            return this;
+        }
+    }
 }

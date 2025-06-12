@@ -44,4 +44,13 @@ public class BookmarkedProperty {
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
+
+    public static class BookmarkedPropertyBuilder {
+        @SuppressFBWarnings(value = {"EI_EXPOSE_REP2"}, justification = "UserInfo는 JPA 관리 객체로 안전하게 공유 가능")
+        public BookmarkedPropertyBuilder user(UserInfo user) {
+            this.user = user;
+            return this;
+        }
+    }
+
 }
