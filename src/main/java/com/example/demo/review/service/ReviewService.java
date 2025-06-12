@@ -14,6 +14,7 @@ import com.example.demo.review.domain.*;
 import com.example.demo.review.dto.Review.*;
 import com.example.demo.review.mapper.*;
 import com.example.demo.review.repository.*;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.persistence.EntityNotFoundException;
 
 
@@ -29,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+@SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class ReviewService {
 
     private final ReviewRepository reviewRepository;

@@ -3,6 +3,7 @@ package com.example.demo.review.controller;
 import com.example.demo.auth.domain.UserInfo;
 import com.example.demo.review.dto.Review.*;
 import com.example.demo.review.service.ReviewService;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/reviews")
 @RequiredArgsConstructor
+@SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class ReviewController {
 
     private final ReviewService reviewService;

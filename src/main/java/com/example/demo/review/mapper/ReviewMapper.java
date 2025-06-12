@@ -10,6 +10,7 @@ import com.example.demo.auth.domain.UserInfo;
 import com.example.demo.review.repository.ReviewCommentRepository;
 import com.example.demo.review.repository.ReviewLikeRepository;
 import com.example.demo.review.dto.Review.ReviewListResponse;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.springframework.data.domain.Page;
 
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,7 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
+@SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class ReviewMapper {
 
     private final ReviewLikeRepository reviewLikeRepo;

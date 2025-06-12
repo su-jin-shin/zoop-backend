@@ -9,6 +9,7 @@ import com.example.demo.review.mapper.ReviewCommentMapper;
 import com.example.demo.review.repository.ReviewCommentLikeRepository;
 import com.example.demo.review.repository.ReviewCommentRepository;
 import com.example.demo.review.repository.ReviewRepository;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+@SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class ReviewCommentService {
 
     private final ReviewRepository reviewRepository;
