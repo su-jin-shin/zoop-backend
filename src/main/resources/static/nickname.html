@@ -21,7 +21,7 @@
     document.getElementById('update-btn').onclick = async () => {
         const nickname = document.getElementById('nickname').value;
         const messageEl = document.getElementById('message');
-        messageEl.innerText = ''; // 초기화
+        messageEl.innerText = '';
 
         if (!nickname) {
             messageEl.innerText = '닉네임을 입력해주세요.';
@@ -29,7 +29,7 @@
         }
 
         try {
-            const res = await fetch('/mypage/user-nickname', {
+            const res = await fetch('http://43.201.121.201/mypage/user-nickname', {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json'
@@ -41,7 +41,7 @@
 
             if (res.ok) {
                 alert('닉네임이 성공적으로 변경되었습니다.');
-                window.location.href = '/home.html'; // 또는 마이페이지 등
+                window.location.href = 'http://43.201.121.201/home.html';
             } else {
                 messageEl.innerText = data.message || '닉네임 변경 실패';
             }
