@@ -21,12 +21,9 @@ public class PropertyController {
     //매물 상세 조회 (기본 정보) API
     @GetMapping("/{propertyId}/basic_info")
     public ResponseEntity<PropertyBasicInfoResponseDto> getBasicInfo(@PathVariable Long propertyId){
-     PropertyBasicInfoResponseDto propertyBasicInfoResponseDto = propertyService.getPropertyBasicInfo(propertyId);
+        PropertyBasicInfoResponseDto propertyBasicInfoResponseDto = propertyService.getPropertyBasicInfo(propertyId);
 
-     if(propertyBasicInfoResponseDto == null) {
-         return ResponseEntity.notFound().build();
-     } //예외처리 추후 수정 (전역)
-         return ResponseEntity.ok(propertyBasicInfoResponseDto); // 정상응답 200
+        return ResponseEntity.ok(propertyBasicInfoResponseDto); // 정상응답 200
     }
 
 

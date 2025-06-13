@@ -13,10 +13,10 @@ import lombok.NoArgsConstructor;
 
 public class ImageDto {
 
-    private String imageUrl;
-    private String imageType;
-    private Integer imageOrder;
-    private boolean isMain;
+    private String imageUrl; //이미지 경로
+    private String imageType; //이미지 타입
+    private Integer imageOrder; //정렬 순서
+    private boolean isMain; //썸네일 여부
 
 
 

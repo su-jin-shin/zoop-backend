@@ -29,10 +29,8 @@ public class PropertyServiceImpl  implements PropertyService{
     //매물 상세조회 (기본 정보)
     @Override
     public PropertyBasicInfoResponseDto getPropertyBasicInfo(Long propertyId) {
-        Property property = propertyRepository.findById(propertyId).orElse(null);
-        if (property == null) {
-            return null; // 또는 기본 응답 객체를 리턴하거나 예외처리
-        }
+        Property property = propertyRepository.findById(propertyId).orElseThrow(NotFoundException::new);
+
         // Optional을 사용해 summary 처리
         PropertySummary summary = summaryRepository.findByProperty_PropertyId(propertyId)
                 .orElse(null); // null 허용
