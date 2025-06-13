@@ -37,7 +37,6 @@ public class PropertyBasicInfoResponseDto {
     private String dealOrWarrantPrc; //거래 또는 보증금 가격
     private String articleFeatureDesc; //매물특징요약
     private String realestateTypeName; //부동산유형명
-    private String buildingTypeName; // 매물부동산유형명2
     private String area2; //전용면적
     private String correspondingFloorCount; //해당층수
     private String parkingPossibleYN; //주차가능여부
@@ -45,6 +44,7 @@ public class PropertyBasicInfoResponseDto {
     private String exposeStartYMD; //노출시작일
     private List<String> summary; //요약 키워드
     private List<ImageDto> images; //이미지 리스트
+
 
 
 
@@ -61,12 +61,11 @@ public class PropertyBasicInfoResponseDto {
                 .rentPrice(property.getRentPrice())
                 .dealOrWarrantPrc(property.getDealOrWarrantPrc())
                 .articleFeatureDesc(property.getArticleFeatureDesc())
-               // .realestateTypeName(p.getRealestateTypeName())
-               // .buildingTypeName(p.getBuildingTypeName())
+                .realestateTypeName(property.getRealEstateTypeName())
                 .area2(property.getArea2())
                 .correspondingFloorCount(property.getCorrespondingFloorCount())
                 .parkingPossibleYN(property.getParkingPossibleYN())
-                .isBookmarked(false) //찜 기능 생성시 추후 다시 구현
+           //     .isBookmarked(false) //찜 기능 생성시 추후 다시 구현
                 .exposeStartYMD(property.getExposeStartYMD())
                 .summary(List.copyOf(convertSummary(summary)))
                 .images(List.copyOf(convertImages(images)))

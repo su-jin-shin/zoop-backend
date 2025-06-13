@@ -4,7 +4,7 @@ import com.example.demo.property.dto.*;
 
 public interface PropertyService {
 
-    //매물 상세조회 (기본 정보)
+    //매물 상세조회 (기본정보)
     PropertyBasicInfoResponseDto getPropertyBasicInfo(Long propertyId);
 
     //매물 상세조회 (상세 설명)
