@@ -26,6 +26,7 @@ public class DemoApplication {
     setIfPresent(dotenv, "KAKAO_CLIENT_ID");
     setIfPresent(dotenv, "KAKAO_REDIRECT_URI");
     setIfPresent(dotenv, "JWT_SECRET_KEY");
+    setIfPresent(dotenv, "SPRING_PROFILES_ACTIVE");
     SpringApplication.run(DemoApplication.class, args);
   }
 }

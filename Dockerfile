@@ -20,3 +20,12 @@ COPY ${JAR_FILE} /app.jar
 ENTRYPOINT ["java","-Dspring.profiles.active=${PROFILES}","-Dserver.env=${ENV}","-jar","app.jar"]
 
 
+## 1️⃣ 경량 JDK 17 기반 이미지
+#FROM amazoncorretto:17-alpine-jdk
+#
+## 2️⃣ CI에서 빌드된 JAR 복사
+#ARG JAR_FILE=target/*.jar
+#COPY ${JAR_FILE} /app.jar
+#
+## 3️⃣ ENTRYPOINT: 런타임 환경변수를 사용해서 동적으로 프로파일 주입
+#ENTRYPOINT sh -c 'exec java -Dspring.profiles.active=$PROFILES -Dserver.env=$ENV -jar /app.jar'
