@@ -61,7 +61,8 @@ jobs:
       - name: Check deploy server URL
         uses: jtalk/url-health-check-action@v3
         with:
-          url: http://${{ secrets.ZOOP_SERVER_IP }}:${{ env.STOPPED_PORT }}/actuator/health
+          url: http://${{ secrets.ZOOP_SERVER_IP }}:${{ env.STOPPED_PORT }}/hc   # <-- 수정
+
           max-attempts: 18
           retry-delay: 10s
 
