@@ -9,7 +9,7 @@ import lombok.Getter;
 public enum SuccessMessage {
     GET_NOTIFICATION_SUCCESS("알림 목록 조회에 성공했습니다."),
     GET_SUCCESS("요청이 정상적으로 처리되었습니다."),
-
+    CREATED_SUCCESSFULLY("성공적으로 등록되었습니다."),
     UPDATE_NICKNAME_SUCCESS("닉네임이 정상적으로 수정되었습니다."),
     PROFILE_IMAGE_UPDATED("프로필 이미지가 수정되었습니다."),
     PROFILE_IMAGE_RESET("기본 프로필 이미지로 변경되었습니다."),
