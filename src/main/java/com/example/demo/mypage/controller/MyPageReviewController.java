@@ -1,6 +1,7 @@
 package com.example.demo.mypage.controller;
 
 import com.example.demo.auth.dto.LoginUser;
+import com.example.demo.common.exception.UserNotFoundException;
 import com.example.demo.mypage.dto.MyReviewResponse;
 import com.example.demo.mypage.service.MyReviewService;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +32,9 @@ public class MyPageReviewController {
     public ResponseEntity<?> getMyReviews(@AuthenticationPrincipal LoginUser loginUser) {
 
         Long userId = parseUserId(loginUser);
+        if (userId == null) {
+            throw new UserNotFoundException();
+        }
         List<MyReviewResponse> reviews = myReviewService.getMyReviews(userId);
         return ResponseEntity.ok().body(reviews);
     }
