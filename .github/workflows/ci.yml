@@ -5,7 +5,6 @@ on:
   pull_request:
 
 jobs:
-  # ────────────────────────────────────────────────────────────────
   build-and-test:
     runs-on: ubuntu-latest
 
@@ -19,7 +18,7 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      # 2) Maven 캐시 (빌드 속도↑)
+      # 2) Maven 캐시
       - uses: actions/cache@v3
         with:
           path: ~/.m2/repository
@@ -39,9 +38,8 @@ jobs:
       - name: SpotBugs
         run: ./mvnw spotbugs:check
 
-      # 6) Docker Login
-      - name: Login to DockerHub
-        uses: docker/login-action@v1
+      # 6) Docker Hub 로그인
+      - uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
