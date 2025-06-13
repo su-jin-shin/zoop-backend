@@ -15,6 +15,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.example.demo.property.util.PropertyDtoConverter.convertImages;
+import static com.example.demo.property.util.PropertyDtoConverter.convertSummary;
+
 @SuppressFBWarnings(
         value = { "EI_EXPOSE_REP", "EI_EXPOSE_REP2" },
         justification = "DTO 클래스이며, 외부로부터 받은 리스트는 변경하지 않고 읽기 전용으로 사용됩니다."
@@ -44,26 +47,7 @@ public class PropertyBasicInfoResponseDto {
     private List<ImageDto> images; //이미지 리스트
 
 
-    //summary 데이터 타입  String -> 리스트 변환 메서드
-    public static List<String> convertSummary(PropertySummary summaryEntity){
-        if(summaryEntity == null || summaryEntity.getSummary() == null || summaryEntity.getSummary().isBlank()){
-            return Collections.emptyList();
-        }
-        return Arrays.stream(summaryEntity.getSummary().split(","))
-                .map(String::trim)
-                .collect(Collectors.toList());
-    }
 
-
-    //images 변환 메서드 (List<Image> -> List<ImageDto> 변환)
-    public static List<ImageDto> convertImages(List<Image> images) {
-        if(images == null || images.isEmpty()){
-            return Collections.emptyList();
-        }
-        return images.stream()
-                .map(ImageDto::from)
-                .collect(Collectors.toList());
-    }
 
 
      //빌더

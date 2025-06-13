@@ -24,4 +24,8 @@ public interface PropertyService {
 
     //매물 상세 조회 (중개 보수 및 세금정보)
     PropertyBrokerFeeResponseDto getBrokerFee(Long propertyId);
+
+    //매물 상세 조회 (매물 정보)
+    PropertyPropertyInfoResponseDto getPropertyInfo(Long propertyId);
+
 }
