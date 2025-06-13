@@ -14,10 +14,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.time.Duration;
 import java.util.Map;
 import java.util.Optional;
 
@@ -64,24 +66,28 @@ public class AuthController {
         String clientIp = getClientIpAddress(request);
         LoginResponseDto res = loginService.kakaoLogin(code, clientIp, request);
 
-        String redirect = res.getNeedsNickname()
-                ? UriComponentsBuilder.fromUriString("/nickname.html")
-                .queryParam("email", jwtUtil.getSubject(res.getAccessToken()))
-                .queryParam("accessToken", res.getAccessToken())
-                .queryParam("refreshToken", res.getRefreshToken())
-                .build().encode().toUriString()
+        // 쿠키 생성
+        ResponseCookie accessCookie = ResponseCookie.from("access_token", res.getAccessToken())
+                .httpOnly(true).secure(true)            // 운영은 HTTPS 전제
+                .sameSite("Lax")                        // SPA → "None" + Secure
+                .path("/").maxAge(Duration.ofMinutes(30))
+                .build();
 
-                : UriComponentsBuilder.fromUriString("/home.html")
-                .queryParam("accessToken",  res.getAccessToken())
-                .queryParam("refreshToken", res.getRefreshToken())
-                .queryParam("kakaoToken",   res.getKakaoAccessToken())
-                .queryParam("nickname",     res.getNickname())
-                .build().encode().toUriString();
+        ResponseCookie refreshCookie = ResponseCookie.from("refresh_token", res.getRefreshToken())
+                .httpOnly(true).secure(true)
+                .sameSite("Lax")
+                .path("/").maxAge(Duration.ofDays(14))
+                .build();
+
+        String redirect = res.getNeedsNickname() ? "/nickname.html" : "/home.html";
 
         return ResponseEntity.status(HttpStatus.FOUND)
+                .header(HttpHeaders.SET_COOKIE, accessCookie.toString())
+                .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())  // 헤더를 두 번 추가
                 .header(HttpHeaders.LOCATION, redirect)
                 .build();
     }
+
 
     //   3) 신규 사용자 닉네임 등록
     @PostMapping("/register")
@@ -99,26 +105,23 @@ public class AuthController {
 
     //   4) 액세스 토큰 재발급
     @PostMapping("/refresh")
-    public ResponseEntity<LoginResponseDto> refresh(@RequestBody Map<String, String> body) {
+    public ResponseEntity<Void> refresh(@CookieValue("refresh_token") String refresh) {
 
-        String refresh = body.get("refreshToken");
         if (refresh == null || jwtUtil.isExpired(refresh)) {
-            throw new UnauthorizedAccessException();      // 403(또는 401) → 전역 핸들러로
+            throw new UnauthorizedAccessException();
         }
 
-        String email    = jwtUtil.getSubject(refresh);
-        String newAccess = jwtUtil.generateAccess(email);
-        String nickname  = userRepo.findByEmail(email)
-                .map(UserInfo::getNickname)
-                .orElse(null);
+        String email      = jwtUtil.getSubject(refresh);
+        String newAccess  = jwtUtil.generateAccess(email);
 
-        return ResponseEntity.ok(
-                LoginResponseDto.builder()
-                        .accessToken(newAccess)
-                        .refreshToken(refresh)
-                        .needsNickname(false)
-                        .nickname(nickname)
-                        .build());
+        ResponseCookie accessCookie = ResponseCookie.from("access_token", newAccess)
+                .httpOnly(true).secure(true)
+                .sameSite("Lax").path("/").maxAge(Duration.ofMinutes(30))
+                .build();
+
+        return ResponseEntity.noContent()  // 굳이 DTO 반환 없이 204
+                .header(HttpHeaders.SET_COOKIE, accessCookie.toString())
+                .build();
     }
 
     //   5) 로그아웃

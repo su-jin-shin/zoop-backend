@@ -1,15 +1,19 @@
 name: cd
-
-# 빌드가 아닌, CI 워크플로 실행 완료 후(성공 시) 트리거
 on:
   workflow_run:
     workflows: ["Maven CI All Checks"]
     types:
       - completed
-
+    branches: [ main ]          # :반짝임: 핵심: main에서 돌아간 CI만 대상
 jobs:
   deploy:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    # CI 성공 + (안전장치) 이벤트가 push 이면서 main 브랜치일 때만
+    if: >
+      ${{
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.event == 'push' &&
+        github.event.workflow_run.head_branch == 'main'
+      }}
     runs-on: ubuntu-latest
     steps:
       - name: Login to DockerHub
@@ -17,13 +21,12 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-
       - name: Pull & Tag Docker Image
         run: |
-          # CI 워크플로에서 미리 빌드·푸시한 이미지가 있다면 그 태그를 사용
           docker pull ${{ secrets.DOCKERHUB_USERNAME }}/zoop_server:latest
+          
 
-      # --- 이하 기존 deploy 스텝 그대로 ---
+      # --- 이하 기존 deploy 스텝 동일 ---
       - name: Set target IP
         run: |
           STATUS=$(curl -o /dev/null -w "%{http_code}" "http://${{ secrets.ZOOP_SERVER_IP }}/env")
