@@ -3,58 +3,24 @@ name: cd
 on:
   workflow_run:
     workflows: ["Maven CI All Checks"]
-    types: [ completed ]
-    branches: [ main ]            # main 브랜치의 CI 결과만 배포
+    types: [completed]
+    branches: [main]
 
 jobs:
   deploy:
-    # CI 성공 + main 브랜치 push 이벤트일 때만 진행
-    if: >
-      ${{
-        github.event.workflow_run.conclusion == 'success' &&
-        github.event.workflow_run.event == 'push' &&
-        github.event.workflow_run.head_branch == 'main'
-      }}
-
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
 
     steps:
-      # 1) Docker Hub 로그인
-      - name: Login to DockerHub
+      - uses: actions/checkout@v4      # (필요 없으면 삭제)
+
+      - name: Docker Hub login
         uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # 2) 이미지 미리 풀(캐시 효과)
-      - name: Pull latest image
-        run: docker pull ${{ secrets.DOCKERHUB_USERNAME }}/zoop_server:latest
-
-      # 3) 현재 서비스 중인(라이브) Upstream 판별 & 새 변수 설정
-      - name: Set deploy variables
-        id: set-vars
-        run: |
-          STATUS=$(curl -o /dev/null -w "%{http_code}" "http://${{ secrets.ZOOP_SERVER_IP }}/env" || true)
-
-          if [ "$STATUS" = "200" ]; then
-            LIVE_UPSTREAM=$(curl -s "http://${{ secrets.ZOOP_SERVER_IP }}/env")
-          else
-            LIVE_UPSTREAM=green      # 서버 첫 배포 시 기본값
-          fi
-          echo "LIVE_UPSTREAM=$LIVE_UPSTREAM" >> $GITHUB_ENV
-
-          if [ "$LIVE_UPSTREAM" = "blue" ]; then
-            echo "NEW_UPSTREAM=green" >> $GITHUB_ENV
-            echo "LIVE_PORT=8080"     >> $GITHUB_ENV
-            echo "NEW_PORT=8081"      >> $GITHUB_ENV
-          else
-            echo "NEW_UPSTREAM=blue"  >> $GITHUB_ENV
-            echo "LIVE_PORT=8081"     >> $GITHUB_ENV
-            echo "NEW_PORT=8080"      >> $GITHUB_ENV
-          fi
-
-      # 4) 새 버전 컨테이너 기동
-      - name: Docker compose up (NEW)
+      - name: Deploy via SSH
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.ZOOP_SERVER_IP }}
@@ -63,37 +29,16 @@ jobs:
           script: |
             set -e
             cd /home/ubuntu
+            # 최신 이미지 pull
             sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/zoop_server:latest
-            sudo docker-compose -f docker-compose-${{ env.NEW_UPSTREAM }}.yml up -d
+            # 기존 컨테이너·네트워크 정리
+            sudo docker compose down
+            # 새 버전 기동
+            sudo docker compose up -d
 
-      # 5) 새 컨테이너 헬스체크
-      - name: Health check (NEW)
+      - name: Health-check 8080
         uses: jtalk/url-health-check-action@v3
         with:
-          url: http://${{ secrets.ZOOP_SERVER_IP }}:${{ env.NEW_PORT }}/hc
+          url: http://${{ secrets.ZOOP_SERVER_IP }}:8080/hc
           max-attempts: 30
           retry-delay: 5s
-
-      # 6) Nginx upstream 스위칭
-      - name: Switch Nginx upstream
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.ZOOP_SERVER_IP }}
-          username: ubuntu
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            set -e
-            sudo docker exec -i nginxserver bash -c \
-              'echo "set \$service_url ${{ env.NEW_UPSTREAM }};" > /etc/nginx/conf.d/service-env.inc && nginx -s reload'
-
-      # 7) 기존(LIVE) 컨테이너 종료 & 삭제
-      - name: Stop old container
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.ZOOP_SERVER_IP }}
-          username: ubuntu
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            set -e
-            sudo docker stop ${{ env.LIVE_UPSTREAM }} || true
-            sudo docker rm   ${{ env.LIVE_UPSTREAM }} || true
