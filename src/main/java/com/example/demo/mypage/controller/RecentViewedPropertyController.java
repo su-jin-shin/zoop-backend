@@ -1,6 +1,7 @@
 package com.example.demo.mypage.controller;
 
 import com.example.demo.auth.dto.LoginUser;
+import com.example.demo.common.exception.UserNotFoundException;
 import com.example.demo.mypage.dto.RecentViewedPropertyRequest;
 import com.example.demo.mypage.dto.RecentViewedPropertyResponse;
 import com.example.demo.mypage.service.RecentViewedPropertyService;
@@ -33,13 +34,18 @@ public class RecentViewedPropertyController {
     @PostMapping
     public void saveRecentViewedProperty(@RequestBody RecentViewedPropertyRequest request, @AuthenticationPrincipal LoginUser loginUser) {
         Long userId = parseUserId(loginUser);
-
+        if (userId == null) {
+            throw new UserNotFoundException();
+        }
         recentViewedPropertyService.save(userId, request.getPropertyId());
     }
 
     @GetMapping
     public ResponseEntity<?> getRecentViewedProperties(@AuthenticationPrincipal LoginUser loginUser) {
         Long userId = parseUserId(loginUser);
+        if (userId == null) {
+            throw new UserNotFoundException();
+        }
         log.info("😀userId: "+userId);
         List<RecentViewedPropertyResponse> result = recentViewedPropertyService.getRecentViewedList(userId);
         log.info("📦 응답 데이터: {}", result);

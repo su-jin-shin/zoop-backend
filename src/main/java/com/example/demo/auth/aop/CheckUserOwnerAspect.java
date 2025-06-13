@@ -12,6 +12,9 @@ import org.springframework.stereotype.Component;
 
 import java.lang.reflect.InvocationTargetException;
 
+import static com.example.demo.common.response.FailedMessage.UNAUTHORIZED_ACCESS;
+import static com.example.demo.common.response.FailedMessage.USER_NOT_FOUND;
+
 @Aspect
 @Component
 @Slf4j
@@ -23,7 +26,7 @@ public class CheckUserOwnerAspect {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
         if (!(auth.getPrincipal() instanceof LoginUser loginUser)) {
-            throw new AccessDeniedException("401 Unauthorized: 인증 정보가 올바르지 않습니다.");
+            throw new AccessDeniedException(USER_NOT_FOUND.getMessage());
         }
 
         /* ───── LoginUser 에 getUserId()가 없으므로
@@ -32,7 +35,7 @@ public class CheckUserOwnerAspect {
         try {
             loggedInUserId = Long.parseLong(loginUser.getUsername());
         } catch (NumberFormatException e) {
-            throw new AccessDeniedException("401 Unauthorized: 잘못된 사용자 정보");
+            throw new AccessDeniedException(USER_NOT_FOUND.getMessage());
         }
 
         /* ---------- 메서드 인자 순회 ---------- */
@@ -41,7 +44,7 @@ public class CheckUserOwnerAspect {
             // 1) Long userId 직접 전달
             if (arg instanceof Long targetUserId) {
                 if (!targetUserId.equals(loggedInUserId)) {
-                    throw new AccessDeniedException("403 Forbidden: 다른 사용자의 데이터 접근 불가");
+                    throw new AccessDeniedException(UNAUTHORIZED_ACCESS.getMessage());
                 }
                 break;
             }

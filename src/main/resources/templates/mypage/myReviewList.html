@@ -30,7 +30,6 @@
 <div th:each="review : ${reviews}" class="review-card">
     <div class="title"
          th:text="${review.item != null && review.item.articleName != null ? review.item.articleName : '매물 정보 없음'}">
-        방배마에스트로(주상복합)
     </div>
 
     <div class="content" th:text="${review.content}">리뷰 내용</div>

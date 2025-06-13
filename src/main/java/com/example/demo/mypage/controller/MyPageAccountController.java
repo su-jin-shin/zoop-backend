@@ -1,7 +1,12 @@
 package com.example.demo.mypage.controller;
 
 import com.example.demo.auth.dto.LoginUser;
+import com.example.demo.common.exception.DuplicatedNicknameException;
+import com.example.demo.common.exception.UserNotFoundException;
+import com.example.demo.common.response.FailedMessage;
+import com.example.demo.common.response.SuccessMessage;
 import com.example.demo.mypage.dto.MyPageAccountResponse;
+import com.example.demo.mypage.dto.NicknameCheckResponse;
 import com.example.demo.mypage.dto.NicknameUpdateRequest;
 import com.example.demo.mypage.dto.ProfileImageResponse;
 import com.example.demo.mypage.service.MypageAccountService;
@@ -12,11 +17,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+
+import static com.example.demo.common.response.FailedMessage.CHECK_AVAILABLE_NICKNAME;
+import static com.example.demo.common.response.FailedMessage.DUPLICATED_NICKNAME;
+import static com.example.demo.common.response.SuccessMessage.GET_SUCCESS;
 
 @RestController
 @RequestMapping("/mypage")
@@ -35,34 +43,25 @@ public class MyPageAccountController {
         }
     }
 
-//    Long userId = 1L;
-
     // 닉네임 수정
     @PatchMapping("/user-nickname")
     public ResponseEntity<?> updateNickname(
             @RequestBody @Valid NicknameUpdateRequest request
             , @AuthenticationPrincipal LoginUser loginUser) {
-//        System.out.println("😂😂"+loginUser); // >>> 테스트 중 아직 인증 부분에 문제가 있음
-//
-//        System.out.println("😂😂"+loginUser.getUsername());
+
         Long userId = parseUserId(loginUser);
-//        Long userId = 1L;
+
         if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new MyPageAccountController.ErrorResponse("로그인이 필요합니다."));
+            throw new UserNotFoundException();
         }
 
         if (nicknameService.isNicknameDuplicate(request.getNickname())) {
-            return ResponseEntity.badRequest().body(
-                    new MyPageAccountController.ErrorResponse("닉네임 중복 확인을 먼저 해주세요.")
-            );
+            throw new DuplicatedNicknameException();
         }
 
         nicknameService.updateNickname(userId, request.getNickname());
 
-        return ResponseEntity.ok(
-                new MyPageAccountController.SuccessResponse("요청이 정상적으로 처리되었습니다.")
-        );
+        return ResponseEntity.ok(SuccessMessage.GET_SUCCESS.getMessage());
     }
 
     // 닉네임 중복 확인
@@ -73,12 +72,10 @@ public class MyPageAccountController {
         boolean isDuplicated = nicknameService.isNicknameDuplicate(nickname);
 
         String message = isDuplicated
-                ? "이미 사용 중인 닉네임입니다."
-                : "해당 닉네임을 사용할 수 있습니다.";
+                ? DUPLICATED_NICKNAME.getMessage()
+                : CHECK_AVAILABLE_NICKNAME.getMessage();
 
-        return ResponseEntity.ok(
-                new MyPageAccountController.NicknameCheckResponse(
-                        isDuplicated, message));
+        return ResponseEntity.ok(new NicknameCheckResponse(isDuplicated, message));
     }
 
     // 프로필 이미지 수정
@@ -88,13 +85,12 @@ public class MyPageAccountController {
             @RequestParam("profileImage") MultipartFile file) {
 
         Long userId = parseUserId(loginUser);
-//        Long userId = 1L;
+
         if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new ErrorResponse("로그인 후 다시 시도해주세요."));
+            throw new UserNotFoundException();
         }
         if (file.isEmpty()) {
-            return ResponseEntity.badRequest().body(new ErrorResponse("이미지 파일이 없습니다."));
+            return ResponseEntity.badRequest().body(FailedMessage.FILE_NOT_FOUND.getMessage());
         }
 
         try {
@@ -102,7 +98,7 @@ public class MyPageAccountController {
             return ResponseEntity.ok(new ProfileImageResponse(savedUrl));
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ErrorResponse("파일 업로드에 실패했습니다."));
+                    .body(FailedMessage.FILE_UPLOAD_FAILED.getMessage());
         }
     }
 
@@ -112,39 +108,28 @@ public class MyPageAccountController {
             @AuthenticationPrincipal LoginUser loginUser) {
 
         Long userId = parseUserId(loginUser);
-//        Long userId = 1L;
+
         if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new ErrorResponse("로그인 후 다시 시도해주세요."));
+            throw new UserNotFoundException();
         }
 
         String defaultUrl = profileImageService.resetToDefaultImage(userId);
         return ResponseEntity.ok().body(new ProfileImageResponse(defaultUrl));
     }
 
-    // 회원 탈퇴
-//    @DeleteMapping("/withdraw")
-
     // 내 정보 조회
     @GetMapping("/account")
     public ResponseEntity<?> getAccountInfo(@AuthenticationPrincipal LoginUser loginUser) {
 
         Long userId = parseUserId(loginUser);
-//        Long userId = 1L;
-        if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new ErrorResponse("로그인 후 다시 시도해주세요."));
-        }
-        MyPageAccountResponse response = myPageService.getAccountInfo(userId);
 
+        if (userId == null) {
+            throw new UserNotFoundException();
+        }
+
+        MyPageAccountResponse response = myPageService.getAccountInfo(userId);
 
         return ResponseEntity.ok(response);
     }
-
-
-    // 응답 DTO
-    record SuccessResponse(String message) {}
-    record ErrorResponse(String message) {}
-    record NicknameCheckResponse(boolean isDuplicated, String message) {}
 
 }

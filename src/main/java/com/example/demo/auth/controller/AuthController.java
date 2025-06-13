@@ -6,6 +6,8 @@ import com.example.demo.auth.repository.UserInfoRepository;
 import com.example.demo.auth.service.KakaoAuthService;
 import com.example.demo.auth.service.LoginService;
 import com.example.demo.auth.util.JwtUtil;
+import com.example.demo.common.exception.InvalidRequestException;
+import com.example.demo.common.exception.UnauthorizedAccessException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,24 +27,18 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class AuthController {
 
-
     private final LoginService loginService;
     private final KakaoAuthService kakaoAuthService;
     private final JwtUtil jwtUtil;
     private final UserInfoRepository userRepo;
 
+    @Value("${kakao.client-id}")  private String kakaoClientId;
+    @Value("${kakao.redirect-uri}") private String redirectUri;
 
-    @Value("${kakao.client-id}")
-    private String kakaoClientId;
 
-    @Value("${kakao.redirect-uri}")
-    private String redirectUri;
-
-    // 카카오 인가 코드 받으러 이동
+    //   1) 카카오 인가 코드 받으러 이동
     @GetMapping("/kakao/login")
-    public ResponseEntity<Void> redirectToKakao(
-            @RequestParam(value = "state", required = false) String state) {
-
+    public ResponseEntity<Void> redirectToKakao(@RequestParam(required = false) String state) {
 
         String url = UriComponentsBuilder
                 .fromHttpUrl("https://kauth.kakao.com/oauth/authorize")
@@ -55,67 +51,64 @@ public class AuthController {
                 .encode()
                 .toUriString();
 
-
         return ResponseEntity.status(HttpStatus.FOUND)
                 .header(HttpHeaders.LOCATION, url)
                 .build();
     }
 
-
-
-    // 카카오가 redirect_uri로 돌려준 code 처리 + 로그인 기록(IP)까지!
+    //   2) 카카오 콜백 처리
     @GetMapping("/kakao/callback")
-    public ResponseEntity<Void> kakaoCallback(
-            @RequestParam String code,
-            HttpServletRequest request) {
+    public ResponseEntity<Void> kakaoCallback(@RequestParam String code,
+                                              HttpServletRequest request) {
 
         String clientIp = getClientIpAddress(request);
         LoginResponseDto res = loginService.kakaoLogin(code, clientIp, request);
 
-        String redirect;
+        String redirect = res.getNeedsNickname()
+                ? UriComponentsBuilder.fromUriString("/nickname.html")
+                .queryParam("email", jwtUtil.getSubject(res.getAccessToken()))
+                .queryParam("accessToken", res.getAccessToken())
+                .queryParam("refreshToken", res.getRefreshToken())
+                .build().encode().toUriString()
 
-        if (res.getNeedsNickname()) {
-            redirect = UriComponentsBuilder.fromUriString("/nickname.html")
-                    .queryParam("email", jwtUtil.getSubject(res.getAccessToken()))
-                    .queryParam("accessToken", res.getAccessToken())
-                    .queryParam("refreshToken", res.getRefreshToken())
-                    .build().encode().toUriString();
-
-
-        } else {
-            redirect = UriComponentsBuilder.fromUriString("/home.html")
-                    .queryParam("accessToken", res.getAccessToken())
-                    .queryParam("refreshToken", res.getRefreshToken())
-                    .queryParam("kakaoToken", res.getKakaoAccessToken())
-                    .queryParam("nickname", res.getNickname())
-                    .build()
-                    .encode()
-                    .toUriString();
-        }
+                : UriComponentsBuilder.fromUriString("/home.html")
+                .queryParam("accessToken",  res.getAccessToken())
+                .queryParam("refreshToken", res.getRefreshToken())
+                .queryParam("kakaoToken",   res.getKakaoAccessToken())
+                .queryParam("nickname",     res.getNickname())
+                .build().encode().toUriString();
 
         return ResponseEntity.status(HttpStatus.FOUND)
                 .header(HttpHeaders.LOCATION, redirect)
                 .build();
     }
 
-    // 신규 사용자 닉네임 등록
+    //   3) 신규 사용자 닉네임 등록
     @PostMapping("/register")
-    public ResponseEntity<Void> register(@RequestBody Map<String,String> body) {
-        loginService.registerNickname(body.get("email"), body.get("nickname"));
-        return ResponseEntity.ok().build();
+    public ResponseEntity<Void> register(@RequestBody Map<String, String> body) {
+
+        String email    = body.get("email");
+        String nickname = body.get("nickname");
+        if (email == null || nickname == null || nickname.trim().isEmpty()) {
+            throw new InvalidRequestException();          // 400 Bad Request
+        }
+
+        loginService.registerNickname(email, nickname);
+        return ResponseEntity.ok().build();               // 성공 시 200
     }
 
-    // 액세스 토큰 재발급
+    //   4) 액세스 토큰 재발급
     @PostMapping("/refresh")
-    public ResponseEntity<LoginResponseDto> refresh(@RequestBody Map<String,String> body) {
+    public ResponseEntity<LoginResponseDto> refresh(@RequestBody Map<String, String> body) {
 
         String refresh = body.get("refreshToken");
-        if (refresh == null || jwtUtil.isExpired(refresh))
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        if (refresh == null || jwtUtil.isExpired(refresh)) {
+            throw new UnauthorizedAccessException();      // 403(또는 401) → 전역 핸들러로
+        }
 
-        String email = jwtUtil.getSubject(refresh);
+        String email    = jwtUtil.getSubject(refresh);
         String newAccess = jwtUtil.generateAccess(email);
-        String nickname = userRepo.findByEmail(email)
+        String nickname  = userRepo.findByEmail(email)
                 .map(UserInfo::getNickname)
                 .orElse(null);
 
@@ -125,29 +118,23 @@ public class AuthController {
                         .refreshToken(refresh)
                         .needsNickname(false)
                         .nickname(nickname)
-                        .build()
-        );
+                        .build());
     }
 
-    // 로그아웃 – 카카오 API 실패해도 204 반환
+    //   5) 로그아웃
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(
-            @RequestHeader("Kakao-Access") String kakaoAccess) {
-
+    public ResponseEntity<Void> logout(@RequestHeader("Kakao-Access") String kakaoAccess) {
         try {
             kakaoAuthService.logout(kakaoAccess);
         } catch (Exception e) {
             log.warn("Kakao logout failed but local logout continues: {}", e.getMessage());
         }
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.noContent().build();        // 204
     }
 
-    // 클라이언트 IP주소 추출 (헤더 → 없으면 RemoteAddr)
+    //   UTIL : IP 추출
     private String getClientIpAddress(HttpServletRequest request) {
         String ip = request.getHeader("X-Forwarded-For");
-        if (ip == null || ip.isEmpty()) {
-            ip = request.getRemoteAddr();
-        }
-        return ip;
+        return (ip == null || ip.isEmpty()) ? request.getRemoteAddr() : ip;
     }
 }

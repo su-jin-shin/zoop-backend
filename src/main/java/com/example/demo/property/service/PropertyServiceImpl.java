@@ -11,6 +11,7 @@ import com.example.demo.property.repository.PropertyRepository;
 import com.example.demo.property.repository.PropertySummaryRepository;
 import com.fasterxml.jackson.databind.annotation.JsonAppend;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.parsers.ReturnTypeParser;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -22,7 +23,7 @@ public class PropertyServiceImpl  implements PropertyService{
     private final PropertyRepository propertyRepository;
     private final PropertySummaryRepository summaryRepository;
     private final ImageRepository imageRepository;
-
+    private final ReturnTypeParser genericReturnTypeParser;
 
 
     //매물 상세조회 (기본 정보)
@@ -50,8 +51,22 @@ public class PropertyServiceImpl  implements PropertyService{
     public PropertyDescriptionResponseDto getPropertyDescription(Long propertyId) {
         Property property = propertyRepository.findById(propertyId).orElseThrow(NotFoundException::new);
 
+
+
         return PropertyDescriptionResponseDto.of(property);
     }
+
+    //매물 상세조회 (매물 정보)
+    @Override
+    public PropertyPropertyInfoResponseDto getPropertyInfo(Long propertyId) {
+        Property property = propertyRepository.findById(propertyId).orElseThrow(NotFoundException::new);
+
+        //매물 아이디 통해 이미지 조회
+        List<Image> images = imageRepository.findByProperty_PropertyId(propertyId);
+
+        return  PropertyPropertyInfoResponseDto.of(property,images);
+    }
+
 
     //매물 상세조회 (시설정보)
     @Override
@@ -90,6 +105,10 @@ public class PropertyServiceImpl  implements PropertyService{
     public PropertyBrokerFeeResponseDto getBrokerFee(Long propertyId) {
         Property property = propertyRepository.findById(propertyId).orElseThrow(NotFoundException::new);
 
+
         return PropertyBrokerFeeResponseDto.of(property);
     }
+
+
+
 }
