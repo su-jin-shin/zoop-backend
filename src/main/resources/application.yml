@@ -75,8 +75,8 @@ spring:
       on-profile: common
   datasource:
     url: jdbc:postgresql://localhost:5432/mydb
-    username: ${POSTGRES_USER}
-    password: ${POSTGRES_PASSWORD}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
   jpa:
     hibernate:
       ddl-auto: update
