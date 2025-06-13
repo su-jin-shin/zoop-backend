@@ -38,3 +38,17 @@ jobs:
       # 5) SpotBugs 정적 분석
       - name: SpotBugs
         run: ./mvnw spotbugs:check
+
+      # 6) Docker Login
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # 7) Docker Build & Push
+      - name: Build and Push Docker Image
+        run: |
+          docker build --platform linux/amd64 \
+            -t ${{ secrets.DOCKERHUB_USERNAME }}/zoop_server:latest .
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/zoop_server:latest
