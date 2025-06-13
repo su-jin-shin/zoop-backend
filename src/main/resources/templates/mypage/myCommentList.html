@@ -45,22 +45,19 @@
         <!-- 연결된 리뷰 정보 -->
         <div class="comment-header"
              th:text="${comment.review.item != null && comment.review.item.articleName != null ? comment.review.item.articleName : '리뷰 대상 없음'}">
-            관악산대창센시티 단지
         </div>
 
         <div class="review-content" th:text="${comment.review.content}">
-            이 매물 너무 좋아요! 3년째 살고 있음.
         </div>
         <!-- 내가 작성한 댓글 내용 -->
         <div class="comment-content" th:text="${comment.content}">
-            저도 이 매물 관심 있었어요!
         </div>
 
         <!-- 날짜 및 공감 수 -->
         <div class="comment-meta">
             <span th:text="${#temporals.format(comment.createdAt, 'yyyy.MM.dd')}">2025.06.08</span>
             <div class="likes">
-                <span th:text="'👍 ' + ${comment.likeCount}">👍 7</span>
+                <span th:text="'👍 ' + ${comment.likeCount}">👍 0</span>
             </div>
         </div>
     </div>
