@@ -51,8 +51,9 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script_stop: true
           script: |
-            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/compass_server:latest
+            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/zoop_server:latest
             sudo docker-compose -f docker-compose-${{env.TARGET_UPSTREAM}}.yml up -d
+            sudo docker-compose up -d
 
       - name: Check deploy server URL
         uses: jtalk/url-health-check-action@v3
