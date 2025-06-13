@@ -30,6 +30,8 @@ public class PropertyController {
     }
 
 
+
+
     //매물 상세 조회 (상세설명) API
     @GetMapping("/{propertyId}/description")
     public ResponseEntity<PropertyDescriptionResponseDto> getDescription(@PathVariable Long propertyId){
@@ -72,12 +74,20 @@ public class PropertyController {
         return  ResponseEntity.ok(propertyAgentResponseDto); //정상 응답 200
     }
 
-    //매물 상세조회 (중개보수 및 세금정보)
+    //매물 상세조회 (중개보수 및 세금정보) API
     @GetMapping("/{propertyId}/broker_fee")
     public ResponseEntity<PropertyBrokerFeeResponseDto> getBroker(@PathVariable Long propertyId){
         PropertyBrokerFeeResponseDto propertyBrokerFeeResponseDto = propertyService.getBrokerFee(propertyId);
 
         return ResponseEntity.ok(propertyBrokerFeeResponseDto); //정상 응답 200
     }
+
+    //매물 상세조회 (매물 정보) API
+    @GetMapping("/{propertyId}/property_info")
+    public ResponseEntity<PropertyPropertyInfoResponseDto> getPropertyInfo(@PathVariable Long propertyId){
+        PropertyPropertyInfoResponseDto propertyPropertyInfoResponseDto = propertyService.getPropertyInfo(propertyId);
+        return ResponseEntity.ok(propertyPropertyInfoResponseDto);
+    }
+
 
 }
