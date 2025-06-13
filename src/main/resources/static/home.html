@@ -21,7 +21,6 @@
 <button id="refresh-btn">액세스 토큰 재발급</button>
 <button id="logout-btn">로그아웃</button>
 
-<!-- 🔥 새로 추가된 탈퇴 버튼과 탈퇴 사유 입력 -->
 <h3>회원탈퇴</h3>
 <textarea id="withdraw-reason" placeholder="탈퇴사유를 입력하세요"></textarea><br>
 <button id="withdraw-btn">탈퇴하기</button>
@@ -48,12 +47,11 @@
         renderTokens();
     };
 
-    // 액세스 토큰 재발급
     document.getElementById('refresh-btn').onclick = async () => {
         const refresh = localStorage.getItem('refreshToken');
         if (!refresh) return alert('리프레시 토큰 없음');
 
-        const res = await fetch('/users/auth/refresh', {
+        const res = await fetch('http://43.201.121.201/users/auth/refresh', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ refreshToken: refresh })
@@ -67,16 +65,15 @@
         } else {
             alert('리프레시 만료! 다시 로그인 필요');
             localStorage.clear();
-            window.location.href = '/login.html';
+            window.location.href = 'http://43.201.121.201/login.html';
         }
     };
 
-    // 로그아웃
     document.getElementById('logout-btn').onclick = async () => {
         const kakaoAccess = localStorage.getItem('accessToken');
         if (!kakaoAccess) return alert('먼저 로그인하세요');
 
-        const res = await fetch('/users/auth/logout', {
+        const res = await fetch('http://43.201.121.201/users/auth/logout', {
             method: 'POST',
             headers: {
                 'Kakao-Access': kakaoAccess,
@@ -87,13 +84,12 @@
         if (res.status === 204) {
             alert('로그아웃 완료');
             localStorage.clear();
-            window.location.href = '/login.html';
+            window.location.href = 'http://43.201.121.201/login.html';
         } else {
             alert('로그아웃 실패');
         }
     };
 
-    // 🔥 탈퇴하기
     document.getElementById('withdraw-btn').onclick = async () => {
         const reason = document.getElementById('withdraw-reason').value;
         if (!reason) {
@@ -107,7 +103,7 @@
             return;
         }
 
-        const res = await fetch('/mypage/withdraw', {
+        const res = await fetch('http://43.201.121.201/mypage/withdraw', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -118,9 +114,9 @@
 
         if (res.ok) {
             const msg = await res.text();
-            alert(msg); // "탈퇴가 정상적으로 처리되었습니다."
+            alert(msg);
             localStorage.clear();
-            window.location.href = '/login.html';
+            window.location.href = 'http://43.201.121.201/login.html';
         } else {
             const error = await res.text();
             alert('탈퇴 실패: ' + error);
