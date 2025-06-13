@@ -21,7 +21,7 @@ jobs:
       - name: Pull & Tag Docker Image
         run: |
           # CI 워크플로에서 미리 빌드·푸시한 이미지가 있다면 그 태그를 사용
-          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/backend_server:latest
+          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/zoop_server:latest
 
       # --- 이하 기존 deploy 스텝 그대로 ---
       - name: Set target IP
