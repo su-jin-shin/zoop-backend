@@ -1,8 +1,8 @@
-name: cd
+name: cd          # ── 배포 워크플로
 
 on:
   workflow_run:
-    workflows: ["Maven CI All Checks"]
+    workflows: ["Maven CI All Checks"]   # ← CI 워크플로 이름
     types: [completed]
     branches: [main]
 
@@ -12,39 +12,57 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1) Docker Hub 로그인(이미지 pull 용)
       - name: Docker Hub Login
         uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      # 2) 원격(EC2) 배포
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1
         with:
-          host: ${{ secrets.ZOOP_SERVER_IP }}
+          host: ${{ secrets.ZOOP_SERVER_IP }}     # EC2 탄력 IP
           username: ubuntu
-          key: ${{ secrets.EC2_SSH_KEY }}
+          key: ${{ secrets.EC2_SSH_KEY }}         # ▶ EC2 접속 + repo clone 겸용
+          envs: EC2_SSH_KEY                       # ▶ 원격 세션에 동일 키 전달
           script: |
             set -e
-
-            # 1) 첫 배포일 경우 폴더 생성 & 코드 클론
-            if [ ! -d "/home/ubuntu/zoop-app" ]; then
-              git clone --depth 1 https://github.com/FC-DEV3-Final-Project/zoop-backend.git /home/ubuntu/zoop-app
+            
+            # ─────────────────────────────────────────────
+            # A. GitHub 접근용 Deploy Key 설정
+            #    (EC2_SSH_KEY와 동일 키 쌍의 '공개키'를
+            #     레포 Deploy keys 에 읽기전용으로 등록해 두었음)
+            # ─────────────────────────────────────────────
+            mkdir -p ~/.ssh
+            install -m 600 /dev/null ~/.ssh/id_repo
+            printf '%s\n' "$EC2_SSH_KEY" > ~/.ssh/id_repo
+            ssh-keyscan github.com >> ~/.ssh/known_hosts
+            export GIT_SSH_COMMAND='ssh -i ~/.ssh/id_repo -o StrictHostKeyChecking=no'
+            
+            # ─────────────────────────────────────────────
+            # B. 애플리케이션 디렉터리 준비
+            # ─────────────────────────────────────────────
+            REPO="FC-DEV3-Final-Project/zoop-backend"
+            APP_DIR="/home/ubuntu/zoop-app"
+            
+            if [ ! -d "$APP_DIR/.git" ]; then
+              git clone --depth 1 git@github.com:${REPO}.git "$APP_DIR"
             fi
-
-            cd /home/ubuntu/zoop-app
-
-            # 2) 최신 코드 가져오기 (Compose 포함)
+            
+            cd "$APP_DIR"
             git fetch --prune origin
-            git reset --hard origin/main
-
-            # 3) 최신 이미지 Pull
+            git reset --hard origin/main   # 최신 코드 + compose 동기화
+            
+            # ─────────────────────────────────────────────
+            # C. 컨테이너 재기동
+            # ─────────────────────────────────────────────
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/zoop_server:latest
+            docker compose -f docker-compose.yml down --remove-orphans
+            docker compose -f docker-compose.yml up -d --pull=never
 
-            # 4) 컨테이너 재기동
-            docker compose down --remove-orphans
-            docker compose up -d --pull=never
-
+      # 3) 헬스체크
       - name: Health-check 8080
         uses: jtalk/url-health-check-action@v3
         with:
