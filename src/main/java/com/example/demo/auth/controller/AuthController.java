@@ -2,12 +2,14 @@ package com.example.demo.auth.controller;
 
 import com.example.demo.auth.domain.UserInfo;
 import com.example.demo.auth.dto.LoginResponseDto;
+import com.example.demo.auth.dto.LoginUser;
 import com.example.demo.auth.repository.UserInfoRepository;
 import com.example.demo.auth.service.KakaoAuthService;
 import com.example.demo.auth.service.LoginService;
 import com.example.demo.auth.util.JwtUtil;
 import com.example.demo.common.exception.InvalidRequestException;
 import com.example.demo.common.exception.UnauthorizedAccessException;
+import com.example.demo.mypage.service.NicknameService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +18,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -32,7 +35,8 @@ public class AuthController {
     private final LoginService loginService;
     private final KakaoAuthService kakaoAuthService;
     private final JwtUtil jwtUtil;
-    private final UserInfoRepository userRepo;
+    private final NicknameService nicknameService;
+
 
     @Value("${kakao.client-id}")  private String kakaoClientId;
     @Value("${kakao.redirect-uri}") private String redirectUri;
@@ -91,16 +95,18 @@ public class AuthController {
 
     //   3) 신규 사용자 닉네임 등록
     @PostMapping("/register")
-    public ResponseEntity<Void> register(@RequestBody Map<String, String> body) {
+    public ResponseEntity<Void> register(@AuthenticationPrincipal LoginUser loginUser,
+                                         @RequestBody Map<String, String> body) {
 
-        String email    = body.get("email");
         String nickname = body.get("nickname");
-        if (email == null || nickname == null || nickname.trim().isEmpty()) {
-            throw new InvalidRequestException();          // 400 Bad Request
+        if (nickname == null || nickname.isBlank()) {
+            throw new InvalidRequestException();      // 400
         }
 
-        loginService.registerNickname(email, nickname);
-        return ResponseEntity.ok().build();               // 성공 시 200
+        Long userId = Long.valueOf(loginUser.getUsername());
+        nicknameService.updateNickname(userId, nickname);
+
+        return ResponseEntity.ok().build();           // 200
     }
 
     //   4) 액세스 토큰 재발급
