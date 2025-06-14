@@ -7,8 +7,6 @@ import jakarta.transaction.Transactional;
 public interface LoginService {
 
 
-    void registerNickname(String email, String nickname);
-
     LoginResponseDto kakaoLogin(String code,
                                        String clientIp,
                                        HttpServletRequest request);
