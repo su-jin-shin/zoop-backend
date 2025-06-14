@@ -20,6 +20,8 @@ jobs:
 
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
         with:
           host: ${{ secrets.ZOOP_SERVER_IP }}
           username: ubuntu
@@ -40,8 +42,9 @@ jobs:
             git pull --ff-only origin main
 
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/zoop_server:latest
-            docker compose -f docker-compose.yml down --remove-orphans
-            docker compose -f docker-compose.yml up -d --pull=never
+            docker compose down --remove-orphans
+            docker compose up -d --pull=never
+      
 
       - name: Health-check 8080
         uses: jtalk/url-health-check-action@v3
