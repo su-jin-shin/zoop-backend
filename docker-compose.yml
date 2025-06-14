@@ -9,10 +9,8 @@ services:
       POSTGRES_DB: mydb
       POSTGRES_USER: myuser
       POSTGRES_PASSWORD: mypass
-    ports:                # ← psql 접속 필요 없으면 지워도 됨
-      - "5432:5432"
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql/data   # 외부 노출 포트 없음 (보안 ↑)
 
   app:
     image: jungyeons/zoop_server:latest
@@ -26,7 +24,7 @@ services:
       ENV: prod
       SERVER_NAME: prod_server
 
-      SPRING_DATASOURCE_URL: 'jdbc:postgresql://db:5432/mydb'
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/mydb
       SPRING_DATASOURCE_USERNAME: myuser
       SPRING_DATASOURCE_PASSWORD: mypass
 

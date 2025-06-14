@@ -12,23 +12,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1) Docker Hub 로그인 (이미지 pull 용)
       - name: Docker Hub Login
         uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # 2) EC2에 접속해서 코드 갱신 + 컨테이너 재기동
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1
-        env:                          # ← 로컬 Runner → 원격으로 전달할 변수
+        env:
           GH_PAT: ${{ secrets.GH_PAT }}
         with:
-          host:     ${{ secrets.ZOOP_SERVER_IP }}
+          host: ${{ secrets.ZOOP_SERVER_IP }}
           username: ubuntu
-          key:      ${{ secrets.EC2_SSH_KEY }}   # EC2 접속용 프라이빗 키
-          envs:     GH_PAT                       # 위 GH_PAT 변수를 원격 세션에 주입
+          key: ${{ secrets.EC2_SSH_KEY }}
+          envs: GH_PAT
           script: |
             set -e
 
@@ -36,22 +34,24 @@ jobs:
             APP_DIR="/home/ubuntu/zoop-app"
             TOKEN=$GH_PAT
 
-            # ── ① 최초 배포일 때 clone ────────────────────────────────
+            # 1) 코드 동기화 -------------------------------------------------
             if [ ! -d "$APP_DIR/.git" ]; then
               git clone --depth 1 https://${TOKEN}@github.com/${REPO}.git "$APP_DIR"
             fi
-
-            # ── ② 최신 코드 동기화 ───────────────────────────────────
             cd "$APP_DIR"
             git remote set-url origin https://${TOKEN}@github.com/${REPO}.git
             git pull --ff-only origin main
 
-            # ── ③ 최신 이미지 pull + 컨테이너 재기동 (sudo 필요) ─────
+            # 2) 최신 이미지 pull -------------------------------------------
             sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/zoop_server:latest
-            sudo docker compose down --remove-orphans
-            sudo docker compose up -d --pull=never
 
-      # 3) 애플리케이션 헬스체크
+            # 3) 컨테이너 정리(볼륨 유지) ------------------------------------
+            sudo docker compose -f docker-compose.yml down --remove-orphans || true
+            sudo docker rm -f postgres-db zoop-app 2>/dev/null || true
+
+            # 4) 재기동 ------------------------------------------------------
+            sudo docker compose -f docker-compose.yml up -d --pull=never --force-recreate
+
       - name: Health-check 8080
         uses: jtalk/url-health-check-action@v3
         with:
