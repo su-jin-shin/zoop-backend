@@ -29,7 +29,7 @@ jobs:
 
             # 1) 첫 배포일 경우 폴더 생성 & 코드 클론
             if [ ! -d "/home/ubuntu/zoop-app" ]; then
-              git clone --depth 1 https://github.com/<ORG>/<REPO>.git /home/ubuntu/zoop-app
+              git clone --depth 1 https://github.com/FC-DEV3-Final-Project/zoop-backend.git /home/ubuntu/zoop-app
             fi
 
             cd /home/ubuntu/zoop-app

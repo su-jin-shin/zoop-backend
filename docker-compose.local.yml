@@ -31,6 +31,7 @@ services:
       - KAKAO_CLIENT_ID=${KAKAO_CLIENT_ID}
       - KAKAO_REDIRECT_URI=http://localhost:18080/users/auth/kakao/callback
       - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - SPRING_PROFILES_ACTIVE=prod
 
 volumes:
   postgres-data-local:
