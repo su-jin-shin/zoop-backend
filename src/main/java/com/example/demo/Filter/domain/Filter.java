@@ -28,6 +28,14 @@ public class Filter {
 
     private String filterTitle;       // 필터 제목
 
+    private String x;                 // 경도
+
+    private String y;                // 위도
+
+    private String bCode;           // 법정 코드
+
+    private String hCode;           // 행정 코드
+
     @Enumerated(EnumType.STRING)
     private TradeTypeName tradeTypeName;   // 거래 타입
 
@@ -39,6 +47,7 @@ public class Filter {
     private BigDecimal rentPrice;                      //월세
 
     private LocalDateTime createdAt;                   // 필터 생성 시각
+
 
 
 }

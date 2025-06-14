@@ -8,7 +8,6 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Getter
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
@@ -32,5 +31,15 @@ public class KeywordFilterHistory {
 
     private Boolean isUsed;                   // 필터 사용 여부
 
+    public void deactivate() {
+        this.isUsed = false;
+    }
+
+    public KeywordFilterHistory(Filter filter, UserInfo userInfo) {
+        this.filter = filter;
+        this.userInfo = userInfo;
+        this.isUsed = true;
+        this.usedAt = LocalDateTime.now();
+    }
 
 }
