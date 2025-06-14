@@ -15,7 +15,7 @@ public class HealthCheckController {
     @Value("${server.env}")
     private String env;
 
-    @Value("${SERVER_NAME:unknown}")   // ← 변경 (기본값 unknown)
+    @Value("${server.name:unknown}")   // 수정
     private String serverName;
 
     @GetMapping("/hc")

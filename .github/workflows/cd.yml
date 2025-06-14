@@ -12,57 +12,37 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # ────────────────────────────────────────────────
-      # 1) Docker Hub 로그인
-      # ────────────────────────────────────────────────
-      - uses: docker/login-action@v1
-        name: Docker Hub Login
+      - name: Docker Hub login
+        uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # ────────────────────────────────────────────────
-      # 2) 원격 배포
-      # ────────────────────────────────────────────────
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.ZOOP_SERVER_IP }}
           username: ubuntu
-          key: ${{ secrets.EC2_SSH_KEY }}   # ▶ EC2 로그인용
-          envs: EC2_SSH_KEY                 # ▶ 같은 키를 원격에도 넘김
+          key: ${{ secrets.EC2_SSH_KEY }}
+          envs: GH_PAT
           script: |
             set -e
-            
-            # ── A. GitHub 접근용 개인키 파일 생성 (줄바꿈 손실 방지) ──
-            mkdir -p ~/.ssh
-            cat > ~/.ssh/id_repo <<'__KEY__'
-            $EC2_SSH_KEY
-            __KEY__
-            chmod 600 ~/.ssh/id_repo
-            ssh-keyscan github.com >> ~/.ssh/known_hosts
-            export GIT_SSH_COMMAND='ssh -i ~/.ssh/id_repo -o StrictHostKeyChecking=no'
-            
-            # ── B. 애플리케이션 코드 동기화 ──
             REPO="FC-DEV3-Final-Project/zoop-backend"
             APP_DIR="/home/ubuntu/zoop-app"
-            
-            if [ ! -d "$APP_DIR/.git" ]; then
-              git clone --depth 1 git@github.com:${REPO}.git "$APP_DIR"
-            fi
-            
-            cd "$APP_DIR"
-            git fetch --prune origin
-            git reset --hard origin/main
-            
-            # ── C. 최신 이미지 pull & 컨테이너 재기동 ──
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/zoop_server:latest
-            docker compose down --remove-orphans
-            docker compose up -d --pull=never
+            TOKEN=$GH_PAT
 
-      # ────────────────────────────────────────────────
-      # 3) 헬스체크
-      # ────────────────────────────────────────────────
+            if [ ! -d "$APP_DIR/.git" ]; then
+              git clone --depth 1 https://${TOKEN}@github.com/${REPO}.git "$APP_DIR"
+            fi
+
+            cd "$APP_DIR"
+            git remote set-url origin https://${TOKEN}@github.com/${REPO}.git
+            git pull --ff-only origin main
+
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/zoop_server:latest
+            docker compose -f docker-compose.yml down --remove-orphans
+            docker compose -f docker-compose.yml up -d --pull=never
+
       - name: Health-check 8080
         uses: jtalk/url-health-check-action@v3
         with:
