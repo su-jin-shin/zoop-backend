@@ -10,7 +10,7 @@ services:
       POSTGRES_USER: myuser
       POSTGRES_PASSWORD: mypass
     ports:
-      - "6543:5432"
+      - "6543:5432"                       # 로컬 PC → 컨테이너 psql 접속
     volumes:
       - postgres-data-local:/var/lib/postgresql/data
 
@@ -20,18 +20,22 @@ services:
     depends_on:
       - db
     ports:
-      - "18080:8080"
+      - "18080:8080"                      # localhost:18080 → 스프링 8080
     environment:
-      - PROFILES=local
-      - ENV=local
-      - SERVER_NAME=local_server
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/mydb
-      - SPRING_DATASOURCE_USERNAME=myuser
-      - SPRING_DATASOURCE_PASSWORD=mypass
-      - KAKAO_CLIENT_ID=${KAKAO_CLIENT_ID}
-      - KAKAO_REDIRECT_URI=http://localhost:18080/users/auth/kakao/callback
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
-      - SPRING_PROFILES_ACTIVE=prod
+      PROFILES: local                     # ENTRYPOINT에서 -Dspring.profiles.active=local
+      ENV: local
+      SERVER_NAME: local_server
+
+      # Datasource
+      SPRING_DATASOURCE_URL: 'jdbc:postgresql://db:5432/mydb'
+      SPRING_DATASOURCE_USERNAME: myuser
+      SPRING_DATASOURCE_PASSWORD: mypass
+      SPRING_PROFILES_ACTIVE: local       # 혹시 코드에서 참조할 때 대비
+
+      # Secrets (호스트 OS 쉘에서 export 해 두면 자동 치환)
+      KAKAO_CLIENT_ID: ${KAKAO_CLIENT_ID}
+      KAKAO_REDIRECT_URI: http://localhost:18080/users/auth/kakao/callback
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
 
 volumes:
   postgres-data-local:
