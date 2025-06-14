@@ -9,6 +9,7 @@ import com.example.demo.auth.dto.LoginUser;
 import com.example.demo.auth.repository.LoginHistoryRepository;
 import com.example.demo.auth.repository.UserInfoRepository;
 import com.example.demo.auth.util.JwtUtil;
+import com.example.demo.mypage.service.NicknameService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.transaction.Transactional;
@@ -94,14 +95,5 @@ public class LoginServiceImpl implements LoginService {
                 .build();
     }
 
-    /* -------------------------------------------------
-     * 신규 사용자 닉네임 등록
-     * ------------------------------------------------- */
-    @Override
-    public void registerNickname(String email, String nickname) {
-        userRepo.findByEmail(email).ifPresent(u -> {
-            u.setNickname(nickname);
-            userRepo.save(u);
-        });
-    }
+
 }
