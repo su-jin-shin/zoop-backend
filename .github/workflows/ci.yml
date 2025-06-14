@@ -22,8 +22,14 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-maven-
 
-      - name: Build & Test
-        run: ./mvnw -B clean verify spotbugs:check
+      - name: Grant execute permission for Maven Wrapper
+        run: chmod +x ./mvnw
+
+      - name: Build and Test
+        run: ./mvnw clean verify
+
+      - name: SpotBugs
+        run: ./mvnw spotbugs:check
 
       - name: Docker Hub Login
         uses: docker/login-action@v1
@@ -35,6 +41,6 @@ jobs:
         run: |
           IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/zoop_server
           docker build --platform linux/amd64 -t $IMAGE:latest .
-          docker tag   $IMAGE:latest $IMAGE:${{ github.sha }}
-          docker push  $IMAGE:latest
-          docker push  $IMAGE:${{ github.sha }}
+          docker tag $IMAGE:latest $IMAGE:${{ github.sha }}
+          docker push $IMAGE:latest
+          docker push $IMAGE:${{ github.sha }}
