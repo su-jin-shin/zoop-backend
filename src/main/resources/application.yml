@@ -1,9 +1,9 @@
 spring:
   profiles:
-    active: prod            # 기본 실행 프로파일
+    active: ${PROFILES:prod}
 
   datasource:
-    url: jdbc:postgresql://db:5432/mydb
+    url: ${SPRING_DATASOURCE_URL}
     username: ${SPRING_DATASOURCE_USERNAME}
     password: ${SPRING_DATASOURCE_PASSWORD}
 
@@ -26,12 +26,11 @@ spring:
 
 server:
   port: 8080
-  address: 0.0.0.0         # 컨테이너 내부 0.0.0.0 바인딩
-  env: prod                # 필요 시 코드에서 사용
+  address: 0.0.0.0
+  env: ${ENV:prod}
 
 springdoc:
-  api-docs:
-    path: /api-docs
+  api-docs.path: /api-docs
   swagger-ui:
     path: /swagger-ui.html
     url: /api-docs
