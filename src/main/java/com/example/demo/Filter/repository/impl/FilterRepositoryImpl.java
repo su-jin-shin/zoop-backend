@@ -5,10 +5,12 @@ import com.example.demo.Filter.domain.Filter;
 import com.example.demo.Filter.domain.QFilter;
 import com.example.demo.Filter.repository.FilterRepositoryCustom;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Optional;
 
+@SuppressFBWarnings(value = "EI_EXPOSE_REP2")
 @RequiredArgsConstructor
 public class FilterRepositoryImpl implements FilterRepositoryCustom {
 
