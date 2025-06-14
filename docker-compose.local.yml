@@ -1,0 +1,5 @@
+version: "3.8"
+services:
+  db:
+    ports:
+      - "6543:5432"        # host 6543  ↔  container 5432
