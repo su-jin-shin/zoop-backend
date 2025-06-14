@@ -65,7 +65,7 @@
         } else {
             alert('리프레시 만료! 다시 로그인 필요');
             localStorage.clear();
-            window.location.href = 'http://43.201.121.201/login.html';
+            window.location.href = 'http://localhost:8080/login.html';
         }
     };
 
@@ -73,7 +73,7 @@
         const kakaoAccess = localStorage.getItem('accessToken');
         if (!kakaoAccess) return alert('먼저 로그인하세요');
 
-        const res = await fetch('http://43.201.121.201/users/auth/logout', {
+        const res = await fetch('http://localhost:8080/users/auth/logout', {
             method: 'POST',
             headers: {
                 'Kakao-Access': kakaoAccess,
@@ -84,7 +84,7 @@
         if (res.status === 204) {
             alert('로그아웃 완료');
             localStorage.clear();
-            window.location.href = 'http://43.201.121.201/login.html';
+            window.location.href = 'http://localhost:8080/login.html';
         } else {
             alert('로그아웃 실패');
         }
@@ -103,7 +103,7 @@
             return;
         }
 
-        const res = await fetch('http://43.201.121.201/mypage/withdraw', {
+        const res = await fetch('http://localhost:8080/mypage/withdraw', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -116,7 +116,7 @@
             const msg = await res.text();
             alert(msg);
             localStorage.clear();
-            window.location.href = 'http://43.201.121.201/login.html';
+            window.location.href = 'http://localhost:8080/login.html';
         } else {
             const error = await res.text();
             alert('탈퇴 실패: ' + error);
