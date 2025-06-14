@@ -3,34 +3,38 @@ version: "3.8"
 services:
   db:
     image: postgres:14.11
-    container_name: postgres-db-local
+    container_name: postgres-db
     restart: always
     environment:
       POSTGRES_DB: mydb
       POSTGRES_USER: myuser
       POSTGRES_PASSWORD: mypass
-    ports:
-      - "6543:5432"
+    # 필요하면 외부 접근용 포트 열기
+    # ports:
+    #   - "5432:5432"
     volumes:
-      - postgres-data-local:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql/data
 
   app:
     image: jungyeons/zoop_server:latest
-    container_name: zoop-app-local
+    container_name: zoop-app
     depends_on:
       - db
     ports:
-      - "18080:8080"
+      - "8080:8080"
     environment:
-      - PROFILES=local
-      - ENV=local
-      - SERVER_NAME=local_server
+      # Spring & 앱
+      - PROFILES=prod
+      - ENV=prod
+      - SERVER_NAME=prod_server
+      # Datasource
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/mydb
       - SPRING_DATASOURCE_USERNAME=myuser
       - SPRING_DATASOURCE_PASSWORD=mypass
+      # Secrets
       - KAKAO_CLIENT_ID=${KAKAO_CLIENT_ID}
-      - KAKAO_REDIRECT_URI=http://localhost:18080/users/auth/kakao/callback
+      - KAKAO_REDIRECT_URI=http://43.201.121.201/users/auth/kakao/callback
       - JWT_SECRET_KEY=${JWT_SECRET_KEY}
 
 volumes:
-  postgres-data-local:
+  postgres-data:
