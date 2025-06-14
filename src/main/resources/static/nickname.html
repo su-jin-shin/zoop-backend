@@ -19,7 +19,7 @@
 
 <script>
     document.getElementById('update-btn').onclick = async () => {
-        const nickname = document.getElementById('nickname').value;
+        const nickname = document.getElementById('nickname').value.trim();
         const messageEl = document.getElementById('message');
         messageEl.innerText = '';
 
@@ -29,24 +29,31 @@
         }
 
         try {
-            const res = await fetch('http://43.201.121.201/users/auth/register', {
-                method: 'PATCH',
+            const res = await fetch('http://localhost:8080/users/auth/register', {
+                method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ nickname: nickname })
+                credentials: 'include', // ← 쿠키 기반 인증 시 필수!
+                body: JSON.stringify({ nickname })
             });
 
-            const data = await res.json();
-
             if (res.ok) {
+                // 본문이 있을 경우만 JSON 파싱
+                const contentLength = res.headers.get('content-length');
+                if (contentLength && parseInt(contentLength) > 0) {
+                    const data = await res.json(); // optional
+                    console.log('서버 응답:', data);
+                }
+
                 alert('닉네임이 성공적으로 변경되었습니다.');
-                window.location.href = 'http://43.201.121.201/home.html';
+                window.location.href = 'http://localhost:8080/home.html';
             } else {
-                messageEl.innerText = data.message || '닉네임 변경 실패';
+                const errorText = await res.text();
+                messageEl.innerText = errorText || '닉네임 변경 실패';
             }
         } catch (e) {
-            console.error(e);
+            console.error('클라이언트 오류:', e);
             messageEl.innerText = '서버 오류가 발생했습니다.';
         }
     };
