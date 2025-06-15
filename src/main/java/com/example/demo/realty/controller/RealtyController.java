@@ -25,4 +25,11 @@ public class RealtyController {
     public ResponseEntity<RealtyAgentNumberResponseDto> getRealtyAgentContact(@PathVariable Long realtyId){
         return ResponseEntity.ok(realtyService.getRealtyAgentNumber(realtyId));
     }
+
+    //매물 찜 등록
+
+
+
+
+
 }
