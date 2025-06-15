@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class PropertyAgentNumberResponseDto {
 
-    private Long PropertyId; //중개사 이름
+    private Long propertyId; //중개사 이름
 
     private String representativeTelNo; //대표전화번호
     private String cellPhoneNo; //휴대전화번호
@@ -22,7 +22,7 @@ public class PropertyAgentNumberResponseDto {
     public static PropertyAgentNumberResponseDto of(Property property){
         Realty realty = property.getRealty();
         return PropertyAgentNumberResponseDto.builder()
-                .PropertyId(property.getPropertyId())
+                .propertyId(property.getPropertyId())
 
                 .representativeTelNo(realty.getRepresentativeTelNo())
                 .cellPhoneNo(realty.getCellPhoneNo())
