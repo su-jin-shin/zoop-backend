@@ -20,6 +20,7 @@ public class PropertyLikeController {
 
     private final PropertyLikeService propertyLikeService;
 
+    //매물 찜 등록
     @PostMapping("/{propertyId}/likes")
     public ResponseEntity<BookmarkedPropertyResponseDto> likeProperty(
             @PathVariable Long propertyId,
@@ -29,5 +30,17 @@ public class PropertyLikeController {
 
         BookmarkedPropertyResponseDto response = propertyLikeService.likeProperty(userId, propertyId);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    //매물 찜 취소
+    @PatchMapping("/{propertyId}/likes")
+    public ResponseEntity<BookmarkedPropertyResponseDto> unlikeProperty(
+            @PathVariable Long propertyId,
+            @AuthenticationPrincipal LoginUser loginUser
+    ){
+        Long userId = Long.valueOf(loginUser.getUsername());
+
+        BookmarkedPropertyResponseDto response = propertyLikeService.unlikeProperty(userId, propertyId);
+        return ResponseEntity.ok(response);
     }
 }
