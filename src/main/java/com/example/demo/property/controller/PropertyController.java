@@ -7,10 +7,9 @@ import lombok.RequiredArgsConstructor;
 import org.apache.coyote.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.parameters.P;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -95,6 +94,14 @@ public class PropertyController {
         return ResponseEntity.ok(propertyAgentNumberResponseDto);
     }
 
+    //매물 비교하기
+    @GetMapping("/compare")
+    public ResponseEntity<List<PropertyCompareResponseDto>> compareProperties(
+            @RequestParam List<Long> propertyIds
+    ){
+        List<PropertyCompareResponseDto> result = propertyService.getCompareProperties(propertyIds);
+        return ResponseEntity.ok(result);
+    }
 
 
 

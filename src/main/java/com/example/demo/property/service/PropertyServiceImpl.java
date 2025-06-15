@@ -9,12 +9,13 @@ import com.example.demo.property.dto.*;
 import com.example.demo.property.repository.ImageRepository;
 import com.example.demo.property.repository.PropertyRepository;
 import com.example.demo.property.repository.PropertySummaryRepository;
+import com.example.demo.property.util.PropertyDtoConverter;
 import com.fasterxml.jackson.databind.annotation.JsonAppend;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.parsers.ReturnTypeParser;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -117,6 +118,62 @@ public class PropertyServiceImpl  implements PropertyService{
         return PropertyAgentNumberResponseDto.of(property);
     }
 
+    @Override
+    public List<PropertyCompareResponseDto> getCompareProperties(List<Long> propertyIds) {
+        List<PropertyCompareResponseDto> result = new ArrayList<>();
+
+        List<Property> properties = propertyRepository.findAllById(propertyIds);
+        List<Image> allImages = imageRepository.findByProperty_PropertyIdIn(propertyIds);
+
+        //이미지 매핑
+        Map<Long,String> thumbnailMap = new HashMap<>();
+        for (Image image : allImages) {
+            Long propertyId = image.getProperty().getPropertyId();
+            if(Boolean.TRUE.equals(image.getIsMain()) && !thumbnailMap.containsKey(propertyId)){
+                thumbnailMap.put(propertyId, image.getImageUrl());
+            }
+        }
+        //태그매핑
+        Map<Long, List<String>> tagMap = new HashMap<>();
+        for (Long propertyId : propertyIds) {
+            Optional<PropertySummary> summaryOpt = summaryRepository.findByProperty_PropertyId(propertyId);
+            if (summaryOpt.isPresent()) {
+                List<String> tags = PropertyDtoConverter.convertSummary(summaryOpt.get());
+                tagMap.put(propertyId, tags);
+            } else {
+                tagMap.put(propertyId, new ArrayList<>());
+            }
+        }
+        //비교 dto 변환
+        for (Property p : properties){
+            PropertyCompareResponseDto dto = PropertyCompareResponseDto.builder()
+                    .propertyId(p.getPropertyId())
+                    .imageUrl(thumbnailMap.getOrDefault(p.getPropertyId(), null))
+                    .tradeTypeName(p.getTradeTypeName())
+                    .dealPrice(p.getDealPrice())
+                    .rentPrice(p.getRentPrice())
+                    .warrantPrice(p.getWarrantPrice())
+                    .dealOrWarrantPrc(p.getDealOrWarrantPrc())
+                    .articleName(p.getArticleName())
+                    .useApproveYmd(p.getUseApproveYmd())
+                    .tagList(tagMap.getOrDefault(p.getPropertyId(), new ArrayList<>()))
+                    .area1(p.getArea1())
+                    .area2(p.getArea2())
+                    .roomCount(p.getRoomCount())
+                    .bathroomCount(p.getBathroomCount())
+                    .floorInfo(p.getFloorInfo())
+                    .directionBaseTypeName(p.getDirectionBaseTypeName())
+                    .direction(p.getDirection())
+                    .etcFeeAmount(p.getEtcFeeAmount())
+                    .moveInPossibleYmd(p.getMoveInPossibleYmd())
+                    .parkingPossibleYN(p.getParkingPossibleYN())
+                    .securityFacilities(p.getSecurityFacilities())
+                    .build();
+
+            result.add(dto);
+        }
+        return result;
+    }
 
 
 }
