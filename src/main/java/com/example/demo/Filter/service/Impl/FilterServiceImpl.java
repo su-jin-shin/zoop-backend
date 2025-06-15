@@ -30,6 +30,7 @@ public class FilterServiceImpl implements FilterService {
     private final FilterRepository filterRepository;
     private final KeywordFilterHistoryRepository keywordFilterHistoryRepository;
 
+    // 사용자가 선택한 키워드 필터 히스토리 저장
     @Override
     public void saveSearchFilter(Long userId, SearchFilterRequestDto searchFilterRequestDto) {
 
@@ -71,11 +72,19 @@ public class FilterServiceImpl implements FilterService {
         keywordFilterHistoryRepository.disableKeywordFilterHistory(history.getKeywordFilterHistoryId());
 
         // 지역 조회
-        Region region = regionRepository.findByCortarNo(updateRequestDto.getHCode()).orElseThrow(NotFoundException::new);
-
+        Region region = regionRepository.findByCortarNo(updateRequestDto.getBCode()).orElseThrow(NotFoundException::new);
 
         // 필터 저장 또는 재사용
         Filter filter = createOrFind(updateRequestDto.toEntity(region));
+
+        // 키워드 필터 히스토리 사용중인 것과 중복인지 체크
+        boolean alreadyExists = keywordFilterHistoryRepository
+                .existsByUserInfoAndFilterAndIsUsedTrue(userInfo, filter);
+
+        // 히스토리 저장
+        if (alreadyExists) {
+            throw new DuplicateFilterHistoryException();
+        }
 
         // 히스토리 저장
         KeywordFilterHistory newKeywordFilterHistory = new KeywordFilterHistory(filter, userInfo);
