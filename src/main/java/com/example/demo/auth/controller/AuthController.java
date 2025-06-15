@@ -32,26 +32,27 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final LoginService loginService;
-    private final KakaoAuthService kakaoAuthService;
-    private final JwtUtil jwtUtil;
-    private final NicknameService nicknameService;
+    private final LoginService         loginService;
+    private final KakaoAuthService     kakaoAuthService;
+    private final JwtUtil              jwtUtil;
+    private final NicknameService      nicknameService;
+    private final UserInfoRepository   userInfoRepository;
 
-
-    @Value("${kakao.client-id}")  private String kakaoClientId;
+    @Value("${kakao.client-id}")    private String kakaoClientId;
     @Value("${kakao.redirect-uri}") private String redirectUri;
 
-
-    //   1) 카카오 인가 코드 받으러 이동
+    /* -------------------------------------------------
+     * 1) 카카오 인가 코드 받으러 이동
+     * ------------------------------------------------- */
     @GetMapping("/kakao/login")
     public ResponseEntity<Void> redirectToKakao(@RequestParam(required = false) String state) {
 
         String url = UriComponentsBuilder
                 .fromHttpUrl("https://kauth.kakao.com/oauth/authorize")
-                .queryParam("client_id", kakaoClientId)
-                .queryParam("redirect_uri", redirectUri)
+                .queryParam("client_id",     kakaoClientId)
+                .queryParam("redirect_uri",  redirectUri)
                 .queryParam("response_type", "code")
-                .queryParam("scope", "account_email,profile_image")
+                .queryParam("scope",         "account_email,profile_image")
                 .queryParamIfPresent("state", Optional.ofNullable(state))
                 .build()
                 .encode()
@@ -62,7 +63,9 @@ public class AuthController {
                 .build();
     }
 
-    //   2) 카카오 콜백 처리
+    /* -------------------------------------------------
+     * 2) 카카오 콜백 처리
+     * ------------------------------------------------- */
     @GetMapping("/kakao/callback")
     public ResponseEntity<Void> kakaoCallback(@RequestParam String code,
                                               HttpServletRequest request) {
@@ -70,46 +73,57 @@ public class AuthController {
         String clientIp = getClientIpAddress(request);
         LoginResponseDto res = loginService.kakaoLogin(code, clientIp, request);
 
-        // 쿠키 생성
+        /* --- 쿠키 생성 (로컬 프로필이면 Secure=false) --- */
+        boolean isLocal = "local".equals(
+                Optional.ofNullable(System.getProperty("spring.profiles.active"))
+                        .orElse(""));
+
         ResponseCookie accessCookie = ResponseCookie.from("access_token", res.getAccessToken())
-                .httpOnly(true).secure(true)            // 운영은 HTTPS 전제
-                .sameSite("Lax")                        // SPA → "None" + Secure
-                .path("/").maxAge(Duration.ofMinutes(30))
+                .httpOnly(true)
+                .secure(!isLocal)
+                .sameSite("Lax")
+                .path("/")
+                .maxAge(Duration.ofMinutes(30))
                 .build();
 
         ResponseCookie refreshCookie = ResponseCookie.from("refresh_token", res.getRefreshToken())
-                .httpOnly(true).secure(true)
+                .httpOnly(true)
+                .secure(!isLocal)
                 .sameSite("Lax")
-                .path("/").maxAge(Duration.ofDays(14))
+                .path("/")
+                .maxAge(Duration.ofDays(14))
                 .build();
 
         String redirect = res.getNeedsNickname() ? "/nickname.html" : "/home.html";
 
         return ResponseEntity.status(HttpStatus.FOUND)
                 .header(HttpHeaders.SET_COOKIE, accessCookie.toString())
-                .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())  // 헤더를 두 번 추가
+                .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
                 .header(HttpHeaders.LOCATION, redirect)
                 .build();
     }
 
-
-    //   3) 신규 사용자 닉네임 등록
+    /* -------------------------------------------------
+     * 3) 신규 사용자 닉네임 등록
+     * ------------------------------------------------- */
     @PostMapping("/register")
     public ResponseEntity<Void> register(@AuthenticationPrincipal LoginUser loginUser,
                                          @RequestBody Map<String, String> body) {
 
         String nickname = body.get("nickname");
         if (nickname == null || nickname.isBlank()) {
-            throw new InvalidRequestException();      // 400
+            throw new InvalidRequestException();   // 400
         }
 
         Long userId = Long.valueOf(loginUser.getUsername());
         nicknameService.updateNickname(userId, nickname);
 
-        return ResponseEntity.ok().build();           // 200
+        return ResponseEntity.ok().build();        // 200
     }
 
-    //   4) 액세스 토큰 재발급
+    /* -------------------------------------------------
+     * 4) 액세스 토큰 재발급
+     * ------------------------------------------------- */
     @PostMapping("/refresh")
     public ResponseEntity<Void> refresh(@CookieValue("refresh_token") String refresh) {
 
@@ -117,31 +131,58 @@ public class AuthController {
             throw new UnauthorizedAccessException();
         }
 
-        String email      = jwtUtil.getSubject(refresh);
-        String newAccess  = jwtUtil.generateAccess(email);
+        String email     = jwtUtil.getSubject(refresh);
+        String newAccess = jwtUtil.generateAccess(email);
 
         ResponseCookie accessCookie = ResponseCookie.from("access_token", newAccess)
-                .httpOnly(true).secure(true)
-                .sameSite("Lax").path("/").maxAge(Duration.ofMinutes(30))
+                .httpOnly(true)
+                .secure(!"local".equals(System.getProperty("spring.profiles.active")))
+                .sameSite("Lax")
+                .path("/")
+                .maxAge(Duration.ofMinutes(30))
                 .build();
 
-        return ResponseEntity.noContent()  // 굳이 DTO 반환 없이 204
+        return ResponseEntity.noContent()
                 .header(HttpHeaders.SET_COOKIE, accessCookie.toString())
                 .build();
     }
 
-    //   5) 로그아웃
+    /* -------------------------------------------------
+     * 5) 로그아웃
+     * ------------------------------------------------- */
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(@RequestHeader("Kakao-Access") String kakaoAccess) {
         try {
             kakaoAuthService.logout(kakaoAccess);
         } catch (Exception e) {
-            log.warn("Kakao logout failed but local logout continues: {}", e.getMessage());
+            log.warn("Kakao logout failed (ignored): {}", e.getMessage());
         }
-        return ResponseEntity.noContent().build();        // 204
+        return ResponseEntity.noContent().build(); // 204
     }
 
-    //   UTIL : IP 추출
+    /* -------------------------------------------------
+     * 6) 로그인된 사용자 정보 조회
+     * ------------------------------------------------- */
+    @GetMapping("/me")
+    public ResponseEntity<Map<String, Object>> getCurrentUser(
+            @AuthenticationPrincipal LoginUser loginUser) {
+
+        Long userId = Long.valueOf(loginUser.getUsername());
+        UserInfo user = userInfoRepository.findById(userId)
+                .orElseThrow(UnauthorizedAccessException::new);
+
+        Map<String, Object> dto = Map.of(
+                "userId",       user.getUserId(),
+                "email",        user.getEmail(),
+                "nickname",     user.getNickname(),
+                "profileImage", user.getProfileImage()
+        );
+        return ResponseEntity.ok(dto);
+    }
+
+    /* -------------------------------------------------
+     * UTIL : 클라이언트 IP 추출
+     * ------------------------------------------------- */
     private String getClientIpAddress(HttpServletRequest request) {
         String ip = request.getHeader("X-Forwarded-For");
         return (ip == null || ip.isEmpty()) ? request.getRemoteAddr() : ip;
