@@ -10,8 +10,10 @@ import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 public class DemoApplication {
   public static void main(String[] args) {
 
-    // 로컬 프로파일이면 .env.local 주입
-    if ("local".equals(System.getenv("PROFILES"))) {
+    // JVM property 기준으로 판단하도록 수정
+    String profile = System.getProperty("spring.profiles.active");
+
+    if ("local".equals(profile)) {
       Dotenv dotenv = Dotenv.configure()
               .filename(".env.local")
               .ignoreIfMissing()
