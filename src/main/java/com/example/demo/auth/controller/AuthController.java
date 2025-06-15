@@ -9,6 +9,7 @@ import com.example.demo.auth.service.LoginService;
 import com.example.demo.auth.util.JwtUtil;
 import com.example.demo.common.exception.InvalidRequestException;
 import com.example.demo.common.exception.UnauthorizedAccessException;
+import com.example.demo.config.FrontProps;
 import com.example.demo.mypage.service.NicknameService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +38,7 @@ public class AuthController {
     private final JwtUtil              jwtUtil;
     private final NicknameService      nicknameService;
     private final UserInfoRepository   userInfoRepository;
+    private final FrontProps front;
 
     @Value("${kakao.client-id}")    private String kakaoClientId;
     @Value("${kakao.redirect-uri}") private String redirectUri;
@@ -94,7 +96,7 @@ public class AuthController {
                 .maxAge(Duration.ofDays(14))
                 .build();
 
-        String redirect = res.getNeedsNickname() ? "/nickname.html" : "/home.html";
+        String redirect = front.buildRedirect(res.getNeedsNickname());
 
         return ResponseEntity.status(HttpStatus.FOUND)
                 .header(HttpHeaders.SET_COOKIE, accessCookie.toString())

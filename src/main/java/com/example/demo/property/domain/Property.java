@@ -2,6 +2,7 @@ package com.example.demo.property.domain;
 
 
 import com.example.demo.property.converter.JsonStringListConverter;
+import com.example.demo.realty.domain.Realty;
 import com.example.demo.review.domain.Complex;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.persistence.*;

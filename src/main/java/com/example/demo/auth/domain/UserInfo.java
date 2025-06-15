@@ -4,8 +4,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.Where;
+
 
 import java.time.LocalDateTime;
 
@@ -13,8 +12,6 @@ import java.time.LocalDateTime;
 @Table(name = "user_info")
 @Getter
 @NoArgsConstructor
-@SQLDelete(sql = "UPDATE user_info SET deleted_at = NOW() WHERE user_id = ?")
-@Where(clause = "deleted_at IS NULL")      // 조회 시 자동 필터
 public class UserInfo {
 
     @Id
@@ -39,13 +36,21 @@ public class UserInfo {
     private LocalDateTime updatedAt;
     private LocalDateTime deletedAt;
 
-    /* --- 탈퇴 전용 도메인 메서드 --- */
+    /* --- 탈퇴 --- */
     public void withdraw(String reason) {
         if (this.deletedAt != null) {
             throw new IllegalStateException("이미 탈퇴 처리된 회원입니다.");
         }
         this.withdrawReason = reason;
         this.deletedAt = LocalDateTime.now();
+    }
+
+    /* --- 복구(재가입) --- */
+    public void reactivate() {
+        if (this.deletedAt == null) return;     // 이미 활성 상태면 무시
+        this.deletedAt = null;
+        this.withdrawReason = null;
+        this.lastLoginAt = LocalDateTime.now();
     }
 
     @PrePersist
