@@ -1,55 +1,82 @@
-# 0. 기본 프로필 및 그룹 지정
+# 0. 기본 프로파일 및 그룹 지정
 spring:
   profiles:
-    active: ${PROFILES:local}
+    active: ${PROFILES:local}  # 기본값 local
     group:
       local: local,common
       prod:  prod,common
 ---
 
-############################
-# 1) 공통(common) 영역
-############################
+# 1. 공통 설정 (common)
 spring:
   config:
     activate.on-profile: common
 
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+        show_sql: false
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
+
+server:
+  port: 8080
+  address: 0.0.0.0
+  env: ${ENV:prod}
+  name: ${SERVER_NAME:unknown}
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    url: /api-docs
+    operations-sorter: method
+    tags-sorter: alpha
+    doc-expansion: none
+
+jwt:
+  secret: ${JWT_SECRET_KEY}  # prod 환경에서는 환경변수로 주입
+
+kakao:
+  client-id: ${KAKAO_CLIENT_ID}
+  redirect-uri: ${KAKAO_REDIRECT_URI}
 ---
 
-############################
-# 2) 로컬(local) 프로필
-############################
+# 2. 로컬 설정 (local)
 spring:
   config:
-    activate.on-profile: local
+    activate:
+      on-profile: local
+
   datasource:
     url: jdbc:postgresql://localhost:6543/mydb
     username: myuser
     password: mypass
+
 jwt:
   secret: Z6z3q5Lg7FscPqaLfJl5yFjO3PrMnxKfaThgq9e02ZbJY5GgnM0IMK3PMkSzr8lq
+
 kakao:
   client-id: b5cac5dbe8078dd547ed5f7fdd805738
   redirect-uri: http://localhost:8080/users/auth/kakao/callback
+
 server:
   env: local
   name: local_server
-
-## ──⯈ ✨ 로컬 화면경로
-front:
-  base-url: ""                    # 빈 값이면 상대 경로로 리다이렉트
-  nickname-path: "/nickname.html" # 기존 HTML
-  home-path: "/home.html"
----
-
-############################
-# 3) 운영(prod) 프로필
-############################
-spring:
-  config:
-    activate.on-profile: prod
-  # …(RDS-URL, SMTP 등 운영 전용 설정)
-front:
-  base-url: "http://localhost:3000"   # FE 서버(도메인) 기준
-  nickname-path: "/login/nicknameForm"
-  home-path: "/chat"
