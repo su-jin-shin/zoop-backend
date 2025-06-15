@@ -20,7 +20,7 @@ services:
     depends_on:
       - db
     ports:
-      - "18080:8080"
+      - "8080:8080"
     environment:
       PROFILES: local
       ENV: local
@@ -31,7 +31,7 @@ services:
       SPRING_DATASOURCE_PASSWORD: mypass
 
       KAKAO_CLIENT_ID: ${KAKAO_CLIENT_ID}
-      KAKAO_REDIRECT_URI: http://localhost:18080/users/auth/kakao/callback
+      KAKAO_REDIRECT_URI: http://localhost:8080/users/auth/kakao/callback
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
 
 volumes:

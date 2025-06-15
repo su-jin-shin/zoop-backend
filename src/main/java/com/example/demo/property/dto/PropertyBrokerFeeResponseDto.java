@@ -2,7 +2,7 @@ package com.example.demo.property.dto;
 
 
 import com.example.demo.property.domain.Property;
-import com.example.demo.property.domain.Realty;
+import com.example.demo.realty.domain.Realty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
