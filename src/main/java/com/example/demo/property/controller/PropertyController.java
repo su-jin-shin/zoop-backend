@@ -42,7 +42,7 @@ public class PropertyController {
     @GetMapping("/{propertyId}/facilities")
     public ResponseEntity<PropertyFacilitiesResponseDto> getFacilities(@PathVariable Long propertyId){
         PropertyFacilitiesResponseDto propertyFacilitiesResponseDto = propertyService.getPropertyFacilities(propertyId);
-        
+
 
         return ResponseEntity.ok(propertyFacilitiesResponseDto); //정상 응답 200
     }
@@ -94,5 +94,8 @@ public class PropertyController {
 
         return ResponseEntity.ok(propertyAgentNumberResponseDto);
     }
+
+
+
 
 }
