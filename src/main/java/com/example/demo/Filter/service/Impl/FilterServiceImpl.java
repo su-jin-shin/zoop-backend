@@ -107,20 +107,18 @@ public class FilterServiceImpl implements FilterService {
         history.deactivate();
     }
 
-    // 사용자 알림 등록 조건 전체 조회
     @Override
-    public List<Filter> getAllKeywordFilter(Long userId) {
-
+    public List<String> getAllFilterTitlesByUser(Long userId) {
         // 사용자 조회
         UserInfo userInfo = userInfoRepository.findByUserId(userId).orElseThrow(UserNotFoundException::new);
 
         // 사용자가 등록한 keyword를 전체 목록 조회
         List<KeywordFilterHistory> keywordFilterHistories = keywordFilterHistoryRepository.findByUserInfoAndIsUsedTrue(userInfo);
-
-        return keywordFilterHistories.stream().map(KeywordFilterHistory::getFilter).toList();
-
+        return keywordFilterHistories.stream()
+                .map(keywordFilterHistory -> keywordFilterHistory.getFilter().getFilterTitle())
+                .toList();
     }
-
+    
     // 사용자가 등록한 필터 조건 상세 조회
     @Override
     public KeywordFilterHistoryResponseDto getKeywordFilterDetail(Long userId, Long keywordFilterHistoryId) {
