@@ -34,5 +34,9 @@ services:
       KAKAO_REDIRECT_URI: http://localhost:18080/users/auth/kakao/callback
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
 
+      FRONT_BASE_URL: ""              # 상대 경로
+      FRONT_NICKNAME_PATH: /nickname.html
+      FRONT_HOME_PATH: /home.html
+
 volumes:
   postgres-data-local:
