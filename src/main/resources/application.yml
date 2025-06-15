@@ -56,7 +56,14 @@ jwt:
 
 kakao:
   client-id: ${KAKAO_CLIENT_ID}
-  redirect-uri: http://43.201.121.201/users/auth/kakao/callback
+  redirect-uri: ${KAKAO_REDIRECT_URI}
+
+front:
+  base-url: ${FRONT_BASE_URL}
+  nickname-path: ${FRONT_NICKNAME_PATH}
+  home-path: ${FRONT_HOME_PATH}
+
+
 ---
 
 # 2. 로컬 설정 (local)
@@ -75,7 +82,7 @@ jwt:
 
 kakao:
   client-id: b5cac5dbe8078dd547ed5f7fdd805738
-  redirect-uri: http://43.201.121.201/users/auth/kakao/callback
+  redirect-uri: http://localhost:8080/users/auth/kakao/callback
 
 server:
   env: local
