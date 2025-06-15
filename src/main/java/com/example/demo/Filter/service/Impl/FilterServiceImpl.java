@@ -11,6 +11,7 @@ import com.example.demo.Filter.repository.RegionRepository;
 import com.example.demo.Filter.service.FilterService;
 import com.example.demo.auth.domain.UserInfo;
 import com.example.demo.auth.repository.UserInfoRepository;
+import com.example.demo.common.exception.DuplicateFilterHistoryException;
 import com.example.demo.common.exception.NotFoundException;
 import com.example.demo.common.exception.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -36,13 +37,21 @@ public class FilterServiceImpl implements FilterService {
         UserInfo userInfo = userInfoRepository.findByUserId(userId).orElseThrow(UserNotFoundException::new);
 
         // 지역 조회
-        Region region = regionRepository.findByCortarNo(searchFilterRequestDto.getHCode()).orElseThrow(NotFoundException::new);
+        Region region = regionRepository.findByCortarNo(searchFilterRequestDto.getBCode()).orElseThrow(NotFoundException::new);
 
         // 필터 조건 저장
         Filter newFilter = searchFilterRequestDto.toEntity(region);
 
         // 필터 중복 체크 및 저장
         Filter filter = createOrFind(newFilter);
+
+        // 키워드 필터 히스토리 사용중인 것과 중복인지 체크
+        boolean alreadyExists = keywordFilterHistoryRepository
+                .existsByUserInfoAndFilterAndIsUsedTrue(userInfo, filter);
+
+        if (alreadyExists) {
+            throw new DuplicateFilterHistoryException();
+        }
 
         // 히스토리 저장
         KeywordFilterHistory history = new KeywordFilterHistory(filter, userInfo);

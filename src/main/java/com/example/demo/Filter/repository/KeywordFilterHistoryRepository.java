@@ -1,5 +1,6 @@
 package com.example.demo.Filter.repository;
 
+import com.example.demo.Filter.domain.Filter;
 import com.example.demo.Filter.domain.KeywordFilterHistory;
 import com.example.demo.auth.domain.UserInfo;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -21,5 +22,9 @@ public interface KeywordFilterHistoryRepository extends JpaRepository<KeywordFil
             "WHERE h.keywordFilterHistoryId = :keywordFilterHistoryId")
     void disableKeywordFilterHistory(@Param("keywordFilterHistoryId") Long keywordFilterHistoryId);
 
+    // 로그인한 사용자의 사용중인 키워드 필터 히스토리 목록 전체 조회
     List<KeywordFilterHistory> findByUserInfoAndIsUsedTrue(UserInfo userInfo);
+
+    // 로그인한 사용자가 필터와 키워드 필터가 true이면 true 반환
+    boolean existsByUserInfoAndFilterAndIsUsedTrue(UserInfo userInfo, Filter filter);
 }

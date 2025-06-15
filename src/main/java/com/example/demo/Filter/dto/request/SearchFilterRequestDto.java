@@ -4,16 +4,15 @@ import com.example.demo.Filter.domain.Filter;
 import com.example.demo.Filter.domain.Region;
 import com.example.demo.Filter.domain.enums.RealEstateTypeName;
 import com.example.demo.Filter.domain.enums.TradeTypeName;
-import com.example.demo.notification.domain.Notification;
-import com.example.demo.notification.dto.NotificationResponseDto;
-import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
+import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+@Slf4j
 @Getter
-@Builder
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
@@ -23,9 +22,10 @@ public class SearchFilterRequestDto {
 
     private String y;                // 위도
 
-    private String bCode;           // 법정 코드
 
-    private String hCode;           // 행정 코드
+    @JsonProperty("bCode") private String bCode;           // 법정 코드
+
+    @JsonProperty("hCode") private String hCode;           // 행정 코드
 
     private TradeTypeName tradeTypeName;   // 거래 타입
 
@@ -37,7 +37,7 @@ public class SearchFilterRequestDto {
 
     private BigDecimal rentPrice;                      //월세
 
-    private LocalDateTime createdAt;                   // 필터 생성시각
+    //private LocalDateTime createdAt;                   // 필터 생성시각
 
     // dto -> entity
     public Filter toEntity(Region region) {

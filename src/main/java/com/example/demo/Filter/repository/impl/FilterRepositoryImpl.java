@@ -7,10 +7,12 @@ import com.example.demo.Filter.repository.FilterRepositoryCustom;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
 @SuppressFBWarnings(value = "EI_EXPOSE_REP2")
+@Repository
 @RequiredArgsConstructor
 public class FilterRepositoryImpl implements FilterRepositoryCustom {
 
@@ -23,6 +25,7 @@ public class FilterRepositoryImpl implements FilterRepositoryCustom {
         return Optional.ofNullable(
                 queryFactory.selectFrom(q)
                         .where(
+                                q.region.eq(filter.getRegion()),
                                 q.x.eq(filter.getX()),
                                 q.y.eq(filter.getY()),
                                 q.bCode.eq(filter.getBCode()),
