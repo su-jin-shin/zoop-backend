@@ -18,7 +18,7 @@ public interface FilterService {
     void deactivateKeywordFilter(Long userId, Long keywordFilterHistoryId);
 
     // 사용자 등록한 필터 조건 전체 목록 조회
-    List<Filter> getAllKeywordFilter(Long userId);
+    List<String> getAllFilterTitlesByUser(Long userId);
 
     // 사용자 등록한 필터 조건 상세 조회
     KeywordFilterHistoryResponseDto getKeywordFilterDetail(Long userId, Long keywordFilterHistoryId);

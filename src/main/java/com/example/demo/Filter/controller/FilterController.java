@@ -13,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 import static com.example.demo.common.response.SuccessMessage.CREATED_SUCCESSFULLY;
 import static com.example.demo.common.response.SuccessMessage.GET_SUCCESS;
 
@@ -79,12 +81,12 @@ public class FilterController {
     @GetMapping()
     public ResponseEntity<?> getAllKeywordFilter(@AuthenticationPrincipal LoginUser loginUser){
         Long userId = Long.valueOf(loginUser.getUsername());
-        filterService.getAllKeywordFilter(userId);
+        List<String> filterTitles = filterService.getAllFilterTitlesByUser(userId);
         return ResponseEntity.ok(
                 ResponseResult.success(
                         HttpStatus.OK,
                         GET_SUCCESS.getMessage(),
-                        null
+                        filterTitles
                 )
         );
     }
