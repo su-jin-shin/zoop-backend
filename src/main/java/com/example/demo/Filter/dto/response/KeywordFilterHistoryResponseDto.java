@@ -44,6 +44,7 @@ public class KeywordFilterHistoryResponseDto {
                 .hCode(filter.getHCode())
                 .tradeTypeName(filter.getTradeTypeName())
                 .realEstateTypeName(filter.getRealEstateTypeName())
+                .dealOrWarrantPrc(filter.getDealOrWarrantPrc())
                 .rentPrice(filter.getRentPrice())
                 .build();
     }
