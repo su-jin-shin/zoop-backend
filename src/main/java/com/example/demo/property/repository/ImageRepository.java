@@ -24,4 +24,6 @@ public interface ImageRepository extends JpaRepository<Image,Long> {
     ORDER BY i.imageOrder ASC
 """)
     List<Image> findTopImagesByPropertyIds(@Param("propertyIds") List<Long> propertyIds);
+
+    List<Image> findByProperty_PropertyIdIn(List<Long> propertyIds);
 }

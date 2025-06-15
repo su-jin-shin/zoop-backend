@@ -23,7 +23,8 @@ public class PropertyServiceImpl  implements PropertyService{
     private final PropertyRepository propertyRepository;
     private final PropertySummaryRepository summaryRepository;
     private final ImageRepository imageRepository;
-    private final ReturnTypeParser genericReturnTypeParser;
+
+
 
 
     //매물 상세조회 (기본 정보)
@@ -105,6 +106,15 @@ public class PropertyServiceImpl  implements PropertyService{
 
 
         return PropertyBrokerFeeResponseDto.of(property);
+    }
+
+
+    //공인중개사 연락처 조회 (매물 상세페이지)
+    @Override
+    public PropertyAgentNumberResponseDto getPropertyAgentNumber(Long propertyId) {
+        Property property = propertyRepository.findById(propertyId).orElseThrow(NotFoundException::new);
+
+        return PropertyAgentNumberResponseDto.of(property);
     }
 
 
