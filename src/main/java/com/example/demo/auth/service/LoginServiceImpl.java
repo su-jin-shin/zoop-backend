@@ -42,40 +42,33 @@ public class LoginServiceImpl implements LoginService {
                                        String clientIp,
                                        HttpServletRequest request) {
 
-        /* 1) 토큰·카카오 유저 조회 */
+        /* 1) 카카오 토큰 & 사용자 조회 */
         KakaoTokenResponse tokenRes = kakaoAuthService.getToken(code);
         KakaoUserDto userDto       = kakaoAuthService.getUser(tokenRes.getAccessToken());
 
-        String email   = userDto.getKakaoAccount().getEmail();
-        String profile = userDto.getKakaoAccount().getProfile().getProfileImageUrl();
-        Long   kakaoId = userDto.getId();
+        String email    = userDto.getKakaoAccount().getEmail();
+        String profile  = userDto.getKakaoAccount().getProfile().getProfileImageUrl();
+        Long   kakaoId  = userDto.getId();
 
-        /* 2) 탈퇴 회원 복구 또는 신규 생성 */
-        UserInfo user = userRepo.findByEmail(email).orElse(null);
-
-        if (user != null) {
-            // ── 기존 row
-            user.reactivate();              // ← 탈퇴 상태면 deletedAt·withdrawReason NULL 처리
-        } else {
-            user = new UserInfo();
-            user.setEmail(email);
-            user.setKakaoId(kakaoId);
-            user.setProfileImage(profile);
-        }
-
+        /* 2) 신규/기존 회원 처리 */
+        UserInfo user = userRepo.findByEmail(email).orElseGet(() -> {
+            UserInfo u = new UserInfo();
+            u.setKakaoId(kakaoId);
+            u.setEmail(email);
+            u.setProfileImage(profile);
+            return u;
+        });
         user.setLastLoginAt(LocalDateTime.now());
-        user.setProfileImage(profile);      // 프로필 이미지 최신화
         userRepo.save(user);
 
-
-        // 3) 로그인 히스토리 기록
+        /* 3) 로그인 히스토리 기록 */
         LoginHistory history = new LoginHistory();
         history.setUser(user);
         history.setLoginAt(LocalDateTime.now());
         history.setIpAddress(clientIp);
         loginHistoryRepo.save(history);
 
-        // 4) SecurityContext 생성 & 세션 저장
+        /* 4) SecurityContext 생성 & 세션 저장 */
         LoginUser principal = new LoginUser(user);
         var authToken = new UsernamePasswordAuthenticationToken(
                 principal, null, principal.getAuthorities());
