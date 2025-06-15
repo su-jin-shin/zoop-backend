@@ -3,7 +3,7 @@ package com.example.demo.realty.service;
 import com.example.demo.common.exception.NotFoundException;
 import com.example.demo.property.domain.Image;
 import com.example.demo.property.domain.Property;
-import com.example.demo.realty.domain.Realty;
+import com.example.demo.property.domain.Realty;
 import com.example.demo.property.domain.enums.ImageType;
 import com.example.demo.property.dto.ImageDto;
 import com.example.demo.property.dto.PropertyListItemDto;
@@ -11,7 +11,6 @@ import com.example.demo.property.repository.ImageRepository;
 import com.example.demo.property.repository.PropertyRepository;
 import com.example.demo.property.repository.PropertySummaryRepository;
 import com.example.demo.property.util.PropertyDtoConverter;
-import com.example.demo.realty.dto.RealtyAgentNumberResponseDto;
 import com.example.demo.realty.dto.RealtyWithPropertiesResponseDto;
 import com.example.demo.realty.repository.RealtyRepository;
 import lombok.RequiredArgsConstructor;
@@ -40,10 +39,10 @@ public class RealtyServiceImpl implements RealtyService {
         // 2. 매물 전체 조회
         List<Property> properties = propertyRepository.findByRealty_RealtyId(realtyId);
 
-
-
+        // 🔍 디버깅 로그 - 조회된 거래유형 출력
+        System.out.println("📋 전체 매물 거래유형:");
         properties.forEach(p -> System.out.println(" - " + p.getTradeTypeName()));
-
+        System.out.println("🧪 전달된 dealType: " + dealType);
 
         // 2-1. 거래유형 필터링 (dealType = "월세", "전세", "매매")
         if (dealType != null && !dealType.isBlank()) {
@@ -53,7 +52,7 @@ public class RealtyServiceImpl implements RealtyService {
                     .filter(p -> {
                         String tradeType = p.getTradeTypeName();
                         boolean match = tradeType != null && tradeType.trim().equalsIgnoreCase(normalized);
-
+                        System.out.printf("🔍 비교: [%s] vs [%s] → %s%n", tradeType, normalized, match);
                         return match;
                     })
                     .toList();
@@ -128,14 +127,5 @@ public class RealtyServiceImpl implements RealtyService {
                 .representativeName(realty.getRepresentativeName())
                 .propertie(propertyList)
                 .build();
-    }
-
-    //공인중개사 정보 조회 (부동산)
-    @Override
-    public RealtyAgentNumberResponseDto getRealtyAgentNumber(Long realtyId) {
-        Realty realty = realtyRepository.findById(realtyId)
-                .orElseThrow(NotFoundException::new);
-
-        return RealtyAgentNumberResponseDto.of(realty);
     }
 }

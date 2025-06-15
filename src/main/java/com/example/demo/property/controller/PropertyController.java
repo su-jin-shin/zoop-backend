@@ -95,7 +95,4 @@ public class PropertyController {
         return ResponseEntity.ok(propertyAgentNumberResponseDto);
     }
 
-
-
-
 }
