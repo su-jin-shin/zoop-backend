@@ -20,6 +20,7 @@ public class PropertyLikeServiceImpl implements PropertyLikeService {
     private final PropertyRepository propertyRepository;
     private final BookmarkedPropertyRepository bookmarkedPropertyRepository;
 
+    //매물 찜 추가
     @Override
     public BookmarkedPropertyResponseDto likeProperty(Long userId, Long propertyId) {
         // 사용자 조회
@@ -45,6 +46,27 @@ public class PropertyLikeServiceImpl implements PropertyLikeService {
         return BookmarkedPropertyResponseDto.builder()
                 .propertyId(property.getPropertyId())
                 .isBookmarked(true)
+                .build();
+    }
+
+    //매물 매물 찜 취소
+    @Override
+    public BookmarkedPropertyResponseDto unlikeProperty(Long userId, Long propertyId) {
+        Property property = propertyRepository.findById(propertyId)
+                .orElseThrow(NotFoundException::new);
+
+        UserInfo user = userInfoRepository.findById(userId)
+                .orElseThrow(UserNotFoundException::new);
+
+        BookmarkedProperty bookmarked = bookmarkedPropertyRepository.findByUserAndProperty(user,property)
+                .orElseThrow(NotFoundException::new);
+
+        bookmarked.setIsBookmarked(false);
+        bookmarkedPropertyRepository.save(bookmarked);
+
+        return BookmarkedPropertyResponseDto.builder()
+                .propertyId(property.getPropertyId())
+                .isBookmarked(false)
                 .build();
     }
 }
