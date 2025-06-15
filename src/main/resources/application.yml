@@ -84,6 +84,11 @@ kakao:
   client-id: b5cac5dbe8078dd547ed5f7fdd805738
   redirect-uri: http://localhost:8080/users/auth/kakao/callback
 
+front:
+  base-url: ""
+  nickname-path: /nickname.html
+  home-path: /home.html
+
 server:
   env: local
   name: local_server
