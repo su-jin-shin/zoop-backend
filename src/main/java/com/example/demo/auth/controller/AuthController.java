@@ -75,36 +75,16 @@ public class AuthController {
         String clientIp = getClientIpAddress(request);
         LoginResponseDto res = loginService.kakaoLogin(code, clientIp, request);
 
-        /* --- 쿠키 생성 (로컬 프로필이면 Secure=false) --- */
-        boolean isLocal = "local".equals(
-                Optional.ofNullable(System.getProperty("spring.profiles.active"))
-                        .orElse(""));
-
-        ResponseCookie accessCookie = ResponseCookie.from("access_token", res.getAccessToken())
-                .httpOnly(true)
-                .secure(!isLocal)
-                .sameSite("Lax")
-                .path("/")
-                .maxAge(Duration.ofMinutes(30))
-                .build();
-
-        ResponseCookie refreshCookie = ResponseCookie.from("refresh_token", res.getRefreshToken())
-                .httpOnly(true)
-                .secure(!isLocal)
-                .sameSite("Lax")
-                .path("/")
-                .maxAge(Duration.ofDays(14))
-                .build();
-
-        String redirect = front.buildRedirect(res.getNeedsNickname());
+        /* --- 쿠키 삭제 → URL fragment 전달 --- */
+        String redirect = front.buildRedirect(res.getNeedsNickname()) +
+                "#access_token="  + res.getAccessToken() +
+                "&refresh_token=" + res.getRefreshToken() +
+                "&needsNickname=" + res.getNeedsNickname();
 
         return ResponseEntity.status(HttpStatus.FOUND)
-                .header(HttpHeaders.SET_COOKIE, accessCookie.toString())
-                .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
                 .header(HttpHeaders.LOCATION, redirect)
                 .build();
     }
-
     /* -------------------------------------------------
      * 3) 신규 사용자 닉네임 등록
      * ------------------------------------------------- */
@@ -127,28 +107,21 @@ public class AuthController {
      * 4) 액세스 토큰 재발급
      * ------------------------------------------------- */
     @PostMapping("/refresh")
-    public ResponseEntity<Void> refresh(@CookieValue("refresh_token") String refresh) {
+    public ResponseEntity<Map<String, String>> refresh(
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader) {
 
-        if (refresh == null || jwtUtil.isExpired(refresh)) {
+        if (authHeader == null || !authHeader.startsWith("Bearer "))
             throw new UnauthorizedAccessException();
-        }
 
-        String email     = jwtUtil.getSubject(refresh);
-        String newAccess = jwtUtil.generateAccess(email);
+        String refresh = authHeader.substring(7);           // "Bearer " 제거
+        if (jwtUtil.isExpired(refresh))
+            throw new UnauthorizedAccessException();
 
-        ResponseCookie accessCookie = ResponseCookie.from("access_token", newAccess)
-                .httpOnly(true)
-                .secure(!"local".equals(System.getProperty("spring.profiles.active")))
-                .sameSite("Lax")
-                .path("/")
-                .maxAge(Duration.ofMinutes(30))
-                .build();
+        String email       = jwtUtil.getSubject(refresh);
+        String newAccess   = jwtUtil.generateAccess(email);
 
-        return ResponseEntity.noContent()
-                .header(HttpHeaders.SET_COOKIE, accessCookie.toString())
-                .build();
+        return ResponseEntity.ok(Map.of("access_token", newAccess));
     }
-
     /* -------------------------------------------------
      * 5) 로그아웃
      * ------------------------------------------------- */

@@ -2,59 +2,59 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>닉네임 수정</title>
+    <title>닉네임 등록</title>
     <style>
-        body { font-family: sans-serif; margin: 2rem; }
-        input, button { margin: 1rem 0; display: block; }
-        #message { color: red; }
+        body{font-family:sans-serif;margin:2rem}
+        input,button{margin:1rem 0;display:block}
+        #message{color:red}
     </style>
 </head>
 <body>
-<h1>닉네임 수정</h1>
+<h1>닉네임 등록</h1>
 
-<input id="nickname" placeholder="새 닉네임 입력" />
+<input id="nickname" placeholder="새 닉네임 입력">
 <button id="update-btn">닉네임 저장</button>
-
 <p id="message"></p>
 
 <script>
-    document.getElementById('update-btn').onclick = async () => {
-        const nickname = document.getElementById('nickname').value.trim();
-        const messageEl = document.getElementById('message');
-        messageEl.innerText = '';
+    /* --- util --------------------------------------------------------- */
+    const API = "http://localhost:8080";
+    function getAccess(){ return localStorage.getItem("access"); }
+    function saveTokens(a,r){ localStorage.setItem("access",a); localStorage.setItem("refresh",r); }
 
-        if (!nickname) {
-            messageEl.innerText = '닉네임을 입력해주세요.';
-            return;
+    function setTokensFromHash(){
+        if(!location.hash.startsWith("#")) return;
+        const p=new URLSearchParams(location.hash.slice(1));
+        if(p.get("access_token")){
+            saveTokens(p.get("access_token"), p.get("refresh_token"));
+            history.replaceState(null,null,location.pathname);
         }
+    }
+    setTokensFromHash();
 
-        try {
-            const res = await fetch('http://localhost:8080/users/auth/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
+    /* --- 닉네임 업데이트 ---------------------------------------------- */
+    document.getElementById("update-btn").onclick = async ()=>{
+        const nickname = document.getElementById("nickname").value.trim();
+        const msg = document.getElementById("message"); msg.textContent="";
+        if(!nickname){ msg.textContent="닉네임을 입력해주세요."; return; }
+
+        try{
+            const res=await fetch(`${API}/users/auth/register`,{
+                method:"POST",
+                headers:{
+                    "Content-Type":"application/json",
+                    "Authorization":"Bearer "+getAccess()
                 },
-                credentials: 'include', // ← 쿠키 기반 인증 시 필수!
-                body: JSON.stringify({ nickname })
+                body:JSON.stringify({ nickname })
             });
-
-            if (res.ok) {
-                // 본문이 있을 경우만 JSON 파싱
-                const contentLength = res.headers.get('content-length');
-                if (contentLength && parseInt(contentLength) > 0) {
-                    const data = await res.json(); // optional
-                    console.log('서버 응답:', data);
-                }
-
-                alert('닉네임이 성공적으로 변경되었습니다.');
-                window.location.href = 'http://localhost:8080/home.html';
-            } else {
-                const errorText = await res.text();
-                messageEl.innerText = errorText || '닉네임 변경 실패';
+            if(res.ok){
+                alert("닉네임 등록 완료!");
+                location.href="/home.html";        // 홈으로
+            }else{
+                msg.textContent=await res.text()||"닉네임 변경 실패";
             }
-        } catch (e) {
-            console.error('클라이언트 오류:', e);
-            messageEl.innerText = '서버 오류가 발생했습니다.';
+        }catch(e){
+            console.error(e); msg.textContent="서버 오류";
         }
     };
 </script>
