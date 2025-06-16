@@ -6,6 +6,8 @@ import static com.example.demo.common.response.FailedMessage.BAD_REQUEST_DEFAULT
 
 // 공통 400번 에러 메세지
 public class InvalidRequestException extends CustomException {
+
+
     @Override
     public HttpStatus getStatus() {
         return HttpStatus.BAD_REQUEST;
@@ -15,4 +17,6 @@ public class InvalidRequestException extends CustomException {
     public String getMessage() {
         return BAD_REQUEST_DEFAULT.getMessage();
     }
+
+
 }

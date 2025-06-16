@@ -7,6 +7,7 @@ package com.example.demo.review.repository;
 
 import com.example.demo.review.domain.Review;
 import com.example.demo.review.domain.ReviewComment;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -15,12 +16,11 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
+@SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public interface ReviewCommentRepository extends JpaRepository<ReviewComment, Long> {
-
     // 특정 리뷰에 달린 댓글 목록
     @Query("SELECT rc FROM ReviewComment rc WHERE rc.review.id = :reviewId AND rc.deletedAt IS NULL")
     List<ReviewComment> findByReviewId(@Param("reviewId") Long reviewId);
-
 
     // 본인이 작성한 댓글 조회
     @Query("SELECT rc FROM ReviewComment rc WHERE rc.user.userId = :userId")

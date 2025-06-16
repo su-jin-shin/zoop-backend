@@ -34,7 +34,7 @@ services:
 
       FRONT_BASE_URL: http://localhost:3000
       FRONT_NICKNAME_PATH: /login/nicknameForm
-      FRONT_HOME_PATH: /chat
+      FRONT_HOME_PATH: /login/complete
 
 volumes:
   postgres-data:

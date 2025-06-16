@@ -20,9 +20,10 @@ import java.time.LocalDateTime;
 public class ReviewCommentLike {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "review_comment_like_id")
     private Long id;
+
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "comment_id", nullable = false)
@@ -33,7 +34,8 @@ public class ReviewCommentLike {
     private UserInfo user;
 
     @Column(name = "is_liked", nullable = false)
-    private boolean isLiked;   //매핑시 getIsxxx가 아닌 isXXX로 매핑됨
+    @Builder.Default
+    private boolean isLiked = false;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
