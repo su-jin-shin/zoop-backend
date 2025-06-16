@@ -16,11 +16,9 @@ import java.util.Optional;
 
 @Repository
 public interface ReviewCommentRepository extends JpaRepository<ReviewComment, Long> {
-
     // 특정 리뷰에 달린 댓글 목록
     @Query("SELECT rc FROM ReviewComment rc WHERE rc.review.id = :reviewId AND rc.deletedAt IS NULL")
     List<ReviewComment> findByReviewId(@Param("reviewId") Long reviewId);
-
 
     // 본인이 작성한 댓글 조회
     @Query("SELECT rc FROM ReviewComment rc WHERE rc.user.userId = :userId")

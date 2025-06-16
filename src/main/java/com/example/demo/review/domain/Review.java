@@ -1,6 +1,7 @@
 package com.example.demo.review.domain;
 
 import com.example.demo.auth.domain.UserInfo;
+import com.example.demo.auth.dto.LoginUser;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.*;
 import jakarta.persistence.*;
@@ -22,7 +23,7 @@ import java.time.LocalDateTime;
 public class Review {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "review_id")
     private Long id;
 
@@ -74,10 +75,14 @@ public class Review {
 
     /* 비즈니스 메서드 */
 
-    //본인 확인
-    public boolean isMine(UserInfo currentUser){
+    public boolean isMine(LoginUser currentUser) {
+        return isMine(currentUser.getUserInfo());
+    }
+
+    public boolean isMine(UserInfo currentUser) {
         return user != null && user.getUserId().equals(currentUser.getUserId());
     }
+
 
     //리뷰 수정: 내용(content), 별점(rating)
     public void updateContent(String content){
@@ -93,10 +98,6 @@ public class Review {
     public void deleteReview() {
         this.deletedAt = LocalDateTime.now();
     }
-
-
-
-
 
 
 

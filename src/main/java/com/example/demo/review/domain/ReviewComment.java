@@ -2,6 +2,7 @@ package com.example.demo.review.domain;
 
 
 import com.example.demo.auth.domain.UserInfo;
+import com.example.demo.auth.dto.LoginUser;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.persistence.*;
 import lombok.*;
@@ -21,9 +22,10 @@ import java.time.LocalDateTime;
 public class ReviewComment {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "comment_id")
     private Long id;
+
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "review_id",nullable = false)
@@ -36,10 +38,12 @@ public class ReviewComment {
     private String content;
 
     @Column(name = "is_resident")
-    private boolean isResident;  //매핑시 getIsxxx가 아닌 isXXX로 매핑됨
+    @Builder.Default
+    private boolean isResident = false;
 
     @Column(name = "has_children")
-    private boolean hasChildren;   //매핑시 getHasxxx가 아닌 HasXXX로 매핑됨
+    @Builder.Default
+    private boolean hasChildren = false;
 
 
 
@@ -60,9 +64,14 @@ public class ReviewComment {
 
 
     //본인 확인
-    public boolean isMine(UserInfo currentUser){
+    public boolean isMine(LoginUser currentUser) {
+        return isMine(currentUser.getUserInfo());
+    }
+
+    public boolean isMine(UserInfo currentUser) {
         return user != null && user.getUserId().equals(currentUser.getUserId());
     }
+
 
     //댓글 수정: 내용
     public void updateContent(String content){

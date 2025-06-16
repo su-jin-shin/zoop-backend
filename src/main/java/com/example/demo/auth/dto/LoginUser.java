@@ -46,9 +46,7 @@ public class LoginUser implements UserDetails {
     }
 
     @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
+    public boolean isAccountNonLocked() {return true;}
 
     @Override
     public boolean isCredentialsNonExpired() {
@@ -58,5 +56,13 @@ public class LoginUser implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    public Long getUserId() {
+        return userInfo.getUserId();
+    }
+
+    public UserInfo getUserInfo() {
+        return userInfo;
     }
 }
