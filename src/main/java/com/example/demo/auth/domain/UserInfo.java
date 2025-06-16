@@ -42,6 +42,7 @@ public class UserInfo {
             throw new IllegalStateException("이미 탈퇴 처리된 회원입니다.");
         }
         this.withdrawReason = reason;
+        this.nickname = null;
         this.deletedAt = LocalDateTime.now();
     }
 
