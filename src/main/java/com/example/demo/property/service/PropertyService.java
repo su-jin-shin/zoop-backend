@@ -3,6 +3,8 @@ package com.example.demo.property.service;
 import com.example.demo.property.dto.*;
 import com.example.demo.realty.dto.RealtyWithPropertiesResponseDto;
 
+import java.util.List;
+
 public interface PropertyService {
 
     //매물 상세조회 (기본정보)
@@ -31,6 +33,9 @@ public interface PropertyService {
 
     //공인중개사 연락처 조회 (매물 상세페이지)
     PropertyAgentNumberResponseDto getPropertyAgentNumber(Long propertyId);
+
+    //매물 비교 하기
+    List<PropertyCompareResponseDto> getCompareProperties(List<Long> propertyIds);
 
 
 

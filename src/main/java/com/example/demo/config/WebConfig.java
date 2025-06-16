@@ -22,11 +22,11 @@ public class WebConfig implements WebMvcConfigurer {
     // CORS 설정 (프론트에서 API 호출 허용)
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**") // 모든 API 경로
-                .allowedOrigins("http://localhost:3000") // Next.js dev 서버
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                .allowedHeaders("*")
-                .allowCredentials(true); // 쿠키 인증도 허용
+        registry.addMapping("/**")
+                .allowedOrigins("http://localhost:3000")          // dev 프런트
+                .allowedMethods("GET","POST","PUT","DELETE","OPTIONS")
+                .allowedHeaders("*", "Authorization")             // ← 명시
+                .allowCredentials(false);                         // ← 쿠키 안 씀
     }
 }
 

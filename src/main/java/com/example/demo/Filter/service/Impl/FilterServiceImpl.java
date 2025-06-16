@@ -11,6 +11,7 @@ import com.example.demo.Filter.repository.RegionRepository;
 import com.example.demo.Filter.service.FilterService;
 import com.example.demo.auth.domain.UserInfo;
 import com.example.demo.auth.repository.UserInfoRepository;
+import com.example.demo.common.exception.DuplicateFilterHistoryException;
 import com.example.demo.common.exception.NotFoundException;
 import com.example.demo.common.exception.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +30,7 @@ public class FilterServiceImpl implements FilterService {
     private final FilterRepository filterRepository;
     private final KeywordFilterHistoryRepository keywordFilterHistoryRepository;
 
+    // 사용자가 선택한 키워드 필터 히스토리 저장
     @Override
     public void saveSearchFilter(Long userId, SearchFilterRequestDto searchFilterRequestDto) {
 
@@ -36,13 +38,21 @@ public class FilterServiceImpl implements FilterService {
         UserInfo userInfo = userInfoRepository.findByUserId(userId).orElseThrow(UserNotFoundException::new);
 
         // 지역 조회
-        Region region = regionRepository.findByCortarNo(searchFilterRequestDto.getHCode()).orElseThrow(NotFoundException::new);
+        Region region = regionRepository.findByCortarNo(searchFilterRequestDto.getBCode()).orElseThrow(NotFoundException::new);
 
         // 필터 조건 저장
         Filter newFilter = searchFilterRequestDto.toEntity(region);
 
         // 필터 중복 체크 및 저장
         Filter filter = createOrFind(newFilter);
+
+        // 키워드 필터 히스토리 사용중인 것과 중복인지 체크
+        boolean alreadyExists = keywordFilterHistoryRepository
+                .existsByUserInfoAndFilterAndIsUsedTrue(userInfo, filter);
+
+        if (alreadyExists) {
+            throw new DuplicateFilterHistoryException();
+        }
 
         // 히스토리 저장
         KeywordFilterHistory history = new KeywordFilterHistory(filter, userInfo);
@@ -62,11 +72,19 @@ public class FilterServiceImpl implements FilterService {
         keywordFilterHistoryRepository.disableKeywordFilterHistory(history.getKeywordFilterHistoryId());
 
         // 지역 조회
-        Region region = regionRepository.findByCortarNo(updateRequestDto.getHCode()).orElseThrow(NotFoundException::new);
-
+        Region region = regionRepository.findByCortarNo(updateRequestDto.getBCode()).orElseThrow(NotFoundException::new);
 
         // 필터 저장 또는 재사용
         Filter filter = createOrFind(updateRequestDto.toEntity(region));
+
+        // 키워드 필터 히스토리 사용중인 것과 중복인지 체크
+        boolean alreadyExists = keywordFilterHistoryRepository
+                .existsByUserInfoAndFilterAndIsUsedTrue(userInfo, filter);
+
+        // 히스토리 저장
+        if (alreadyExists) {
+            throw new DuplicateFilterHistoryException();
+        }
 
         // 히스토리 저장
         KeywordFilterHistory newKeywordFilterHistory = new KeywordFilterHistory(filter, userInfo);
@@ -89,20 +107,18 @@ public class FilterServiceImpl implements FilterService {
         history.deactivate();
     }
 
-    // 사용자 알림 등록 조건 전체 조회
     @Override
-    public List<Filter> getAllKeywordFilter(Long userId) {
-
+    public List<String> getAllFilterTitlesByUser(Long userId) {
         // 사용자 조회
         UserInfo userInfo = userInfoRepository.findByUserId(userId).orElseThrow(UserNotFoundException::new);
 
         // 사용자가 등록한 keyword를 전체 목록 조회
         List<KeywordFilterHistory> keywordFilterHistories = keywordFilterHistoryRepository.findByUserInfoAndIsUsedTrue(userInfo);
-
-        return keywordFilterHistories.stream().map(KeywordFilterHistory::getFilter).toList();
-
+        return keywordFilterHistories.stream()
+                .map(keywordFilterHistory -> keywordFilterHistory.getFilter().getFilterTitle())
+                .toList();
     }
-
+    
     // 사용자가 등록한 필터 조건 상세 조회
     @Override
     public KeywordFilterHistoryResponseDto getKeywordFilterDetail(Long userId, Long keywordFilterHistoryId) {
