@@ -92,12 +92,13 @@ public class LoginServiceImpl implements LoginService {
         /* 5) JWT 발급 */
         String access  = jwtUtil.generateAccess(email);
         String refresh = jwtUtil.generateRefresh(email);
+        boolean needsNickname = (user.getNickname() == null || user.getNickname().isBlank());
 
         return LoginResponseDto.builder()
                 .accessToken(access)
                 .refreshToken(refresh)
                 .kakaoAccessToken(tokenRes.getAccessToken())
-                .needsNickname(user.getNickname() == null)
+                .needsNickname(needsNickname)
                 .nickname(user.getNickname())
                 .build();
     }
