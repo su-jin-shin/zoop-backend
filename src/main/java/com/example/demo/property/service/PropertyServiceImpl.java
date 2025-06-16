@@ -1,7 +1,10 @@
 package com.example.demo.property.service;
 
+import com.example.demo.auth.domain.UserInfo;
+import com.example.demo.auth.repository.UserInfoRepository;
 import com.example.demo.common.exception.InvalidRequestException;
 import com.example.demo.common.exception.NotFoundException;
+import com.example.demo.common.exception.UserNotFoundException;
 import com.example.demo.mypage.repository.BookmarkedPropertyRepository;
 import com.example.demo.property.domain.Image;
 import com.example.demo.property.domain.Property;
@@ -26,6 +29,7 @@ public class PropertyServiceImpl  implements PropertyService{
     private final PropertySummaryRepository summaryRepository;
     private final ImageRepository imageRepository;
     private final BookmarkedPropertyRepository bookmarkedPropertyRepository;
+    private final UserInfoRepository userInfoRepository;
 
 
 
@@ -46,6 +50,8 @@ public class PropertyServiceImpl  implements PropertyService{
     //매물 상세조회 (기본 정보)
     @Override
     public PropertyBasicInfoResponseDto getPropertyBasicInfo(Long propertyId, Long userId) {
+
+
         Property property = propertyRepository.findById(propertyId).orElseThrow(NotFoundException::new);
         PropertySummary summary = summaryRepository.findByProperty_PropertyId(propertyId).orElse(null);
         List<Image> images = imageRepository.findByProperty_PropertyId(propertyId);
@@ -64,6 +70,7 @@ public class PropertyServiceImpl  implements PropertyService{
     //매물 상세조회 (상세 설명)
     @Override
     public PropertyDescriptionResponseDto getPropertyDescription(Long propertyId) {
+
         Property property = propertyRepository.findById(propertyId).orElseThrow(NotFoundException::new);
 
         return PropertyDescriptionResponseDto.of(property);
