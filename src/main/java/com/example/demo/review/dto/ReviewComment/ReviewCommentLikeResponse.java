@@ -9,6 +9,7 @@ import lombok.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class ReviewCommentLikeResponse {
     private Long reviewId;
     private Long commentId;

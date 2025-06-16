@@ -6,12 +6,14 @@ package com.example.demo.review.repository;
 import com.example.demo.auth.domain.UserInfo;
 import com.example.demo.auth.dto.LoginUser;
 import com.example.demo.review.domain.ReviewLike;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
 @Repository
+@SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public interface ReviewLikeRepository extends JpaRepository<ReviewLike, Long> {
 
     // 특정 유저가 특정 리뷰에 좋아요 눌렀는지

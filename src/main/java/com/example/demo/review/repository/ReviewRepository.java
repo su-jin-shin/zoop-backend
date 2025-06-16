@@ -9,6 +9,7 @@ import com.example.demo.auth.domain.UserInfo;
 import com.example.demo.auth.dto.LoginUser;
 import com.example.demo.common.exception.InvalidRequestException;
 import com.example.demo.review.domain.Review;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -19,6 +20,8 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
+@Repository
+@SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     @Query("SELECT r FROM Review r " +

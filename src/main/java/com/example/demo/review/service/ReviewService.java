@@ -17,6 +17,7 @@ import com.example.demo.review.domain.*;
 import com.example.demo.review.dto.Review.*;
 import com.example.demo.review.mapper.ReviewMapper;
 import com.example.demo.review.repository.*;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -28,6 +29,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+@SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class ReviewService {
 
     private final ReviewRepository reviewRepository;

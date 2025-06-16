@@ -7,6 +7,7 @@ import com.example.demo.review.domain.ReviewComment;
 import com.example.demo.review.domain.ReviewCommentLike;
 import com.example.demo.review.dto.ReviewComment.*;
 import com.example.demo.review.repository.ReviewCommentLikeRepository;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -14,6 +15,7 @@ import java.time.LocalDateTime;
 
 @Component
 @RequiredArgsConstructor
+@SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class ReviewCommentMapper {
 
     private final ReviewCommentLikeRepository likeRepository;

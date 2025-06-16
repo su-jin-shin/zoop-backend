@@ -1,6 +1,7 @@
 package com.example.demo.review.repository;
 
 import com.example.demo.review.domain.Complex;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
+@SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public interface ComplexRepository extends JpaRepository<Complex, Long> {
 
 
