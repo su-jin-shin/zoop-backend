@@ -4,19 +4,21 @@ package com.example.demo.review.repository;
 메서드 : 좋아요 여부/개수 조회, 토글 등록/수정, 개수 조회 등
  */
 import com.example.demo.auth.domain.UserInfo;
+import com.example.demo.auth.dto.LoginUser;
 import com.example.demo.review.domain.ReviewLike;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
 @Repository
+@SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public interface ReviewLikeRepository extends JpaRepository<ReviewLike, Long> {
 
     // 특정 유저가 특정 리뷰에 좋아요 눌렀는지
-    Optional<ReviewLike> findByReviewIdAndUser(Long reviewId,UserInfo user);
+    Optional<ReviewLike> findByReviewIdAndUser(Long reviewId, UserInfo user);
 
-    // 특정 리뷰 좋아요 개수
+    // 좋아요 수 (True 상태만)
     long countByReviewIdAndIsLikedTrue(Long reviewId);
-
 }

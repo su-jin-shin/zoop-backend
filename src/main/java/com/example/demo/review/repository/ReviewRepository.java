@@ -6,34 +6,54 @@ package com.example.demo.review.repository;
 */
 
 import com.example.demo.auth.domain.UserInfo;
+import com.example.demo.auth.dto.LoginUser;
+import com.example.demo.common.exception.InvalidRequestException;
 import com.example.demo.review.domain.Review;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
-
 @Repository
+@SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public interface ReviewRepository extends JpaRepository<Review, Long> {
 
+    @Query("SELECT r FROM Review r " +
+            "WHERE r.complex.id = :complexId AND r.deletedAt IS NULL")
+    Page<Review> findByComplexId(@Param("complexId") Long complexId, Pageable pageable);
 
-    // 1. 특정 단지 기반 페이징 + 정렬
-    @Query("SELECT r FROM Review r WHERE r.complex.Id = :complexId AND r.deletedAt IS NULL")
-    Page<Review> findByComplexId(@Param("complexId")Long complexId, Pageable pageable);
-
-    // 2. 특정 매물 기반 페이징 + 정렬
-    @Query("SELECT r FROM Review r WHERE r.propertyId = :propertyId AND r.deletedAt IS NULL")
+    @Query("SELECT r FROM Review r " +
+            "WHERE r.propertyId = :propertyId AND r.deletedAt IS NULL")
     Page<Review> findByPropertyId(@Param("propertyId") Long propertyId, Pageable pageable);
 
-    // 3. 내 리뷰 (마이페이지 or 필터용)
-    @Query("SELECT r FROM Review r WHERE r.user = :user AND r.deletedAt IS NULL")
+    @Query("SELECT r FROM Review r " +
+            "WHERE r.user = :user AND r.deletedAt IS NULL")
     Page<Review> findByUser(@Param("user") UserInfo user, Pageable pageable);
 
-    // 4. 단일 리뷰 조회
-    Optional<Review> findById(Long reviewId);
+    // 공통 조회 메서드 추상화
+    default Page<Review> findPagedReviews(Long complexId, Long propertyId, String sort, boolean isMine,
+                                          LoginUser loginUser, int page, int size) {
+        Sort sortOption = switch (sort) {
+            case "latest" -> Sort.by(Sort.Direction.DESC, "createdAt");
+            case "like" -> Sort.by(Sort.Direction.DESC, "likeCount");
+            default -> Sort.by(Sort.Direction.DESC, "likeCount");
+        };
+        Pageable pageable = PageRequest.of(page, size, sortOption);
 
-
+        if (isMine) {
+            return findByUser(loginUser.getUserInfo(), pageable);
+        } else if (complexId != null) {
+            return findByComplexId(complexId, pageable);
+        } else if (propertyId != null) {
+            return findByPropertyId(propertyId, pageable);
+        } else {
+            throw new InvalidRequestException();
+        }
+    }
 }

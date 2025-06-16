@@ -1,6 +1,10 @@
 package com.example.demo.review.service;
 
 import com.example.demo.auth.domain.UserInfo;
+import com.example.demo.auth.dto.LoginUser;
+import com.example.demo.common.exception.NotFoundException;
+import com.example.demo.common.exception.UnauthorizedAccessException;
+import com.example.demo.property.repository.PropertyRepository;
 import com.example.demo.review.domain.Review;
 import com.example.demo.review.domain.ReviewComment;
 import com.example.demo.review.domain.ReviewCommentLike;
@@ -10,7 +14,6 @@ import com.example.demo.review.repository.ReviewCommentLikeRepository;
 import com.example.demo.review.repository.ReviewCommentRepository;
 import com.example.demo.review.repository.ReviewRepository;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,112 +30,90 @@ public class ReviewCommentService {
     private final ReviewCommentRepository commentRepository;
     private final ReviewCommentLikeRepository likeRepository;
     private final ReviewCommentMapper commentMapper;
+    private final PropertyRepository propertyRepository;
 
-    /**
-     * 댓글 단건 조회
-     */
-    public ReviewCommentResponse getCommentById(Long commentId, UserInfo currentUser) {
-        ReviewComment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new EntityNotFoundException("댓글을 찾을 수 없습니다."));
-        return commentMapper.toDto(comment, currentUser);
-    }
-
-    /**
-     * 댓글 목록 조회 (페이징 없이 전체 반환)
-     */
-    public List<ReviewCommentResponse> getComments(Long reviewId, UserInfo currentUser) {
-        List<ReviewComment> comments = commentRepository.findByReviewId(reviewId);
-        return comments.stream()
-                .map(comment -> commentMapper.toDto(comment, currentUser))
+    public List<ReviewCommentResponse> getComments(Long reviewId, LoginUser loginUser) {
+        return commentRepository.findByReviewId(reviewId).stream()
+                .map(comment -> commentMapper.toDto(comment, loginUser))
                 .toList();
     }
 
-    /**
-     * 댓글 작성
-     */
     @Transactional
-    public ReviewCommentResponse createComment(Long reviewId, UserInfo currentUser, ReviewCommentCreateRequest request) {
+    public ReviewCommentResponse createComment(Long reviewId, LoginUser loginUser, ReviewCommentCreateRequest request) {
         Review review = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new EntityNotFoundException("해당 리뷰를 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException());
 
-        ReviewComment comment = commentMapper.toEntity(request, currentUser, review);
+        Long propertyId = review.getPropertyId();
+        if (propertyId == null || !propertyRepository.existsById(propertyId)) {
+            throw new NotFoundException();
+        }
+
+        ReviewComment comment = commentMapper.toEntity(request, loginUser, review);
         commentRepository.save(comment);
 
-        return commentMapper.toDto(comment, currentUser);
+        return commentMapper.toDto(comment, loginUser);
     }
 
-    /**
-     * 댓글 수정
-     */
     @Transactional
-    public ReviewCommentResponse updateComment(Long commentId, UserInfo currentUser, ReviewCommentUpdateRequest request) {
-        ReviewComment comment = getOwnCommentOrThrow(commentId, currentUser.getUserId());
-        commentMapper.updateEntity(comment, request);
-        return commentMapper.toDto(comment, currentUser);
+    public ReviewCommentResponse updateComment(Long commentId, LoginUser loginUser, ReviewCommentUpdateRequest request) {
+        ReviewComment comment = getOwnCommentOrThrow(commentId, loginUser.getUserId());
+
+        comment.updateContent(request.getContent());
+        commentRepository.save(comment);
+
+        return commentMapper.toDto(comment, loginUser);
     }
 
-    /**
-     * 댓글 삭제 (Soft delete)
-     */
     @Transactional
-    public void deleteComment(Long commentId, UserInfo currentUser) {
-        ReviewComment comment = getOwnCommentOrThrow(commentId, currentUser.getUserId());
-        comment.deleteReviewComment(); // 도메인 메서드
+    public void deleteComment(Long commentId, LoginUser loginUser) {
+        ReviewComment comment = getOwnCommentOrThrow(commentId, loginUser.getUserId());
+        comment.deleteReviewComment();
     }
 
-    /**
-     * 댓글 좋아요 등록/해제
-     */
     @Transactional
-    public ReviewCommentLikeResponse updateLikeStatus(Long commentId, UserInfo currentUser, boolean isLiked) {
+    public ReviewCommentLikeResponse updateLikeStatus(Long commentId, LoginUser loginUser, boolean isLiked) {
         ReviewComment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new EntityNotFoundException("댓글을 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException());
 
-        ReviewCommentLike like = likeRepository.findByReviewCommentIdAndUser(commentId, currentUser)
-                .orElseGet(() -> commentMapper.toEntity(comment, currentUser, isLiked));
+        UserInfo userInfo = loginUser.getUserInfo();
 
-        like.updateLikeStatus(isLiked); // 도메인 메서드
+        ReviewCommentLike like = likeRepository.findByReviewCommentIdAndUser(commentId, userInfo)
+                .orElseGet(() -> commentMapper.toEntity(comment, userInfo, isLiked));
+
+        like.updateLikeStatus(isLiked);
         likeRepository.save(like);
 
         return ReviewCommentLikeResponse.builder()
                 .reviewId(comment.getReview().getId())
                 .commentId(commentId)
-                .userId(currentUser.getUserId())
+                .userId(userInfo.getUserId())
                 .isLiked(isLiked)
                 .build();
     }
 
-    /**
-     * 좋아요 여부 조회
-     */
-    public boolean isLiked(Long commentId, UserInfo currentUser) {
-        return likeRepository.findByReviewCommentIdAndUser(commentId, currentUser)
+    public boolean isLiked(Long commentId, LoginUser loginUser) {
+        return likeRepository.findByReviewCommentIdAndUser(commentId, loginUser.getUserInfo())
                 .map(ReviewCommentLike::isLiked)
                 .orElse(false);
     }
 
-    /**
-     * 댓글 수 조회
-     */
-    public Long getCommentCount(Long commentId) {
-        return commentRepository.commentCount(commentId);
+    public Long getCommentCount(Long reviewId) {
+        return commentRepository.commentCount(reviewId);
     }
 
-    //댓글 좋아요 수 조회
     public Long getLikeCount(Long commentId) {
         return likeRepository.countByReviewCommentIdAndIsLikedTrue(commentId);
     }
 
-
-    /**
-     * 본인 댓글 확인
-     */
+    // 유저 본인의 댓글인지 확인
     private ReviewComment getOwnCommentOrThrow(Long commentId, Long userId) {
         ReviewComment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new EntityNotFoundException("댓글을 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException());
         if (!comment.getUser().getUserId().equals(userId)) {
-            throw new SecurityException("본인의 댓글만 수정 또는 삭제할 수 있습니다.");
+            throw new UnauthorizedAccessException();
         }
         return comment;
     }
 }
+
+

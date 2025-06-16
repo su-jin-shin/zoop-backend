@@ -21,4 +21,5 @@ public class ResponseResult {
     public static ResponseResult failed(HttpStatus status, String message, Object data) {
         return new ResponseResult(status.value(), false, message, data);
     }
+
 }

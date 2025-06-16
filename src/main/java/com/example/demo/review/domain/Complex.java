@@ -34,6 +34,12 @@ public class Complex {
     private LocalDateTime updatedAt;
     private LocalDateTime deletedAt;
 
+    protected Complex() {}  // JPA 기본 생성자
+
+    public Complex(String complexNo, String complexName) {
+        this.complexNo = complexNo;
+        this.complexName = complexName;
+    }
 
 
 
