@@ -93,13 +93,18 @@ public class AuthController {
     public ResponseEntity<Void> register(@AuthenticationPrincipal LoginUser loginUser,
                                          @RequestBody Map<String, String> body) {
 
+
+
         String nickname = body.get("nickname");
         if (nickname == null || nickname.isBlank()) {
             throw new InvalidRequestException();   // 400
         }
 
         Long userId = Long.valueOf(loginUser.getUsername());
+        System.out.println(userId);
         nicknameService.updateNickname(userId, nickname);
+
+
 
         return ResponseEntity.ok().build();        // 200
     }
