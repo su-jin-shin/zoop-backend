@@ -7,8 +7,11 @@ import java.util.List;
 
 public interface PropertyService {
 
-    //매물 상세조회 (기본정보)
+    //매물 상세 조회( 기본정보) usertId 없이 호출
     PropertyBasicInfoResponseDto getPropertyBasicInfo(Long propertyId);
+
+    //매물 상세조회 (기본정보)
+    PropertyBasicInfoResponseDto getPropertyBasicInfo(Long propertyId,Long userId);
 
     //매물 상세조회 (상세 설명)
     PropertyDescriptionResponseDto getPropertyDescription(Long propertyId);

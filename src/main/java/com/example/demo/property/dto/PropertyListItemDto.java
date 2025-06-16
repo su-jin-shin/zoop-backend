@@ -18,6 +18,7 @@ import java.util.List;
 @AllArgsConstructor
 public class PropertyListItemDto {
 
+    private Integer order; // 정렬 순서
     private Long propertyId; //매물아이디(기본키)
     private String tradeTypeName; //거래유형명
     private BigDecimal rentPrice; //월세
@@ -31,6 +32,9 @@ public class PropertyListItemDto {
     private String area2; //전용면적
     private Double latitude; //위도
     private Double longitude; //경도
+
+    private Boolean isBookmarked; // 찜 여부
+
 
     private String articleName; //매물이름
     private ImageDto thumbnail;//썸네일

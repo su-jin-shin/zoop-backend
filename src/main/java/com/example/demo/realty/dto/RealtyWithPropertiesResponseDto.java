@@ -27,6 +27,9 @@ public class RealtyWithPropertiesResponseDto {
     private Integer rentCount; //월세 건수
     private String representativeName; //대표자이름
 
-    private List<PropertyListItemDto> propertie; //매물
+    private List<PropertyListItemDto> property; //매물
+    private int page;
+    private int size;
+    private boolean hasNext;
 
 }

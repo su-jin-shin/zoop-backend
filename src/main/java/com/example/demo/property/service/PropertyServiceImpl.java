@@ -2,6 +2,7 @@ package com.example.demo.property.service;
 
 import com.example.demo.common.exception.InvalidRequestException;
 import com.example.demo.common.exception.NotFoundException;
+import com.example.demo.mypage.repository.BookmarkedPropertyRepository;
 import com.example.demo.property.domain.Image;
 import com.example.demo.property.domain.Property;
 import com.example.demo.property.domain.PropertySummary;
@@ -24,23 +25,37 @@ public class PropertyServiceImpl  implements PropertyService{
     private final PropertyRepository propertyRepository;
     private final PropertySummaryRepository summaryRepository;
     private final ImageRepository imageRepository;
+    private final BookmarkedPropertyRepository bookmarkedPropertyRepository;
 
 
 
+    //매물 상세조회 (기본정보) userId없는 버전
+    @Override
+    public PropertyBasicInfoResponseDto getPropertyBasicInfo(Long propertyId){
+        Property property = propertyRepository.findById(propertyId).orElseThrow(NotFoundException::new);
+
+        //Optional을 사용해 summary처리
+        PropertySummary summary = summaryRepository.findByProperty_PropertyId(propertyId).orElse(null);
+
+        //매물 아이디 통해 이미지 조회;
+        List<Image> images = imageRepository.findByProperty_PropertyId(propertyId);
+
+        return PropertyBasicInfoResponseDto.of(property,summary,images);
+    }
 
     //매물 상세조회 (기본 정보)
     @Override
-    public PropertyBasicInfoResponseDto getPropertyBasicInfo(Long propertyId) {
+    public PropertyBasicInfoResponseDto getPropertyBasicInfo(Long propertyId, Long userId) {
         Property property = propertyRepository.findById(propertyId).orElseThrow(NotFoundException::new);
-
-        // Optional을 사용해 summary 처리
-        PropertySummary summary = summaryRepository.findByProperty_PropertyId(propertyId)
-                .orElse(null); // null 허용
-
-        //매물 아이디 통해 이미지 조회
+        PropertySummary summary = summaryRepository.findByProperty_PropertyId(propertyId).orElse(null);
         List<Image> images = imageRepository.findByProperty_PropertyId(propertyId);
 
-        return PropertyBasicInfoResponseDto.of(property, summary, images);
+        boolean isBookmarked = false;
+        if (userId != null) {
+            isBookmarked = bookmarkedPropertyRepository.existsByUser_UserIdAndProperty_PropertyIdAndIsBookmarkedTrue(userId, propertyId);
+        }
+
+        return PropertyBasicInfoResponseDto.of(property, summary, images, isBookmarked);
     }
 
 
@@ -50,8 +65,6 @@ public class PropertyServiceImpl  implements PropertyService{
     @Override
     public PropertyDescriptionResponseDto getPropertyDescription(Long propertyId) {
         Property property = propertyRepository.findById(propertyId).orElseThrow(NotFoundException::new);
-
-
 
         return PropertyDescriptionResponseDto.of(property);
     }

@@ -26,7 +26,7 @@ public class RealtyController {
         return ResponseEntity.ok(realtyService.getRealtyAgentNumber(realtyId));
     }
 
-    //매물 찜 등록
+
 
 
 
