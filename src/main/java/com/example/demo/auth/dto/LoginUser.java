@@ -13,7 +13,7 @@ import java.util.List;
 @Getter
 @RequiredArgsConstructor
 @SuppressFBWarnings(
-        value = "EI_EXPOSE_REP2",
+        value = { "EI_EXPOSE_REP", "EI_EXPOSE_REP2" },
         justification = "LoginUser는 세션 DTO 용도이며, UserInfo는 JPA Entity로 변경 위험이 낮음"
 )
 public class LoginUser implements UserDetails {

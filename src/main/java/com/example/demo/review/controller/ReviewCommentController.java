@@ -7,6 +7,7 @@ import com.example.demo.common.response.SuccessMessage;
 import com.example.demo.common.response.FailedMessage;
 import com.example.demo.review.dto.ReviewComment.*;
 import com.example.demo.review.service.ReviewCommentService;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -22,6 +23,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/reviews/{reviewId}/comments")
 @RequiredArgsConstructor
+@SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class ReviewCommentController {
 
     private static final Logger log = LoggerFactory.getLogger(ReviewCommentController.class);
