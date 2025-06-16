@@ -10,7 +10,6 @@ import java.math.BigDecimal;
 import java.util.List;
 @SuppressFBWarnings(
         value = { "EI_EXPOSE_REP", "EI_EXPOSE_REP2" }
-
 )
 @Data
 @Builder

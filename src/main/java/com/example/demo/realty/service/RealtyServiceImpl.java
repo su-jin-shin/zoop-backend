@@ -126,7 +126,7 @@ public class RealtyServiceImpl implements RealtyService {
                 .leaseCount(realty.getLeaseCount())
                 .rentCount(realty.getRentCount())
                 .representativeName(realty.getRepresentativeName())
-                .propertie(propertyList)
+                .property(propertyList)
                 .build();
     }
 

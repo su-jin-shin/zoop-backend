@@ -1,11 +1,15 @@
 package com.example.demo.property.controller;
 
+import com.example.demo.auth.dto.LoginUser;
+import com.example.demo.common.exception.UserNotFoundException;
 import com.example.demo.property.domain.Property;
 import com.example.demo.property.dto.*;
 import com.example.demo.property.service.PropertyService;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.Response;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,10 +23,16 @@ public class PropertyController {
 
     //매물 상세 조회 (기본 정보) API
     @GetMapping("/{propertyId}/basic_info")
-    public ResponseEntity<PropertyBasicInfoResponseDto> getBasicInfo(@PathVariable Long propertyId){
-        PropertyBasicInfoResponseDto propertyBasicInfoResponseDto = propertyService.getPropertyBasicInfo(propertyId);
-
-        return ResponseEntity.ok(propertyBasicInfoResponseDto); // 정상응답 200
+    public ResponseEntity<PropertyBasicInfoResponseDto> getBasicInfo(
+            @PathVariable Long propertyId,
+            @AuthenticationPrincipal LoginUser loginUser
+    ) {
+        if(loginUser == null){
+            throw new UserNotFoundException();
+        }
+        Long userId = (loginUser != null) ? Long.valueOf(loginUser.getUsername()) : null;
+        PropertyBasicInfoResponseDto dto = propertyService.getPropertyBasicInfo(propertyId, userId);
+        return ResponseEntity.ok(dto);
     }
 
 
@@ -30,16 +40,24 @@ public class PropertyController {
 
     //매물 상세 조회 (상세설명) API
     @GetMapping("/{propertyId}/description")
-    public ResponseEntity<PropertyDescriptionResponseDto> getDescription(@PathVariable Long propertyId){
-        PropertyDescriptionResponseDto propertyDescriptionResponseDto = propertyService.getPropertyDescription(propertyId);
+    public ResponseEntity<PropertyDescriptionResponseDto> getDescription(@PathVariable Long propertyId,@AuthenticationPrincipal LoginUser loginUser){
 
+        if(loginUser == null){
+            throw new UserNotFoundException();
+        }
+        PropertyDescriptionResponseDto propertyDescriptionResponseDto = propertyService.getPropertyDescription(propertyId);
 
         return ResponseEntity.ok(propertyDescriptionResponseDto); //정상응답 200
     }
 
     //매물 상세조회 (시설정보) API
     @GetMapping("/{propertyId}/facilities")
-    public ResponseEntity<PropertyFacilitiesResponseDto> getFacilities(@PathVariable Long propertyId){
+    public ResponseEntity<PropertyFacilitiesResponseDto> getFacilities(@PathVariable Long propertyId, @AuthenticationPrincipal LoginUser loginUser){
+
+        if(loginUser == null){
+            throw new UserNotFoundException();
+        }
+
         PropertyFacilitiesResponseDto propertyFacilitiesResponseDto = propertyService.getPropertyFacilities(propertyId);
 
 
@@ -48,7 +66,13 @@ public class PropertyController {
 
     //매물 상세조회 (위치정보) API
     @GetMapping("/{propertyId}/location")
-    public ResponseEntity<PropertyLocationResponseDto> getLocation(@PathVariable Long propertyId){
+    public ResponseEntity<PropertyLocationResponseDto> getLocation(@PathVariable Long propertyId, @AuthenticationPrincipal LoginUser loginUser){
+
+        if(loginUser == null){
+            throw new UserNotFoundException();
+        }
+
+
         PropertyLocationResponseDto propertyLocationResponseDto = propertyService.getPropertyLocation(propertyId);
 
         return ResponseEntity.ok(propertyLocationResponseDto); //정상 응답 200

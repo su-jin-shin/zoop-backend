@@ -2,6 +2,8 @@ package com.example.demo.property.controller;
 
 import com.example.demo.auth.domain.UserInfo;
 import com.example.demo.auth.dto.LoginUser;
+import com.example.demo.common.exception.UserNotFoundException;
+import com.example.demo.mypage.domain.BookmarkedProperty;
 import com.example.demo.property.dto.BookmarkedPropertyRequestDto;
 import com.example.demo.property.dto.BookmarkedPropertyResponseDto;
 import com.example.demo.property.service.PropertyLikeService;
@@ -26,10 +28,13 @@ public class PropertyLikeController {
             @PathVariable Long propertyId,
             @AuthenticationPrincipal LoginUser loginUser
     ) {
+        if(loginUser == null){
+            throw new UserNotFoundException();
+        }
         Long userId = Long.valueOf(loginUser.getUsername()); // 또는 loginUser.getUserInfo().getUserId()
 
         BookmarkedPropertyResponseDto response = propertyLikeService.likeProperty(userId, propertyId);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response); //정상응답 201
     }
 
     //매물 찜 취소
@@ -38,9 +43,11 @@ public class PropertyLikeController {
             @PathVariable Long propertyId,
             @AuthenticationPrincipal LoginUser loginUser
     ){
-        Long userId = Long.valueOf(loginUser.getUsername());
-
-        BookmarkedPropertyResponseDto response = propertyLikeService.unlikeProperty(userId, propertyId);
-        return ResponseEntity.ok(response);
+      if(loginUser == null){
+          throw new UserNotFoundException();
+      }
+      Long userId = Long.valueOf(loginUser.getUsername());
+        BookmarkedPropertyResponseDto response = propertyLikeService.unlikeProperty(userId,propertyId);
+        return ResponseEntity.ok(response); //정상응답 200
     }
 }

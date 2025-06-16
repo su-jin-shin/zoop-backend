@@ -83,6 +83,7 @@ public class Property {
     private String floorInfo; //층정보
     private String dealOrWarrantPrc; //거래 또는 보증금 가격
 
+
     private String area1; //공급면적
     private String area2; //전용면적
     private String direction; //방향  
