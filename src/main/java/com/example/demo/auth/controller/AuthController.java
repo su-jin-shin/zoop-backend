@@ -79,6 +79,7 @@ public class AuthController {
         String redirect = front.buildRedirect(res.getNeedsNickname()) +
                 "#access_token="  + res.getAccessToken() +
                 "&refresh_token=" + res.getRefreshToken() +
+                "&kakao_access="  + res.getKakaoAccessToken() +
                 "&needsNickname=" + res.getNeedsNickname();
 
         return ResponseEntity.status(HttpStatus.FOUND)

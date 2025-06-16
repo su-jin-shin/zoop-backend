@@ -17,44 +17,54 @@
 <p id="message"></p>
 
 <script>
-    /* --- util --------------------------------------------------------- */
+    /* util ------------------------------------------------ */
     const API = "http://localhost:8080";
-    function getAccess(){ return localStorage.getItem("access"); }
-    function saveTokens(a,r){ localStorage.setItem("access",a); localStorage.setItem("refresh",r); }
+    function getAccess()      { return localStorage.getItem("access"); }
+    function getRefresh()     { return localStorage.getItem("refresh"); }
+    function saveTokens(a,r,k){
+        localStorage.setItem("access",  a);
+        localStorage.setItem("refresh", r);
+        if (k) localStorage.setItem("kakaoAccess", k);
+    }
 
-    function setTokensFromHash(){
+    /* 콜백 hash 파싱 */
+    (function setTokensFromHash(){
         if(!location.hash.startsWith("#")) return;
         const p=new URLSearchParams(location.hash.slice(1));
         if(p.get("access_token")){
-            saveTokens(p.get("access_token"), p.get("refresh_token"));
+            saveTokens(
+                p.get("access_token"),
+                p.get("refresh_token"),
+                p.get("kakao_access")
+            );
             history.replaceState(null,null,location.pathname);
         }
-    }
-    setTokensFromHash();
+    })();
 
-    /* --- 닉네임 업데이트 ---------------------------------------------- */
+    /* 닉네임 저장 ---------------------------------------- */
     document.getElementById("update-btn").onclick = async ()=>{
         const nickname = document.getElementById("nickname").value.trim();
         const msg = document.getElementById("message"); msg.textContent="";
         if(!nickname){ msg.textContent="닉네임을 입력해주세요."; return; }
 
         try{
-            const res=await fetch(`${API}/users/auth/register`,{
+            const res = await fetch(`${API}/users/auth/register`,{
                 method:"POST",
                 headers:{
                     "Content-Type":"application/json",
                     "Authorization":"Bearer "+getAccess()
                 },
-                body:JSON.stringify({ nickname })
+                body: JSON.stringify({ nickname })
             });
             if(res.ok){
                 alert("닉네임 등록 완료!");
-                location.href="/home.html";        // 홈으로
+                location.href="/home.html";
             }else{
-                msg.textContent=await res.text()||"닉네임 변경 실패";
+                msg.textContent = (await res.text()) || "닉네임 변경 실패";
             }
         }catch(e){
-            console.error(e); msg.textContent="서버 오류";
+            console.error(e);
+            msg.textContent="서버 오류";
         }
     };
 </script>

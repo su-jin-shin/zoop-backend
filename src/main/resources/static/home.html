@@ -22,33 +22,37 @@
 
 <button id="logout-btn">로그아웃</button>
 
-
 <h3>회원 탈퇴</h3>
 <textarea id="withdraw-reason" placeholder="탈퇴 사유를 입력하세요"></textarea>
 <button id="withdraw-btn">탈퇴하기</button>
 
-
-
 <script>
-    /* ---------- 공통 util ---------- */
-    const API = "http://localhost:8080";          // ← 필요 시 prod URL
-    function getAccess()  { return localStorage.getItem("access"); }
-    function getRefresh() { return localStorage.getItem("refresh"); }
-    function saveTokens(a,r){ localStorage.setItem("access",a); localStorage.setItem("refresh",r); }
+    /* ────────── 공통 util ────────── */
+    const API = "http://localhost:8080";
+    function getAccess()      { return localStorage.getItem("access"); }
+    function getRefresh()     { return localStorage.getItem("refresh"); }
+    function getKakaoAccess() { return localStorage.getItem("kakaoAccess"); }
+    function saveTokens(a,r,k){
+        localStorage.setItem("access",  a);
+        localStorage.setItem("refresh", r);
+        if (k) localStorage.setItem("kakaoAccess", k);
+    }
 
-    /* (1) 카카오 콜백에서 해시(#)에 달린 토큰 파싱 & 저장 ------------------ */
-    function setTokensFromHash(){
+    /* ① 해시(#) 파싱 → 토큰 저장 */
+    (function setTokensFromHash(){
         if(!location.hash.startsWith("#")) return;
         const p = new URLSearchParams(location.hash.slice(1));
         if(p.get("access_token")){
-            saveTokens(p.get("access_token"), p.get("refresh_token"));
-            // URL 깔끔하게 만들기
-            history.replaceState(null,null,location.pathname);
+            saveTokens(
+                p.get("access_token"),
+                p.get("refresh_token"),
+                p.get("kakao_access")
+            );
+            history.replaceState(null,null,location.pathname);   // URL 정리
         }
-    }
-    setTokensFromHash();
+    })();
 
-    /* (2) access 만료 시 자동 재발급 ------------------------------------ */
+    /* ② JWT 만료 시 refresh */
     async function refreshAccess(){
         const res = await fetch(`${API}/users/auth/refresh`,{
             method:"POST",
@@ -62,28 +66,28 @@
         return false;
     }
 
-    /* (3) 공통 fetch 래퍼 ---------------------------------------------- */
+    /* ③ Authorization 자동 부착 fetch */
     async function authFetch(url,opt={}){
         const res = await fetch(url,{
             ...opt,
             headers:{ ...(opt.headers||{}), "Authorization":"Bearer "+getAccess() }
         });
-        if(res.status === 401 && await refreshAccess()){
-            // 한 번만 재시도
-            return fetch(url,{ ...opt, headers:{ ...(opt.headers||{}),
-                    "Authorization":"Bearer "+getAccess() }});
+        if(res.status===401 && await refreshAccess()){
+            return fetch(url,{ ...opt,
+                headers:{ ...(opt.headers||{}), "Authorization":"Bearer "+getAccess() }
+            });
         }
         return res;
     }
 
-    /* ---------- 로그인 유저 정보 로드 ---------- */
+    /* ---------- 사용자 정보 로드 ---------- */
     async function loadUser(){
         try{
             const res = await authFetch(`${API}/users/auth/me`);
             if(!res.ok) throw new Error();
             const user = await res.json();
-            document.getElementById("profile-image").src = user.profileImage||"";
-            document.getElementById("nickname").textContent = user.nickname||"(닉네임 없음)";
+            document.getElementById("profile-image").src = user.profileImage || "";
+            document.getElementById("nickname").textContent = user.nickname || "(닉네임 없음)";
             document.getElementById("email").textContent = user.email;
             document.getElementById("user-card").hidden = false;
         }catch{
@@ -94,42 +98,36 @@
 
     /* ---------- 로그아웃 ---------- */
     document.getElementById("logout-btn").onclick = async ()=>{
-        const res = await authFetch(`${API}/users/auth/logout`,{ method:"POST" });
+        const res = await fetch(`${API}/users/auth/logout`,{
+            method:"POST",
+            headers:{
+                "Authorization":"Bearer "+getAccess(),
+                "Kakao-Access": getKakaoAccess()
+            }
+        });
         if(res.status===204){
-            localStorage.removeItem("access");
-            localStorage.removeItem("refresh");
+            localStorage.clear();
             alert("로그아웃 완료");
-            location.href = "/login.html";
-        }else{ alert("로그아웃 실패"); }
+            location.href="/login.html";
+        }else alert("로그아웃 실패");
     };
 
     /* ---------- 회원 탈퇴 ---------- */
-    document.getElementById('withdraw-btn').onclick = async () => {
-        const reason = document.getElementById('withdraw-reason').value.trim();
-        if (!reason) {
-            alert('탈퇴 사유를 입력해주세요.');
-            return;
-        }
+    document.getElementById("withdraw-btn").onclick = async ()=>{
+        const reason = document.getElementById("withdraw-reason").value.trim();
+        if(!reason){ alert("탈퇴 사유를 입력해주세요."); return; }
 
-        try {
-            const res = await fetch('/mypage/withdraw', {
-                method:'POST',
-                credentials:'include',
-                headers:{ 'Content-Type':'application/json' },
-                body: JSON.stringify({ withdrawReason: reason })
-            });
-
-            if (res.ok) {
-                const msg = await res.text();
-                alert(msg || '탈퇴가 완료되었습니다.');
-                location.href = '/login.html';
-            } else {
-                const err = await res.text();
-                alert('탈퇴 실패: ' + err);
-            }
-        } catch (e) {
-            alert('서버 오류로 탈퇴에 실패했습니다.');
-            console.error(e);
+        const res = await authFetch(`${API}/mypage/withdraw`,{
+            method:"POST",
+            headers:{ "Content-Type":"application/json" },
+            body: JSON.stringify({ withdrawReason: reason })
+        });
+        if(res.ok){
+            alert((await res.text()) || "탈퇴가 완료되었습니다.");
+            localStorage.clear();
+            location.href="/login.html";
+        }else{
+            alert("탈퇴 실패: "+(await res.text()));
         }
     };
 
