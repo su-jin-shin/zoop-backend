@@ -5,6 +5,7 @@ import com.example.demo.common.exception.UserNotFoundException;
 import com.example.demo.property.domain.Property;
 import com.example.demo.property.dto.*;
 import com.example.demo.property.service.PropertyService;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.Response;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/properties")
