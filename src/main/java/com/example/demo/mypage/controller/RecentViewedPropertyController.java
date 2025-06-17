@@ -3,9 +3,9 @@ package com.example.demo.mypage.controller;
 import com.example.demo.auth.dto.LoginUser;
 import com.example.demo.common.exception.UserNotFoundException;
 import com.example.demo.mypage.dto.RecentViewedPropertyRequest;
-import com.example.demo.mypage.dto.RecentViewedPropertyResponse;
+import com.example.demo.mypage.dto.MyPropertyResponse;
 import com.example.demo.mypage.service.RecentViewedPropertyService;
-import io.swagger.v3.oas.models.responses.ApiResponse;
+import com.example.demo.property.dto.PropertyListItemDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +18,7 @@ import java.util.Map;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/mypage/histories/recent-items")
+@RequestMapping("/mypage/histories/recent-properties")
 public class RecentViewedPropertyController {
 
     private final RecentViewedPropertyService recentViewedPropertyService;
@@ -47,7 +47,7 @@ public class RecentViewedPropertyController {
             throw new UserNotFoundException();
         }
         log.info("😀userId: "+userId);
-        List<RecentViewedPropertyResponse> result = recentViewedPropertyService.getRecentViewedList(userId);
+        List<PropertyListItemDto> result = recentViewedPropertyService.getRecentViewedList(userId);
         log.info("📦 응답 데이터: {}", result);
 
         return ResponseEntity.ok(Map.of("recentViewedProperties", result));

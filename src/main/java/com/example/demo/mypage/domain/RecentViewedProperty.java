@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.annotations.Where;
 
 import java.time.LocalDateTime;
 
@@ -39,6 +40,7 @@ public class RecentViewedProperty {
     @Column(name = "viewed_at", nullable = false)
     private LocalDateTime viewedAt;
 
+    @Column(name = "deleted_at")
     private LocalDateTime deletedAt; // 확장 고려한 컬럼
 
     public static class RecentViewedPropertyBuilder {

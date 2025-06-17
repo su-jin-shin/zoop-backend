@@ -11,5 +11,5 @@ import java.util.Optional;
 public interface RecentViewedPropertyRepository extends JpaRepository<RecentViewedProperty, Long> {
 
     Optional<RecentViewedProperty> findByUserAndProperty(UserInfo user, Property property);
-    List<RecentViewedProperty> findTop20ByUser_UserIdOrderByViewedAtDesc(Long userId);
+    List<RecentViewedProperty> findTop20ByUser_UserIdAndDeletedAtIsNullOrderByViewedAtDesc(Long userId);
 }
