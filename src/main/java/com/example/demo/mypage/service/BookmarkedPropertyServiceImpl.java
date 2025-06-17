@@ -2,7 +2,7 @@ package com.example.demo.mypage.service;
 
 import com.example.demo.mypage.domain.BookmarkedProperty;
 import com.example.demo.common.excel.PropertyExcelDto;
-import com.example.demo.mypage.dto.BookmarkedPropertyPageResponse;
+import com.example.demo.mypage.dto.MyPropertyPageResponse;
 import com.example.demo.mypage.dto.MapPropertyDto;
 import com.example.demo.mypage.repository.BookmarkedPropertyRepository;
 import com.example.demo.property.domain.Image;
@@ -35,7 +35,7 @@ public class BookmarkedPropertyServiceImpl implements BookmarkedPropertyService 
 
     @Override
     @Transactional(readOnly = true)
-    public BookmarkedPropertyPageResponse getBookmarkedProperties(Long userId, Pageable pageable) {
+    public MyPropertyPageResponse getBookmarkedProperties(Long userId, Pageable pageable) {
         // 마이페이지에서는 정렬 조건 무시하고 createdAt DESC
         Page<BookmarkedProperty> pageResult = bookmarkedPropertyRepository.findAllWithPropertyByUserId(userId, pageable);
         return convertToResponse(userId, pageResult);
@@ -63,7 +63,7 @@ public class BookmarkedPropertyServiceImpl implements BookmarkedPropertyService 
 //    정렬키: price_asc, price_desc, area_asc, area_desc, recent
     @Override
     @Transactional(readOnly = true)
-    public BookmarkedPropertyPageResponse getPagedProperties(Long userId, int page, int size, String sort) {
+    public MyPropertyPageResponse getPagedProperties(Long userId, int page, int size, String sort) {
         List<BookmarkedProperty> bookmarks = bookmarkedPropertyRepository.findAllWithPropertyByUserId(userId);
         log.info("List<BookmarkedProperty> bookmarks" + bookmarks);
         // 1️⃣ 정렬 처리 (Java 쪽에서)
@@ -102,11 +102,11 @@ public class BookmarkedPropertyServiceImpl implements BookmarkedPropertyService 
     }
 
 
-    private BookmarkedPropertyPageResponse convertToResponse(Long userId, Page<BookmarkedProperty> pageResult) {
+    private MyPropertyPageResponse convertToResponse(Long userId, Page<BookmarkedProperty> pageResult) {
         return convertToResponse(userId, pageResult, pageResult.getNumber(), pageResult.getSize());
     }
 
-    private BookmarkedPropertyPageResponse convertToResponse(Long userId, Page<BookmarkedProperty> pageResult, int page, int size) {
+    private MyPropertyPageResponse convertToResponse(Long userId, Page<BookmarkedProperty> pageResult, int page, int size) {
         List<BookmarkedProperty> content = pageResult.getContent();
         List<Long> propertyIds = content.stream()
                 .map(bp -> bp.getProperty().getPropertyId())
@@ -150,7 +150,7 @@ public class BookmarkedPropertyServiceImpl implements BookmarkedPropertyService 
                 })
                 .toList();
 
-        return new BookmarkedPropertyPageResponse(
+        return new MyPropertyPageResponse(
                 responseList,
                 page,
                 size,

@@ -2,7 +2,6 @@ package com.example.demo.mypage.repository;
 
 import com.example.demo.auth.domain.UserInfo;
 import com.example.demo.mypage.domain.BookmarkedProperty;
-import com.example.demo.mypage.dto.BookmarkedPropertyPageResponse;
 import com.example.demo.property.domain.Property;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.repository.JpaRepository;
