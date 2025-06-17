@@ -7,4 +7,10 @@ import lombok.Setter;
 @Setter
 public class RecentViewedPropertyRequest {
     private Long propertyId;
+
+    public RecentViewedPropertyRequest(Long propertyId) {
+        this.propertyId = propertyId;
+    }
+
+    public RecentViewedPropertyRequest() {}
 }

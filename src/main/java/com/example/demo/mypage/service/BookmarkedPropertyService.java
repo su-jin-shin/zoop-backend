@@ -1,46 +1,26 @@
 package com.example.demo.mypage.service;
 
-import com.example.demo.auth.domain.UserInfo;
-import com.example.demo.auth.repository.UserInfoRepository;
-import com.example.demo.mypage.domain.BookmarkedProperty;
-import com.example.demo.mypage.repository.BookmarkedPropertyRepository;
-import com.example.demo.property.domain.Property;
-import com.example.demo.property.repository.PropertyRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestMapping;
+import com.example.demo.common.excel.PropertyExcelDto;
+import com.example.demo.mypage.dto.BookmarkedPropertyPageResponse;
+import com.example.demo.mypage.dto.MapPropertyDto;
+import com.example.demo.property.dto.PropertyListItemDto;
+import org.springframework.data.domain.Pageable;
 
-import java.time.LocalDateTime;
+import java.util.List;
 
-@Service
-@RequiredArgsConstructor
-public class BookmarkedPropertyService {
+public interface BookmarkedPropertyService {
 
-    private final BookmarkedPropertyRepository bookmarkedPropertyRepository;
-    private final PropertyRepository propertyRepository;
-    private final UserInfoRepository userInfoRepository;
+    BookmarkedPropertyPageResponse getBookmarkedProperties(Long userId, Pageable pageable); // 마이페이지용
+//    BookmarkedPropertyPageResponse getBookmarkedProperties(Long userId, int page, int size, String sort); //지도용
 
-    public void toggleBookmark(Long userId, Long propertyId, Boolean isBookmarked) {
-        Property property = propertyRepository.findById(propertyId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 매물입니다."));
+    // 지도용 전체 리스트
+    List<MapPropertyDto> getMapProperties(Long userId);
 
-        UserInfo user = userInfoRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+    // 바텀시트용 정렬 + 페이지
+    BookmarkedPropertyPageResponse getPagedProperties(Long userId, int page, int size, String sort);
 
-        bookmarkedPropertyRepository.findByUserAndProperty(user, property)
-                .ifPresentOrElse(
-                        existing -> {
-                            existing.setIsBookmarked(isBookmarked);
-                            // updatedAt은 @UpdateTimestamp로 자동 업데이트도 가능
-                        },
-                        () -> {
-                            BookmarkedProperty newBookmark = BookmarkedProperty.builder()
-                                    .user(user)
-                                    .property(property)
-                                    .isBookmarked(isBookmarked)
-                                    .build();
-                            bookmarkedPropertyRepository.save(newBookmark);
-                        }
-                );
-    }
+    List<PropertyListItemDto> getAllBookmarkedPropertyResponses(Long userId);
+
+    List<PropertyExcelDto> getBookmarkedPropertiesForExcel(Long userId);
+
 }
