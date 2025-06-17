@@ -2,12 +2,17 @@ package com.example.demo.common.excel;
 
 import com.example.demo.property.domain.Property;
 import com.example.demo.realty.domain.Realty;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.*;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+@SuppressFBWarnings(
+        value = "EI_EXPOSE_REP2",
+        justification = "tagList는 방어적 복사 getter/setter로 보호됨"
+)
 @Getter
 @Setter
 @Builder(toBuilder = true)
