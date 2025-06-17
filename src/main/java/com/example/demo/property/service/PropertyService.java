@@ -42,6 +42,7 @@ public interface PropertyService {
     //매물 비교 하기
     List<PropertyCompareResponseDto> getCompareProperties(List<Long> propertyIds);
 
-
+    //매물 OG 조회
+    PropertyOgResponseDto getPropertyOg(Long propertyId);
 
 }

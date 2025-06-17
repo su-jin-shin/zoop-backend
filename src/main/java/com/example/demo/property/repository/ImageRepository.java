@@ -15,15 +15,17 @@ public interface ImageRepository extends JpaRepository<Image,Long> {
     //매물 ID에 해당하는 이미지 리스트 조회
     List<Image> findByProperty_PropertyId(Long propertyId);
 
-    //제일 처음 이미지 가져오기
-    @Query("""
-    SELECT i FROM Image i
-    WHERE i.property.propertyId IN :propertyIds
-      AND i.isMain = true
-      AND i.deletedAt IS NULL
-    ORDER BY i.imageOrder ASC
-""")
-    List<Image> findTopImagesByPropertyIds(@Param("propertyIds") List<Long> propertyIds);
+    //썸네일 이미지 가져오기
+    @Query(value = """
+    SELECT DISTINCT ON (i.property_id) *
+    FROM image i
+    WHERE i.property_id IN (:propertyIds)
+      AND i.deleted_at IS NULL
+    ORDER BY i.property_id,
+             CASE WHEN i.is_main THEN 0 ELSE 1 END,
+             i.image_order ASC
+    """, nativeQuery = true)
+    List<Image> findThumbnailsByPropertyIds(@Param("propertyIds") List<Long> propertyIds);
 
     List<Image> findByProperty_PropertyIdIn(List<Long> propertyIds);
 }

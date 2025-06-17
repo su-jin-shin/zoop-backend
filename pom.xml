@@ -145,6 +145,14 @@
       <version>4.8.3</version>
     </dependency>
 
+    <!-- 엑셀 내보내기 기능에 필요-->
+    <dependency>
+      <groupId>org.apache.poi</groupId>
+      <artifactId>poi-ooxml</artifactId>
+      <version>5.2.3</version>
+    </dependency>
+
+
     <!-- Testing: JUnit 5 & Spring Boot Test -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -169,6 +177,13 @@
       <version>5.9.3</version>
       <scope>test</scope>
     </dependency>
+    <!-- Spring Security Test (for @WithMockUser, etc.) -->
+    <dependency>
+      <groupId>org.springframework.security</groupId>
+      <artifactId>spring-security-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+
   </dependencies>
 
   <build>

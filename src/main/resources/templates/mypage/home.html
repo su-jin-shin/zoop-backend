@@ -20,21 +20,37 @@
         .addr { color: #666; font-size: 13px; }
         .meta { font-size: 12px; margin-top: 4px; color: #999; }
         .heart { color: #007aff; font-size: 20px; }
+
+        .map-btn {
+            display: block;
+            text-align: right;
+            margin-bottom: 10px;
+        }
+
+        .map-btn a {
+            text-decoration: none;
+            color: #007aff;
+            font-weight: bold;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
 <div class="container">
     <h2>마이페이지</h2>
     <div class="tab">
-        <button class="tab-btn" data-tab="liked">찜한 매물</button>
-        <button class="tab-btn active" data-tab="recent">최근 본 매물</button>
+        <button class="tab-btn active" data-tab="liked">찜한 매물</button>
+        <button class="tab-btn" data-tab="recent">최근 본 매물</button>
     </div>
 
-    <div id="liked" class="tab-content">
-        <p>찜한 매물 리스트 (예시용)</p>
+    <div id="liked" class="tab-content active">
+        <div class="map-btn">
+            <a href="mypage/MapView">지도에서 보기 →</a>
+        </div>
+        <div id="liked-list"></div>
     </div>
 
-    <div id="recent" class="tab-content active">
+    <div id="recent" class="tab-content">
         <div id="recent-list"></div>
     </div>
 </div>
@@ -52,18 +68,23 @@
             tabContents.forEach(content => content.classList.remove("active"));
             document.getElementById(tab).classList.add("active");
 
-            if (tab === "recent") {
+            if (tab === "liked") {
+                likedPage = 0;
+                hasMoreLiked = true;
+                loadLikedProperties(true);
+            } else {
                 loadRecentViewedProperties();
             }
         });
     });
 
+    // 최근 본 매물
     async function loadRecentViewedProperties() {
         const listDiv = document.getElementById("recent-list");
         listDiv.innerHTML = "<p>불러오는 중...</p>";
 
         try {
-            const response = await fetch("/mypage/histories/recent-items");
+            const response = await fetch("/mypage/histories/recent-properties");
             const data = await response.json();
             const items = data.recentViewedProperties;
 
@@ -72,19 +93,9 @@
                 return;
             }
 
-            listDiv.innerHTML = ""; // 초기화
+            listDiv.innerHTML = "";
             items.forEach(item => {
-                const el = document.createElement("div");
-                el.className = "item";
-                el.innerHTML = `
-          <img src="${item.thumbnailImage}" alt="매물 이미지" />
-          <div class="info">
-            <div class="title">${item.tradeTypeName} ${item.dealOrWarrantPrc}</div>
-            <div class="addr">${item.articleName} ${item.buildingName}</div>
-            <div class="meta">${item.realestateTypeName} · ${item.area1}㎡</div>
-          </div>
-          <div class="heart">${item.isBookmarked ? "💙" : "🤍"}</div>
-        `;
+                const el = createItemElement(item);
                 listDiv.appendChild(el);
             });
         } catch (e) {
@@ -93,8 +104,76 @@
         }
     }
 
-    // 페이지 로드 시 한 번 실행
-    loadRecentViewedProperties();
+    // 찜한 매물
+    let likedPage = 0;
+    let hasMoreLiked = true;
+
+    async function loadLikedProperties(reset = false) {
+        const listDiv = document.getElementById("liked-list");
+        if (reset) {
+            listDiv.innerHTML = "";
+            likedPage = 0;
+            hasMoreLiked = true;
+        }
+
+        if (!hasMoreLiked) return;
+
+        try {
+            const response = await fetch(`/mypage/histories/bookmarked-properties?page=${likedPage}&size=20`, {
+                headers: {
+                    "x-access-token": localStorage.getItem("token")
+                }
+            });
+            const data = await response.json();
+            const items = data.bookmarkedProperties;
+
+            if (!items || items.length === 0) {
+                if (likedPage === 0) {
+                    listDiv.innerHTML = "<p>찜한 매물이 없습니다.</p>";
+                }
+                hasMoreLiked = false;
+                return;
+            }
+
+            items.forEach(item => {
+                const el = createItemElement(item);
+                listDiv.appendChild(el);
+            });
+
+            hasMoreLiked = data.hasNext;
+            likedPage += 1;
+        } catch (e) {
+            console.error("찜한 매물 조회 실패", e);
+        }
+    }
+
+    function createItemElement(item) {
+        const el = document.createElement("div");
+        el.className = "item";
+        el.innerHTML = `
+        <img src="${item.thumbnailImage}" alt="매물 이미지" />
+        <div class="info">
+          <div class="title">${item.tradeTypeName} ${item.dealOrWarrantPrc}</div>
+          <div class="addr">${item.articleName} ${item.buildingName}</div>
+          <div class="meta">${item.realestateTypeName} · ${item.area1}㎡</div>
+        </div>
+        <div class="heart">${item.isBookmarked ? "💙" : "🤍"}</div>
+      `;
+        return el;
+    }
+
+    // 무한스크롤
+    window.addEventListener("scroll", () => {
+        if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
+            const likedTab = document.getElementById("liked");
+            if (likedTab.classList.contains("active")) {
+                loadLikedProperties();
+            }
+        }
+    });
+
+    // 초기 로드
+    loadLikedProperties(true);
 </script>
 </body>
 </html>
