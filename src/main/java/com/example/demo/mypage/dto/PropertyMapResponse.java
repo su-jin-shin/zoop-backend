@@ -26,10 +26,8 @@ public class PropertyMapResponse {
 
     @Builder
     public static PropertyMapResponse of(List<PropertyListItemDto> mapProperties, BookmarkedPropertyPageResponse bookmarkedPageResponse) {
-        return new PropertyMapResponse(
-                mapProperties == null ? null : new ArrayList<>(mapProperties),
-                bookmarkedPageResponse
-        );
+        return new PropertyMapResponse(mapProperties, bookmarkedPageResponse);
     }
 }
+
 

@@ -75,11 +75,20 @@ public class PropertyExcelDto {
                 .brokerFee(realtor.getBrokerFee())
                 .build();
     }
-    public List<String> getTagList() {
-        return tagList == null ? null : new ArrayList<>(tagList); // 복사본 반환
-    }
     public void setTagList(List<String> tagList) {
-        this.tagList = tagList == null ? null : new ArrayList<>(tagList); // 복사본 저장
+        this.tagList = tagList == null ? null : new ArrayList<>(tagList);
     }
 
+    public List<String> getTagList() {
+        return tagList == null ? null : new ArrayList<>(tagList);
+    }
+
+    public static class PropertyExcelDtoBuilder {
+        private List<String> tagList;
+
+        public PropertyExcelDtoBuilder tagList(List<String> tagList) {
+            this.tagList = tagList == null ? null : new ArrayList<>(tagList);
+            return this;
+        }
+    }
 }
