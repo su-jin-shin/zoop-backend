@@ -10,6 +10,7 @@ import org.hibernate.dialect.PostgreSQLEnumJdbcType;
 
 import java.time.LocalDateTime;
 
+@Getter
 @Entity
 @Table(name = "message")
 @NoArgsConstructor
@@ -32,7 +33,7 @@ public class Message {
     @JoinColumn(name = "chat_room_id", nullable = false)
     private ChatRoom chatRoom;
 
-    @JdbcType(PostgreSQLEnumJdbcType.class)
+    @Enumerated(EnumType.STRING)
     private SenderType senderType;
 
     @Column(columnDefinition = "TEXT")
