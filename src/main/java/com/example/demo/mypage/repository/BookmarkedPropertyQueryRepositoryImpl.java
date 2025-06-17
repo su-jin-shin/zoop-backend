@@ -4,6 +4,7 @@ import com.example.demo.mypage.domain.BookmarkedProperty;
 import com.example.demo.mypage.domain.QBookmarkedProperty;
 import com.example.demo.property.domain.QProperty;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
@@ -12,6 +13,7 @@ import java.util.List;
 
 @Slf4j
 @Repository
+@SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "queryFactory is final and not exposed externally")
 @RequiredArgsConstructor
 public class BookmarkedPropertyQueryRepositoryImpl implements BookmarkedPropertyQueryRepository{
 

@@ -4,14 +4,25 @@ import com.example.demo.property.dto.PropertyListItemDto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
-@AllArgsConstructor
 public class BookmarkedPropertyPageResponse {
 
-    private List<PropertyListItemDto> bookmarkedProperties;
-    private int page;
-    private int size;
-    private boolean hasNext;
+    private final List<PropertyListItemDto> bookmarkedProperties;
+    private final int page;
+    private final int size;
+    private final boolean hasNext;
+
+    public BookmarkedPropertyPageResponse(List<PropertyListItemDto> bookmarkedProperties, int page, int size, boolean hasNext) {
+        this.bookmarkedProperties = bookmarkedProperties == null ? null : new ArrayList<>(bookmarkedProperties);
+        this.page = page;
+        this.size = size;
+        this.hasNext = hasNext;
+    }
+
+    public List<PropertyListItemDto> getBookmarkedProperties() {
+        return bookmarkedProperties == null ? null : new ArrayList<>(bookmarkedProperties);
+    }
 }

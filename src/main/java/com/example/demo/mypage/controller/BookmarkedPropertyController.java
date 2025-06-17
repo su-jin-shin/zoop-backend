@@ -9,6 +9,7 @@ import com.example.demo.mypage.dto.PropertyMapResponse;
 import com.example.demo.mypage.dto.BookmarkedPropertyPageResponse;
 import com.example.demo.mypage.dto.MapPropertyDto;
 import com.example.demo.mypage.service.BookmarkedPropertyService;
+import com.example.demo.property.dto.PropertyListItemDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.web.PageableDefault;
@@ -62,12 +63,16 @@ public class BookmarkedPropertyController {
         // 1. 지도용 전체 좌표 리스트
         List<MapPropertyDto> mapDtos = bookmarkedPropertyService.getMapProperties(userId);
 
+        List<PropertyListItemDto> converted = mapDtos.stream()
+                .map(MapPropertyDto::toPropertyListItemDto)
+                .toList();
+
         // 2. 바텀시트용 페이지 목록
         BookmarkedPropertyPageResponse bottomSheet = bookmarkedPropertyService.getPagedProperties(userId, page, size, sort);
 
         return ResponseEntity.ok(PropertyMapResponse.builder()
-                .mapProperties(mapDtos)
-                .bottomSheet(bottomSheet)
+                .mapProperties(converted)
+                .bookmarkedPageResponse(bottomSheet)
                 .build());
     }
 

@@ -5,16 +5,23 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
-@NoArgsConstructor
-@AllArgsConstructor
 public class ExcelResponseDto<T> {
 
-    private List<T> excelData;
+    private final List<T> excelData;
 
-    public static <T> ExcelResponseDto<T> from(List<T> data) {
-        return new ExcelResponseDto<>(data);
+    public ExcelResponseDto(List<T> excelData) {
+        this.excelData = excelData == null ? null : new ArrayList<>(excelData);
+    }
+
+    public List<T> getExcelData() {
+        return excelData == null ? null : new ArrayList<>(excelData);
+    }
+
+    public static <T> ExcelResponseDto<T> from(List<T> dtoList) {
+        return new ExcelResponseDto<>(dtoList);
     }
 }
