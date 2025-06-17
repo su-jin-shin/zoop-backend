@@ -10,7 +10,7 @@ import java.util.List;
 
 @Getter
 @Setter
-@Builder
+@Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
 public class PropertyExcelDto {
@@ -83,12 +83,4 @@ public class PropertyExcelDto {
         return tagList == null ? null : new ArrayList<>(tagList);
     }
 
-    public static class PropertyExcelDtoBuilder {
-        private List<String> tagList;
-
-        public PropertyExcelDtoBuilder tagList(List<String> tagList) {
-            this.tagList = tagList == null ? null : new ArrayList<>(tagList);
-            return this;
-        }
-    }
 }
