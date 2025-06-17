@@ -24,7 +24,7 @@ public class MyPageCommentController {
         try {
             return Long.valueOf(loginUser.getUsername());
         } catch (Exception e) {
-            return null;
+            return null; 
         }
     }
 
