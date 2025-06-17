@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "message")
 @NoArgsConstructor
-@SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "chatRoom은 도메인 내부 객체로 신뢰 가능")
+@SuppressFBWarnings(value = { "EI_EXPOSE_REP", "EI_EXPOSE_REP2" }, justification = "chatRoom은 도메인 내부 객체로 신뢰 가능")
 public class Message {
 
     public Message(ChatRoom chatRoom, SenderType senderType, String content) {
