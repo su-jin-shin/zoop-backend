@@ -40,8 +40,6 @@ public class RecommendedProperty {
     private Filter filter; //필터 아이디(외래키)
 
 
-    private Boolean isActive;
-
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime createdAt;   // 지역 추가 시각
