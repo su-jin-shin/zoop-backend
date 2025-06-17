@@ -5,6 +5,7 @@ import com.example.demo.realty.domain.Realty;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -63,7 +64,7 @@ public class PropertyExcelDto {
                 .exposureAddress(property.getExposureAddress())
                 .latitude(property.getLatitude())
                 .longitude(property.getLongitude())
-                .tagList(property.getTagList())
+                .tagList(property.getTagList() == null ? null : new ArrayList<>(property.getTagList()))
                 .realtorName(realtor.getRealtorName())
                 .representativeName(realtor.getRepresentativeName())
                 .establishRegistrationNo(realtor.getEstablishRegistrationNo())
@@ -74,4 +75,11 @@ public class PropertyExcelDto {
                 .brokerFee(realtor.getBrokerFee())
                 .build();
     }
+    public List<String> getTagList() {
+        return tagList == null ? null : new ArrayList<>(tagList); // 복사본 반환
+    }
+    public void setTagList(List<String> tagList) {
+        this.tagList = tagList == null ? null : new ArrayList<>(tagList); // 복사본 저장
+    }
+
 }
