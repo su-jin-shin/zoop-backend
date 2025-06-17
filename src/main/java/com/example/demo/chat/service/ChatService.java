@@ -35,17 +35,26 @@ public class ChatService {
     private final UserInfoRepository userInfoRepository;
 
     // 채팅방 생성
-    @Transactional
-    public Long createChatRoom(Long userId) {
-        try {
-            ChatRoom chatRoom = new ChatRoom();
-            chatRoom.setUserId(userId);
-            ChatRoom saved = chatRoomRepository.save(chatRoom);
-            return saved.getChatRoomId();
-        } catch (Exception e) {
-            throw new ChatServiceException(String.format("%s. userId=%d", ErrorMessages.CHAT_CREATE_FAILED, userId), e);
+        @Transactional
+        public Long createChatRoom(Long userId) {
+            try {
+                // 사용자 조회
+                UserInfo userInfo = userInfoRepository.findByUserId(userId)
+                        .orElseThrow(UserNotFoundException::new);
+
+                // 채팅방 생성
+                ChatRoom chatRoom = new ChatRoom(userInfo);
+                ChatRoom saved = chatRoomRepository.save(chatRoom);
+
+                return saved.getChatRoomId();
+
+            } catch (Exception e) {
+                throw new ChatServiceException(
+                        String.format("%s. userId=%d", ErrorMessages.CHAT_CREATE_FAILED, userId),
+                        e
+                );
+            }
         }
-    }
 
     private ChatRoom findByChatRoomId(Long chatRoomId, String context) {
         return chatRoomRepository.findById(chatRoomId)
@@ -91,7 +100,11 @@ public class ChatService {
 
     // 채팅방 목록 조회
     public List<ChatRoomDto> getUserChatRooms(Long userId) {
-        List<ChatRoom> chatRooms = chatRoomRepository.findChatRoomsByUserId(userId);
+        // 사용자 조회
+        UserInfo userInfo = userInfoRepository.findByUserId(userId)
+                .orElseThrow(UserNotFoundException::new);
+
+        List<ChatRoom> chatRooms = chatRoomRepository.findByUserInfoAndIsDeletedFalseOrderByLastMessageAtDesc(userInfo);
 
         List<ChatRoomDto> result = new ArrayList<>();
         int order = 0;
@@ -109,6 +122,7 @@ public class ChatService {
         return result;
     }
 
+    // 로그인한 사용자가 특정 채팅방 선택시 채팅내용 조회
     @Transactional(readOnly = true)
     public ChatRoomDetailResponseDto getUserChatRoomMessages(Long userId, Long chatRoomId) {
 
@@ -117,7 +131,7 @@ public class ChatService {
                 .orElseThrow(UserNotFoundException::new);
 
         // 용자의 채팅방인지 확인 후 조회
-        ChatRoom chatRoom = chatRoomRepository.findByChatRoomIdAndUserId(chatRoomId, userInfo.getUserId());
+        ChatRoom chatRoom = chatRoomRepository.findByChatRoomIdAndUserInfo(chatRoomId, userInfo);
         if(chatRoom == null){
             throw new NotFoundException();
         }
@@ -132,5 +146,27 @@ public class ChatService {
 
         // 응답 DTO 생성
         return ChatRoomDetailResponseDto.from(chatRoom, messageDtos);
+    }
+
+    // 채팅방 검색( 제목 및 채팅내용으로 검색)
+    @Transactional(readOnly = true)
+    public List<ChatRoomDto> searchChatRooms(Long userId, String searchText) {
+
+        // 사용자 조회
+        UserInfo userInfo = userInfoRepository.findByUserId(userId)
+                .orElseThrow(UserNotFoundException::new);
+        // 사용자의 채팅방 전체 조회
+        List<ChatRoom> chatRooms = chatRoomRepository.findByUserInfoAndIsDeletedFalseOrderByLastMessageAtDesc(userInfo);
+
+        return chatRooms.stream()
+                .filter(chatRoom -> isMatchingChatRoom(chatRoom, searchText))
+                .map(ChatRoomDto::fromEntity)
+                .toList();
+    }
+
+    // 로그인한 사용자의 채팅방 중에서 채팅방 제목이나 채팅내용이 동일할 때 조회
+    private boolean isMatchingChatRoom(ChatRoom chatRoom, String searchText) {
+        return chatRoom.getTitle().contains(searchText) ||
+                messageRepository.existsByChatRoomAndContentContainingIgnoreCase(chatRoom, searchText);
     }
 }
