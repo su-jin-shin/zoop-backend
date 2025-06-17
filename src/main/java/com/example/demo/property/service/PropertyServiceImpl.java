@@ -61,6 +61,7 @@ public class PropertyServiceImpl  implements PropertyService{
             isBookmarked = bookmarkedPropertyRepository.existsByUser_UserIdAndProperty_PropertyIdAndIsBookmarkedTrue(userId, propertyId);
         }
 
+
         return PropertyBasicInfoResponseDto.of(property, summary, images, isBookmarked);
     }
 
