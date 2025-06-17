@@ -207,4 +207,20 @@ public class PropertyController {
 
     }
 
+    //매물 OG 정보 조회
+    @GetMapping("/{propertyId}/property_og")
+    public  ResponseEntity<?> getpropertyOg(@PathVariable Long propertyId,
+                                                                @AuthenticationPrincipal LoginUser loginUser){
+
+        PropertyOgResponseDto propertyOgResponseDto = propertyService.getPropertyOg(propertyId);
+        return ResponseEntity.ok(
+                ResponseResult.success(
+                        HttpStatus.OK,
+                        GET_SUCCESS.getMessage(),
+                        propertyOgResponseDto
+                )
+        );
+
+    }
+
 }
