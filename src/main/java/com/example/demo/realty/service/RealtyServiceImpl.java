@@ -106,7 +106,7 @@ public class RealtyServiceImpl implements RealtyService {
                             .summary(summaryMap.getOrDefault(p.getPropertyId(), Collections.emptyList()))
                             .aptName(p.getAptName())
                             .buildingName(p.getBuildingName())
-                            .realestateTypeName(p.getRealEstateTypeName())
+                            .realEstateTypeName(p.getRealEstateTypeName())
                             .area2(p.getArea2())
                             .latitude(p.getLatitude())
                             .longitude(p.getLongitude())

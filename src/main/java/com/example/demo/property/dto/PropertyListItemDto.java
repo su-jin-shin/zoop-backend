@@ -28,7 +28,7 @@ public class PropertyListItemDto {
     private List<String> summary; //요약 키워드
     private String aptName; //아파트이름
     private String buildingName; //건물이름
-    private String realestateTypeName;//부동산 유형명
+    private String realEstateTypeName;//부동산 유형명
     private String area2; //전용면적
     private Double latitude; //위도
     private Double longitude; //경도

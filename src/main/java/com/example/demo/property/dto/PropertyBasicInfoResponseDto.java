@@ -36,7 +36,7 @@ public class PropertyBasicInfoResponseDto {
     private BigDecimal rentPrice; //월세
     private String dealOrWarrantPrc; //거래 또는 보증금 가격
     private String articleFeatureDesc; //매물특징요약
-    private String realestateTypeName; //부동산유형명
+    private String realEstateTypeName; //부동산유형명
     private String area2; //전용면적
     private String correspondingFloorCount; //해당층수
     private String parkingPossibleYN; //주차가능여부
@@ -61,7 +61,7 @@ public class PropertyBasicInfoResponseDto {
                 .rentPrice(property.getRentPrice())
                 .dealOrWarrantPrc(property.getDealOrWarrantPrc())
                 .articleFeatureDesc(property.getArticleFeatureDesc())
-                .realestateTypeName(property.getRealEstateTypeName())
+                .realEstateTypeName(property.getRealEstateTypeName())
                 .area2(property.getArea2())
                 .correspondingFloorCount(property.getCorrespondingFloorCount())
                 .parkingPossibleYN(property.getParkingPossibleYN())
