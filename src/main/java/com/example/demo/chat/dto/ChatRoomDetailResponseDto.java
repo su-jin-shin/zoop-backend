@@ -4,6 +4,7 @@ package com.example.demo.chat.dto;
 import com.example.demo.chat.domain.ChatRoom;
 import com.example.demo.chat.domain.Message;
 import com.example.demo.chat.type.SenderType;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -17,6 +18,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@SuppressFBWarnings(value = "EI_EXPOSE_REP")
 public class ChatRoomDetailResponseDto {
     private Long chatRoomId;
     private String title;
@@ -34,6 +36,7 @@ public class ChatRoomDetailResponseDto {
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP")
     public static class MessageResponseDto {
         private Long messageId;
         private SenderType senderType;
