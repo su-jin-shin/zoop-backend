@@ -5,6 +5,7 @@ import com.example.demo.chat.dto.ChatRoomDto;
 import com.example.demo.chat.dto.MessageDto;
 import com.example.demo.chat.service.ChatService;
 import com.example.demo.chat.type.SenderType;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,7 @@ import java.util.Map;
 @RequestMapping("/chats")
 @Slf4j
 @RequiredArgsConstructor
+@SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "Spring DI에서 안전하게 관리됨")
 public class ChatController {
 
     private final ChatService chatService;

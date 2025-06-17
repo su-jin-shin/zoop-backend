@@ -1,6 +1,7 @@
 package com.example.demo.chat.domain;
 
 import com.example.demo.chat.type.SenderType;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,6 +13,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "message")
 @NoArgsConstructor
+@SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "chatRoom은 도메인 내부 객체로 신뢰 가능")
 public class Message {
 
     public Message(ChatRoom chatRoom, SenderType senderType, String content) {
