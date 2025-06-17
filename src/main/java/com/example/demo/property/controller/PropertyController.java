@@ -100,7 +100,11 @@ public class PropertyController {
 
     //매물 상세조회 (거래정보) API
     @GetMapping("/{propertyId}/transaction")
-    public ResponseEntity<?> getTransaction(@PathVariable Long propertyId){
+    public ResponseEntity<?> getTransaction(@PathVariable Long propertyId, @AuthenticationPrincipal LoginUser loginUser){
+
+        if(loginUser == null){
+            throw new UserNotFoundException();
+        }
         PropertyTransactionResponseDto propertyTransactionResponseDto = propertyService.getPropertyTransaction(propertyId);
 
         return ResponseEntity.ok(
@@ -114,7 +118,10 @@ public class PropertyController {
 
     //매물 상세조회 (중개정보) API
     @GetMapping("/{propertyId}/agent")
-    public ResponseEntity<?> getAgent(@PathVariable Long propertyId){
+    public ResponseEntity<?> getAgent(@PathVariable Long propertyId, @AuthenticationPrincipal LoginUser loginUser){
+        if(loginUser == null){
+            throw new UserNotFoundException();
+        }
         PropertyAgentResponseDto propertyAgentResponseDto = propertyService.getPropertyAgent(propertyId);
 
 
@@ -129,7 +136,10 @@ public class PropertyController {
 
     //매물 상세조회 (중개보수 및 세금정보) API
     @GetMapping("/{propertyId}/broker_fee")
-    public ResponseEntity<?> getBroker(@PathVariable Long propertyId){
+    public ResponseEntity<?> getBroker(@PathVariable Long propertyId,@AuthenticationPrincipal LoginUser loginUser){
+        if(loginUser == null){
+            throw new UserNotFoundException();
+        }
         PropertyBrokerFeeResponseDto propertyBrokerFeeResponseDto = propertyService.getBrokerFee(propertyId);
 
         return ResponseEntity.ok(
@@ -143,7 +153,10 @@ public class PropertyController {
 
     //매물 상세조회 (매물 정보) API
     @GetMapping("/{propertyId}/property_info")
-    public ResponseEntity<?> getPropertyInfo(@PathVariable Long propertyId){
+    public ResponseEntity<?> getPropertyInfo(@PathVariable Long propertyId,@AuthenticationPrincipal LoginUser loginUser){
+        if(loginUser == null){
+            throw new UserNotFoundException();
+        }
         PropertyPropertyInfoResponseDto propertyPropertyInfoResponseDto = propertyService.getPropertyInfo(propertyId);
 
         return ResponseEntity.ok(
@@ -157,7 +170,10 @@ public class PropertyController {
 
     //공인중개사 연락처 조회 (매물 상세페이지) API
     @GetMapping("/{propertyId}/agent_number")
-    public ResponseEntity<?> getAgentNumber(@PathVariable Long propertyId){
+    public ResponseEntity<?> getAgentNumber(@PathVariable Long propertyId, @AuthenticationPrincipal LoginUser loginUser){
+        if(loginUser == null){
+            throw new UserNotFoundException();
+        }
         PropertyAgentNumberResponseDto propertyAgentNumberResponseDto = propertyService.getPropertyAgentNumber(propertyId);
 
 
@@ -173,8 +189,11 @@ public class PropertyController {
     //매물 비교하기
     @GetMapping("/compare")
     public ResponseEntity<?> compareProperties(
-            @RequestParam List<Long> propertyIds
+            @RequestParam List<Long> propertyIds, @AuthenticationPrincipal LoginUser loginUser
     ){
+        if(loginUser == null){
+            throw new UserNotFoundException();
+        }
         List<PropertyCompareResponseDto> result = propertyService.getCompareProperties(propertyIds);
 
 
