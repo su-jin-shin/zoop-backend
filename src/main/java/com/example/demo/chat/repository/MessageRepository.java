@@ -1,5 +1,6 @@
 package com.example.demo.chat.repository;
 
+import com.example.demo.chat.domain.ChatRoom;
 import com.example.demo.chat.domain.Message;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -17,4 +18,7 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
 
     // 로그인한 유저가 특정 채팅방을 조회할 때 삭제되지 않은 메세지만 조회
     List<Message> findByChatRoom_ChatRoomIdAndDeletedAtIsNull(Long chatRoomId);
+
+    // 검색어가 채팅방에서 채팅한 내용과 동일할 때 조회
+    boolean existsByChatRoomAndContentContainingIgnoreCase(ChatRoom chatRoom, String searchText);
 }

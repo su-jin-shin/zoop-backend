@@ -96,4 +96,21 @@ public class ChatController {
                 )
         );
     }
+    // 로그인한 사용자의 채팅방 중에서 제목이나 내용으로 조회
+    @GetMapping("/search")
+    public ResponseEntity<?> searchChatRoom(@AuthenticationPrincipal LoginUser loginUser,
+                                            @RequestParam String searchText) {
+        //Long userId = Long.valueOf(loginUser.getUsername());
+        Long userId = 4L;
+        List<ChatRoomDto> chatRooms = chatService.searchChatRooms(userId, searchText);
+
+        return ResponseEntity.ok(
+                ResponseResult.success(
+                        HttpStatus.OK,
+                        GET_SUCCESS.getMessage(),
+                        chatRooms
+                )
+        );
+    }
+
 }

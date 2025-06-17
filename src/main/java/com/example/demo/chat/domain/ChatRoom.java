@@ -1,5 +1,6 @@
 package com.example.demo.chat.domain;
 
+import com.example.demo.auth.domain.UserInfo;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -18,9 +19,10 @@ public class ChatRoom {
     @Column
     private Long chatRoomId;
 
-    @Setter
-    @Column
-    private Long userId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private UserInfo userInfo;
 
     @Column(columnDefinition = "TEXT")
     private String title;
@@ -39,6 +41,18 @@ public class ChatRoom {
 
     @Column
     private LocalDateTime deletedAt;
+
+    // 생성자
+    public ChatRoom(UserInfo userInfo) {
+        this.userInfo = userInfo;
+        this.title = "new chat";
+        this.createdAt = LocalDateTime.now();
+        this.lastMessageAt = LocalDateTime.now();
+    }
+
+    // 기본 생성자
+    protected ChatRoom() {}
+
 
     @PrePersist
     public void prePersist() {

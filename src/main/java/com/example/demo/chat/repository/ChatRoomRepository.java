@@ -19,9 +19,9 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
     void softDeleteChatRoom(@Param("chatRoomId") Long chatRoomId, @Param("now")LocalDateTime now);
     
     // 채팅방 목록 조회
-    @Query("SELECT c FROM ChatRoom c WHERE c.userId = :userId AND c.isDeleted = false ORDER BY c.lastMessageAt DESC")
-    List<ChatRoom> findChatRoomsByUserId(@Param("userId") Long userId);
+    List<ChatRoom> findByUserInfoAndIsDeletedFalseOrderByLastMessageAtDesc(UserInfo userInfo);
 
     // 특정 유저의 특정 채팅방 조회
-    ChatRoom findByChatRoomIdAndUserId(Long chatRoomId, Long userId);
+    ChatRoom findByChatRoomIdAndUserInfo(Long chatRoomId, UserInfo userInfo);
+
 }
