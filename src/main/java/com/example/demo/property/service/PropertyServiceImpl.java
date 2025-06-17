@@ -196,5 +196,18 @@ public class PropertyServiceImpl  implements PropertyService{
         return result;
     }
 
+    //매물OG 조회
+    @Override
+    public PropertyOgResponseDto getPropertyOg(Long propertyId) {
+    Property property = propertyRepository.findById(propertyId)
+            .orElseThrow(NotFoundException::new);
+
+    //이미지 1개
+        List<Image> images = imageRepository.findThumbnailsByPropertyIds(List.of(propertyId));
+        List<Image> selectedImage = images.isEmpty() ? List.of() : List.of(images.get(0));
+
+        return PropertyOgResponseDto.of(property,selectedImage);
+    }
+
 
 }
