@@ -3,6 +3,7 @@ package com.example.demo.property.dto;
 import com.example.demo.property.domain.Image;
 import com.example.demo.property.domain.Property;
 import com.example.demo.property.domain.PropertySummary;
+import com.example.demo.review.domain.Complex;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -29,6 +30,7 @@ import static com.example.demo.property.util.PropertyDtoConverter.convertSummary
 public class PropertyBasicInfoResponseDto {
 
     private Long propertyId; //매물아이디(기본키)
+    private Long complexId; //단지 아이디 (외래키)
     private String tradeTypeName; //거래유형명
     private String articleName; //매물이름
     private BigDecimal warrantPrice; //보증금 또는 전세
@@ -51,9 +53,10 @@ public class PropertyBasicInfoResponseDto {
 
 
      //빌더
-    public static PropertyBasicInfoResponseDto of(Property property, PropertySummary summary, List<Image> images,Boolean isBookmarked){
+    public static PropertyBasicInfoResponseDto of(Property property, PropertySummary summary, List<Image> images, Boolean isBookmarked){
         return PropertyBasicInfoResponseDto.builder()
                 .propertyId(property.getPropertyId())
+                .complexId(property.getComplex() != null ? property.getComplex().getId() : null)
                 .tradeTypeName(property.getTradeTypeName())
                 .articleName(property.getArticleName())
                 .dealPrice(property.getDealPrice())

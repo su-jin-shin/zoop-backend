@@ -1,5 +1,6 @@
 package com.example.demo.chat.repository;
 
+import com.example.demo.auth.domain.UserInfo;
 import com.example.demo.chat.domain.ChatRoom;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -8,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
 
@@ -20,4 +22,6 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
     @Query("SELECT c FROM ChatRoom c WHERE c.userId = :userId AND c.isDeleted = false ORDER BY c.lastMessageAt DESC")
     List<ChatRoom> findChatRoomsByUserId(@Param("userId") Long userId);
 
+    // 특정 유저의 특정 채팅방 조회
+    ChatRoom findByChatRoomIdAndUserId(Long chatRoomId, Long userId);
 }

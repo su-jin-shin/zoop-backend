@@ -1,5 +1,6 @@
 package com.example.demo.chat.domain;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -9,6 +10,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "chat_room")
 @Getter
+@SuppressFBWarnings(value = "EI_EXPOSE_REP")
 public class ChatRoom {
 
     @Id
