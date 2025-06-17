@@ -10,10 +10,11 @@ import org.hibernate.dialect.PostgreSQLEnumJdbcType;
 
 import java.time.LocalDateTime;
 
+@Getter
 @Entity
 @Table(name = "message")
 @NoArgsConstructor
-@SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "chatRoom은 도메인 내부 객체로 신뢰 가능")
+@SuppressFBWarnings(value = { "EI_EXPOSE_REP", "EI_EXPOSE_REP2" }, justification = "chatRoom은 도메인 내부 객체로 신뢰 가능")
 public class Message {
 
     public Message(ChatRoom chatRoom, SenderType senderType, String content) {
@@ -32,7 +33,7 @@ public class Message {
     @JoinColumn(name = "chat_room_id", nullable = false)
     private ChatRoom chatRoom;
 
-    @JdbcType(PostgreSQLEnumJdbcType.class)
+    @Enumerated(EnumType.STRING)
     private SenderType senderType;
 
     @Column(columnDefinition = "TEXT")

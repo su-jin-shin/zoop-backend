@@ -1,19 +1,24 @@
 package com.example.demo.chat.controller;
 
 import com.example.demo.auth.dto.LoginUser;
+import com.example.demo.chat.dto.ChatRoomDetailResponseDto;
 import com.example.demo.chat.dto.ChatRoomDto;
 import com.example.demo.chat.dto.MessageDto;
 import com.example.demo.chat.service.ChatService;
 import com.example.demo.chat.type.SenderType;
+import com.example.demo.common.response.ResponseResult;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+
+import static com.example.demo.common.response.SuccessMessage.GET_SUCCESS;
 
 @RestController
 @RequestMapping("/chats")
@@ -77,4 +82,18 @@ public class ChatController {
         return ResponseEntity.ok(chatRooms);
     }
 
+    // 채팅 상세보기
+    @GetMapping("/detail/{chatRoomId}")
+    public ResponseEntity<?> getChatRoomsDetails(@AuthenticationPrincipal LoginUser loginUser,
+                                                 @PathVariable("chatRoomId") Long chatRoomId) {
+        Long userId = Long.valueOf(loginUser.getUsername());
+        ChatRoomDetailResponseDto responseDto = chatService.getUserChatRoomMessages(userId, chatRoomId);
+        return ResponseEntity.ok(
+                ResponseResult.success(
+                        HttpStatus.OK,
+                        GET_SUCCESS.getMessage(),
+                        responseDto
+                )
+        );
+    }
 }
