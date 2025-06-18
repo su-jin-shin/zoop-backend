@@ -223,4 +223,21 @@ public class PropertyController {
 
     }
 
+    // 부동산별 매물 보기 (부동산 정보)
+    @GetMapping("/{propertyId}/realty")
+    public ResponseEntity<?> getRealtyWithProperties (@PathVariable Long propertyId,
+                                                                                    @AuthenticationPrincipal LoginUser loginUser){
+        if(loginUser == null){
+            throw new UserNotFoundException();
+        }
+        RealtyWithPropertiesResponseDto realtyWithPropertiesResponseDto = propertyService.getRealtyWithProperties(propertyId);
+
+        return ResponseEntity.ok(
+                ResponseResult.success(
+                        HttpStatus.OK,
+                        GET_SUCCESS.getMessage(),
+                        realtyWithPropertiesResponseDto
+                )
+        );
+    }
 }

@@ -8,7 +8,7 @@ import com.example.demo.mypage.repository.BookmarkedPropertyRepository;
 import com.example.demo.property.domain.Image;
 import com.example.demo.property.domain.Property;
 import com.example.demo.property.dto.ImageDto;
-import com.example.demo.property.dto.PropertyListItemDto;
+import com.example.demo.realty.dto.PropertyListItemDto;
 import com.example.demo.property.repository.ImageRepository;
 import com.example.demo.realty.domain.Realty;
 import lombok.RequiredArgsConstructor;

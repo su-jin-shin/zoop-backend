@@ -8,6 +8,10 @@ import com.example.demo.mypage.dto.PropertyMapResponse;
 import com.example.demo.mypage.dto.MyPropertyPageResponse;
 import com.example.demo.mypage.dto.MapPropertyDto;
 import com.example.demo.mypage.service.BookmarkedPropertyService;
+
+
+import com.example.demo.realty.dto.PropertyListItemDto;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.web.PageableDefault;
@@ -23,8 +27,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 import java.io.ByteArrayInputStream;
+
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+
 import java.util.List;
 import java.util.function.Function;
 

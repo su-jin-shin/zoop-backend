@@ -1,5 +1,8 @@
 package com.example.demo.mypage.dto;
 
+
+import com.example.demo.realty.dto.PropertyListItemDto;
+
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.Builder;
 import lombok.Getter;
