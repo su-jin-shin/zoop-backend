@@ -1,8 +1,12 @@
 package com.example.demo.mypage.service;
 
+
 import com.example.demo.common.excel.PropertyExcelDto;
 import com.example.demo.mypage.dto.PropertyMapResponse;
-import com.example.demo.property.dto.PropertyListItemDto;
+
+
+import com.example.demo.realty.dto.PropertyListItemDto;
+
 
 import java.util.List;
 

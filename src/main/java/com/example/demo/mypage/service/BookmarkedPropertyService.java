@@ -3,7 +3,7 @@ package com.example.demo.mypage.service;
 import com.example.demo.common.excel.PropertyExcelDto;
 import com.example.demo.mypage.dto.MyPropertyPageResponse;
 import com.example.demo.mypage.dto.MapPropertyDto;
-import com.example.demo.property.dto.PropertyListItemDto;
+import com.example.demo.realty.dto.PropertyListItemDto;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
