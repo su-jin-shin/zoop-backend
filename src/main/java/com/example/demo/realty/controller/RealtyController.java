@@ -51,7 +51,7 @@ public class RealtyController {
         if(loginUser == null){
             throw new UserNotFoundException();
         }
-        Long userId = (loginUser != null) ?loginUser.getUserId() : null;
+        Long userId = (loginUser != null) ? Long.valueOf(loginUser.getUsername()) : null;
 
         RealtyPropertyListResponseDto response = realtyService.getPropertiesByRealty(realtyId, tradeTypeName, userId,pageable);
 
