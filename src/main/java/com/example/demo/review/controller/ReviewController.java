@@ -25,89 +25,88 @@ public class ReviewController {
 
     private final ReviewService reviewService;
 
-    @GetMapping("/{propertyId}")
+    @GetMapping("/{propertyId}")   //성공
     public ResponseEntity<?> getReviews(
-            @RequestParam(required = false) Long complexId,
             @PathVariable Long propertyId,
-            @RequestParam(defaultValue = "like") String sort,
-            @RequestParam(defaultValue = "false") boolean isMine,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
             @AuthenticationPrincipal LoginUser loginUser
-    ) {
-        if (isMine && loginUser == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(ResponseResult.failed(HttpStatus.UNAUTHORIZED, FailedMessage.LOGIN_REQUIRED.getMessage(), null));
-        }
+    ){
+        Long userId = Long.valueOf(loginUser.getUsername());
 
-        ReviewListResponse response = reviewService.getReviews(
-                complexId, propertyId, sort, isMine, loginUser, page, size);
+        ReviewListResponse response = reviewService.getReviews(userId, propertyId);
 
         return ResponseEntity.ok(ResponseResult.success(HttpStatus.OK, SuccessMessage.REVIEW_FETCHED.getMessage(), response));
     }
 
-    @PostMapping("/{propertyId}")
+    @PostMapping("/{propertyId}")  //성공
     public ResponseEntity<?> createReview(
             @PathVariable Long propertyId,
             @RequestBody @Valid ReviewCreateRequest request,
             @AuthenticationPrincipal LoginUser loginUser
     ) {
-        if (loginUser == null) {
+        Long userId = Long.valueOf(loginUser.getUsername());
+
+        if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(ResponseResult.failed(HttpStatus.UNAUTHORIZED, FailedMessage.LOGIN_REQUIRED.getMessage(), null));
         }
 
-        ReviewResponse response = reviewService.createReview(propertyId, request, loginUser);
+        ReviewCreateResponse response = reviewService.createReview(propertyId, request, userId);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ResponseResult.success(HttpStatus.CREATED, SuccessMessage.REVIEW_CREATED.getMessage(), response));
     }
 
-    @PatchMapping("/{reviewId}")
+    @PatchMapping("/{reviewId}")  //성공
     public ResponseEntity<?> updateReview(
             @PathVariable Long reviewId,
             @RequestBody @Valid ReviewUpdateRequest request,
             @AuthenticationPrincipal LoginUser loginUser
     ) {
-        if (loginUser == null) {
+        Long userId = Long.valueOf(loginUser.getUsername());
+
+        if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(ResponseResult.failed(HttpStatus.UNAUTHORIZED, FailedMessage.LOGIN_REQUIRED.getMessage(), null));
         }
 
-        ReviewResponse response = reviewService.updateReview(reviewId, request, loginUser);
+        ReviewCreateResponse response = reviewService.updateReview(reviewId, request, userId);
         return ResponseEntity.ok(ResponseResult.success(HttpStatus.OK, SuccessMessage.REVIEW_UPDATED.getMessage(), response));
     }
 
-    @DeleteMapping("/{reviewId}")
+    @DeleteMapping("/{reviewId}")  //성공
     public ResponseEntity<?> deleteReview(
             @PathVariable Long reviewId,
             @AuthenticationPrincipal LoginUser loginUser
     ) {
-        if (loginUser == null) {
+        Long userId = Long.valueOf(loginUser.getUsername());
+
+        if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(ResponseResult.failed(HttpStatus.UNAUTHORIZED, FailedMessage.LOGIN_REQUIRED.getMessage(), null));
         }
 
-        reviewService.deleteReview(reviewId, loginUser);
+        reviewService.deleteReview(reviewId, userId);
         return ResponseEntity.ok(ResponseResult.success(HttpStatus.OK, SuccessMessage.REVIEW_DELETED.getMessage(), null));
     }
 
     @PutMapping("/{reviewId}/likes")
     public ResponseEntity<?> updateLikeStatus(
             @PathVariable Long reviewId,
-            @RequestBody Map<String, Boolean> payload,
+            @RequestBody ReviewLikeRequest request,
             @AuthenticationPrincipal LoginUser loginUser) {
 
-        if (loginUser == null) {
+        Long userId = Long.valueOf(loginUser.getUsername());
+
+        if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(ResponseResult.failed(HttpStatus.UNAUTHORIZED, FailedMessage.LOGIN_REQUIRED.getMessage(), null));
-        }
+        }  //없어도 됨 --> 추후 삭제하고 @AuthenticationPrincipal이 null이면 exception hander에서 잡기
 
-        Boolean isLiked = payload.get("isLiked");
+        Boolean isLiked = request.getIsLiked();
         if (isLiked == null) {
             throw new InvalidRequestException();
         }
 
-        ReviewLikeResponse response = reviewService.updateLikeStatus(reviewId, isLiked, loginUser);
+        ReviewLikeResponse response = reviewService.updateLikeStatus(reviewId, isLiked, userId);
         HttpStatus status = isLiked ? HttpStatus.CREATED : HttpStatus.OK;
         return ResponseEntity.status(status)
                 .body(ResponseResult.success(status, SuccessMessage.REVIEW_LIKED.getMessage(), response));
@@ -118,12 +117,14 @@ public class ReviewController {
             @PathVariable Long reviewId,
             @AuthenticationPrincipal LoginUser loginUser) {
 
-        if (loginUser == null) {
+        Long userId = Long.valueOf(loginUser.getUsername());
+
+        if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(ResponseResult.failed(HttpStatus.UNAUTHORIZED, FailedMessage.LOGIN_REQUIRED.getMessage(), null));
         }
 
-        boolean liked = reviewService.isLiked(reviewId, loginUser);
+        boolean liked = reviewService.isLiked(reviewId, userId);
         return ResponseEntity.ok(ResponseResult.success(HttpStatus.OK, SuccessMessage.REVIEW_LIKE_STATUS_FETCHED.getMessage(), liked));
     }
 
@@ -140,6 +141,24 @@ public class ReviewController {
                 .reviewId(reviewId).commentCount(count).build();
         return ResponseEntity.ok(ResponseResult.success(HttpStatus.OK, SuccessMessage.COMMENT_COUNT_FETCHED.getMessage(), response));
     }
+
+
+    //내 리뷰 조회
+    @GetMapping("/my")
+    public ResponseEntity<?> getMyReviews(
+            @AuthenticationPrincipal LoginUser loginUser
+    ) {
+        Long userId = Long.valueOf(loginUser.getUsername());
+
+        var myReviews = reviewService.getMyReviews(userId);
+
+        return ResponseEntity.ok(
+                ResponseResult.success(HttpStatus.OK, "내 리뷰 목록 조회 성공", myReviews)
+        );
+    }
+
+
+
 }
 
 

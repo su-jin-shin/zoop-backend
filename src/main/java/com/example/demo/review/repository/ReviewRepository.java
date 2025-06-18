@@ -1,13 +1,6 @@
 package com.example.demo.review.repository;
 
-/*
-목적 :리뷰 본문, 별점 등 처리 전담
-메서드 : 리뷰 목록 조회, 정렬, 사용자 리뷰 조회 등
-*/
-
 import com.example.demo.auth.domain.UserInfo;
-import com.example.demo.auth.dto.LoginUser;
-import com.example.demo.common.exception.InvalidRequestException;
 import com.example.demo.review.domain.Review;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.springframework.data.domain.Page;
@@ -18,42 +11,59 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 import java.util.Optional;
 
 @Repository
 @SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public interface ReviewRepository extends JpaRepository<Review, Long> {
 
+
+    // 삭제된 리뷰 제외 조회
+    @Query("SELECT r FROM Review r WHERE r.id = :id AND r.deletedAt IS NULL")
+    Optional<Review> findActiveById(@Param("id") Long id);
+
+
+    // 복합단지 ID로 리뷰 조회
     @Query("SELECT r FROM Review r " +
             "WHERE r.complex.id = :complexId AND r.deletedAt IS NULL")
     Page<Review> findByComplexId(@Param("complexId") Long complexId, Pageable pageable);
 
+    // 매물 ID로 리뷰 조회
     @Query("SELECT r FROM Review r " +
             "WHERE r.propertyId = :propertyId AND r.deletedAt IS NULL")
     Page<Review> findByPropertyId(@Param("propertyId") Long propertyId, Pageable pageable);
 
+    // 특정 유저의 리뷰 조회
     @Query("SELECT r FROM Review r " +
-            "WHERE r.user = :user AND r.deletedAt IS NULL")
-    Page<Review> findByUser(@Param("user") UserInfo user, Pageable pageable);
+            "WHERE r.user = :user AND r.deletedAt IS NULL " +
+            "ORDER BY r.createdAt DESC")
+    List<Review> findActiveByUser(@Param("user") UserInfo user);
 
-    // 공통 조회 메서드 추상화
-    default Page<Review> findPagedReviews(Long complexId, Long propertyId, String sort, boolean isMine,
-                                          LoginUser loginUser, int page, int size) {
+
+    // 복합단지에 대한 리뷰 조회
+    default Page<Review> findReviewsByComplexId(Long complexId, String sort, int page, int size) {
         Sort sortOption = switch (sort) {
             case "latest" -> Sort.by(Sort.Direction.DESC, "createdAt");
             case "like" -> Sort.by(Sort.Direction.DESC, "likeCount");
             default -> Sort.by(Sort.Direction.DESC, "likeCount");
         };
         Pageable pageable = PageRequest.of(page, size, sortOption);
-
-        if (isMine) {
-            return findByUser(loginUser.getUserInfo(), pageable);
-        } else if (complexId != null) {
-            return findByComplexId(complexId, pageable);
-        } else if (propertyId != null) {
-            return findByPropertyId(propertyId, pageable);
-        } else {
-            throw new InvalidRequestException();
-        }
+        return findByComplexId(complexId, pageable);
     }
+
+    // 매물에 대한 리뷰 조회
+    default Page<Review> findReviewsByPropertyId(Long propertyId, String sort, int page, int size) {
+        Sort sortOption = switch (sort) {
+            case "latest" -> Sort.by(Sort.Direction.DESC, "createdAt");
+            case "like" -> Sort.by(Sort.Direction.DESC, "likeCount");
+            default -> Sort.by(Sort.Direction.DESC, "likeCount");
+        };
+        Pageable pageable = PageRequest.of(page, size, sortOption);
+        return findByPropertyId(propertyId, pageable);
+    }
+
+
 }
+

@@ -58,11 +58,5 @@ public class LoginUser implements UserDetails {
         return true;
     }
 
-    public Long getUserId() {
-        return userInfo.getUserId();
-    }
 
-    public UserInfo getUserInfo() {
-        return userInfo;
-    }
 }

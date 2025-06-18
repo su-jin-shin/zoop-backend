@@ -14,9 +14,9 @@ import java.util.List;
 public class ReviewListResponse {
     private Long propertyId;
     private Long complexId;
-    private List<ReviewResponse> reviews;
-    private long page;
-    private long size;
-    private long totalCount;
+    private List<ReviewCreateResponse> reviews;
+    private Long page;
+    private Long size;
+    private Long totalCount;
 }
 

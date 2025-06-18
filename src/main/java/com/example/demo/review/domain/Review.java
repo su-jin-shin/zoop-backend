@@ -51,11 +51,15 @@ public class Review {
     @Builder.Default
     private Long likeCount = 0L;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "has_children")
-    private boolean hasChildren;
+    @Builder.Default
+    private HasChildren hasChildren = HasChildren.NO_CHILDREN;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "is_resident")
-    private boolean isResident;
+    @Builder.Default
+    private IsResident isResident = IsResident.NON_RESIDENT;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -75,9 +79,7 @@ public class Review {
 
     /* 비즈니스 메서드 */
 
-    public boolean isMine(LoginUser currentUser) {
-        return isMine(currentUser.getUserInfo());
-    }
+
 
     public boolean isMine(UserInfo currentUser) {
         return user != null && user.getUserId().equals(currentUser.getUserId());
@@ -98,7 +100,6 @@ public class Review {
     public void deleteReview() {
         this.deletedAt = LocalDateTime.now();
     }
-
 
 
 }
