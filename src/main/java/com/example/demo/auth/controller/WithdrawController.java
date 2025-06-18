@@ -19,7 +19,7 @@ public class WithdrawController {
 
     private final WithdrawServiceImpl withdrawService;
 
-    @PostMapping("/withdraw")
+    @DeleteMapping("/withdraw")
     public ResponseEntity<ResponseResult> withdraw(
             @AuthenticationPrincipal LoginUser loginUser,
             @Valid @RequestBody WithdrawRequestDto request) {

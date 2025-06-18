@@ -154,7 +154,7 @@
         }
 
         const res = await authFetch(`${API}/mypage/withdraw`, {
-            method: "POST",
+            method: "DELETE",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ withdrawReason: reason })
         });
