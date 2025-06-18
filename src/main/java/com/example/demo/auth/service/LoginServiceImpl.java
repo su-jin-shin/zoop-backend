@@ -6,6 +6,8 @@ import com.example.demo.auth.dto.KakaoTokenResponse;
 import com.example.demo.auth.dto.KakaoUserDto;
 import com.example.demo.auth.dto.LoginResponseDto;
 import com.example.demo.auth.dto.LoginUser;
+import com.example.demo.auth.factory.LoginHistoryFactory;
+import com.example.demo.auth.factory.UserInfoFactory;
 import com.example.demo.auth.repository.LoginHistoryRepository;
 import com.example.demo.auth.repository.UserInfoRepository;
 import com.example.demo.auth.util.JwtUtil;
@@ -53,15 +55,14 @@ public class LoginServiceImpl implements LoginService {
         /* 2) 탈퇴 회원 복구 또는 신규 생성 */
         UserInfo user = userRepo.findByEmail(email).orElse(null);
 
-        if (user != null) {
-            // ── 기존 row
-            user.reactivate();              // ← 탈퇴 상태면 deletedAt·withdrawReason NULL 처리
-        } else {
-            user = new UserInfo();
-            user.setEmail(email);
-            user.setKakaoId(kakaoId);
-            user.setProfileImage(profile);
-        }
+
+
+            if (user != null) {
+                user.reactivate();          // ← 탈퇴 상태면 deletedAt·withdrawReason NULL 처리
+            } else {
+                user = UserInfoFactory.createFromKakao(kakaoId, email, profile);
+            }
+
 
         user.setLastLoginAt(LocalDateTime.now());
         user.setProfileImage(profile);      // 프로필 이미지 최신화
@@ -69,10 +70,7 @@ public class LoginServiceImpl implements LoginService {
 
 
         // 3) 로그인 히스토리 기록
-        LoginHistory history = new LoginHistory();
-        history.setUser(user);
-        history.setLoginAt(LocalDateTime.now());
-        history.setIpAddress(clientIp);
+        LoginHistory history = LoginHistoryFactory.create(user, clientIp);
         loginHistoryRepo.save(history);
 
         // 4) SecurityContext 생성 & 세션 저장
