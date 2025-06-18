@@ -15,4 +15,5 @@ public class ReviewCommentLikeResponse {
     private Long commentId;
     private Long userId;
     private Boolean isLiked;
+    private Long likeCount;
 }

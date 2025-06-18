@@ -14,10 +14,10 @@ import java.util.List;
 @SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class ReviewCommentListResponse {
     private Long reviewId;
-    private List<ReviewCommentResponse> comments;
-    private long commentCount;
-    private long page;
-    private long size;
-    private long totalCount;
+    private List<ReviewCommentCreateResponse> comments;
+    private Long commentCount;
+    private Long page;
+    private Long size;
+    private Long totalCount;
 }
 

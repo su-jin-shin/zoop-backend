@@ -1,12 +1,12 @@
 package com.example.demo.review.controller;
 
+import com.example.demo.review.service.ReviewCommentService;
 import com.example.demo.auth.dto.LoginUser;
 import com.example.demo.common.exception.InvalidRequestException;
 import com.example.demo.common.response.ResponseResult;
 import com.example.demo.common.response.SuccessMessage;
 import com.example.demo.common.response.FailedMessage;
 import com.example.demo.review.dto.ReviewComment.*;
-import com.example.demo.review.service.ReviewCommentService;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -26,27 +26,39 @@ import java.util.Map;
 @SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class ReviewCommentController {
 
-    private static final Logger log = LoggerFactory.getLogger(ReviewCommentController.class);
+
     private final ReviewCommentService commentService;
 
-    @GetMapping
-    public ResponseEntity<?> getComments(@PathVariable Long reviewId, @AuthenticationPrincipal LoginUser loginUser) {
-        List<ReviewCommentResponse> comments = commentService.getComments(reviewId, loginUser);
+    @GetMapping  //성공
+    public ResponseEntity<?> getComments(
+            @PathVariable Long reviewId,
+            @AuthenticationPrincipal LoginUser loginUser) {
+
+        Long userId = Long.valueOf(loginUser.getUsername());
+
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ResponseResult.failed(HttpStatus.UNAUTHORIZED, FailedMessage.LOGIN_REQUIRED.getMessage(), null));
+        }
+
+        List<ReviewCommentCreateResponse> comments = commentService.getComments(reviewId, userId);
         return ResponseEntity.ok(ResponseResult.success(HttpStatus.OK, SuccessMessage.GET_COMMENT_LIST_SUCCESS.getMessage(), comments));
     }
 
-    @PostMapping
+    @PostMapping   //성공
     public ResponseEntity<?> createComment(
             @PathVariable Long reviewId,
             @RequestBody @Valid ReviewCommentCreateRequest request,
             @AuthenticationPrincipal LoginUser loginUser
     ) {
-        if (loginUser == null) {
+        Long userId = Long.valueOf(loginUser.getUsername());
+
+        if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(ResponseResult.failed(HttpStatus.UNAUTHORIZED, FailedMessage.USER_NOT_FOUND.getMessage(), null));
+                    .body(ResponseResult.failed(HttpStatus.UNAUTHORIZED, FailedMessage.LOGIN_REQUIRED.getMessage(), null));
         }
 
-        ReviewCommentResponse response = commentService.createComment(reviewId, loginUser, request);
+        ReviewCommentCreateResponse response = commentService.createComment(reviewId, userId, request);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ResponseResult.success(HttpStatus.CREATED, SuccessMessage.COMMENT_CREATED.getMessage(), response));
     }
@@ -57,7 +69,15 @@ public class ReviewCommentController {
             @RequestBody @Valid ReviewCommentUpdateRequest request,
             @AuthenticationPrincipal LoginUser loginUser
     ) {
-        ReviewCommentResponse response = commentService.updateComment(commentId, loginUser, request);
+        Long userId = Long.valueOf(loginUser.getUsername());
+
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ResponseResult.failed(HttpStatus.UNAUTHORIZED, FailedMessage.LOGIN_REQUIRED.getMessage(), null));
+        }
+
+
+        ReviewCommentCreateResponse response = commentService.updateComment(commentId, userId, request);
         return ResponseEntity.ok(ResponseResult.success(HttpStatus.OK, SuccessMessage.COMMENT_UPDATED.getMessage(), response));
     }
 
@@ -66,33 +86,42 @@ public class ReviewCommentController {
             @PathVariable Long commentId,
             @AuthenticationPrincipal LoginUser loginUser
     ) {
-        commentService.deleteComment(commentId, loginUser);
+        Long userId = Long.valueOf(loginUser.getUsername());
+
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ResponseResult.failed(HttpStatus.UNAUTHORIZED, FailedMessage.LOGIN_REQUIRED.getMessage(), null));
+        }
+
+        commentService.deleteComment(commentId, userId);
         return ResponseEntity.ok(ResponseResult.success(HttpStatus.OK, SuccessMessage.COMMENT_DELETED.getMessage(), null));
     }
 
     @PutMapping("/{commentId}/likes")
-    public ResponseEntity<?> toggleLike(
+    public ResponseEntity<?> updateCommentLikeStatus(
             @PathVariable Long commentId,
-            @RequestBody Map<String, Boolean> payload,
+            @RequestBody ReviewCommentLikeRequest request,
             @AuthenticationPrincipal LoginUser loginUser
     ) {
-        if (loginUser == null) {
+        Long userId = Long.valueOf(loginUser.getUsername());
+
+        if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(ResponseResult.failed(HttpStatus.UNAUTHORIZED, FailedMessage.USER_NOT_FOUND.getMessage(), null));
+                    .body(ResponseResult.failed(HttpStatus.UNAUTHORIZED, FailedMessage.LOGIN_REQUIRED.getMessage(), null));
         }
 
-        Boolean isLiked = payload.get("isLiked");
+        Boolean isLiked = request.getIsLiked();
         if (isLiked == null) {
             throw new InvalidRequestException();
         }
 
-        var response = commentService.updateLikeStatus(commentId, loginUser, isLiked);
+        ReviewCommentLikeResponse response = commentService.updateLikeStatus(commentId, isLiked, userId);
         HttpStatus status = isLiked ? HttpStatus.CREATED : HttpStatus.OK;
         return ResponseEntity.status(status)
                 .body(ResponseResult.success(status, SuccessMessage.COMMENT_LIKE_STATUS_UPDATED.getMessage(), response));
     }
 
-    @GetMapping("/count")
+    @GetMapping("/count")   // review댓글 세기랑 중복됨. 후에 리팩토링시 변경 예정
     public ResponseEntity<?> getCommentCount(@PathVariable Long reviewId) {
         Long count = commentService.getCommentCount(reviewId);
         return ResponseEntity.ok(ResponseResult.success(HttpStatus.OK, SuccessMessage.GET_COMMENT_COUNT.getMessage(), count));
@@ -106,9 +135,34 @@ public class ReviewCommentController {
 
     @GetMapping("/{commentId}/likes")
     public ResponseEntity<?> isLiked(@PathVariable Long commentId, @AuthenticationPrincipal LoginUser loginUser) {
-        boolean liked = commentService.isLiked(commentId, loginUser);
+        Long userId = Long.valueOf(loginUser.getUsername());
+
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ResponseResult.failed(HttpStatus.UNAUTHORIZED, FailedMessage.LOGIN_REQUIRED.getMessage(), null));
+        }
+
+        boolean liked = commentService.isLiked(commentId, userId);
         return ResponseEntity.ok(ResponseResult.success(HttpStatus.OK, SuccessMessage.GET_COMMENT_LIKE_STATUS.getMessage(), liked));
     }
+
+
+    //내 댓글 조회
+    @GetMapping("/my")
+    public ResponseEntity<?> getMyComments(
+            @AuthenticationPrincipal LoginUser loginUser
+    ) {
+        Long userId = Long.valueOf(loginUser.getUsername());
+
+        var myComments = commentService.getMyComments(userId);
+
+        return ResponseEntity.ok(
+                ResponseResult.success(HttpStatus.OK, "내 댓글 목록 조회 성공", myComments)
+        );
+    }
+
+
+
 }
 
 

@@ -1,15 +1,14 @@
 package com.example.demo.review.dto.Review;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-//댓글 수 조회 Response용 DTO
 @Getter
-@Builder
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
-public class CommentCountResponse {
-    private Long reviewId;
-    private Long commentCount;
+public class ReviewLikeRequest {
+    private Boolean isLiked;
 }

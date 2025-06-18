@@ -54,9 +54,17 @@ public class ReviewCommentLike {
     }
 
     // 좋아요 등록/해제 
-    public void updateLikeStatus(boolean isLiked){
+    public void updateLikeStatus(boolean isLiked) {
         this.isLiked = isLiked;
-        onUpdate();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public static ReviewCommentLike of(ReviewComment comment, UserInfo user, boolean isLiked) {
+        return ReviewCommentLike.builder()
+                .reviewComment(comment)
+                .user(user)
+                .isLiked(isLiked)
+                .build();
     }
 
 }
