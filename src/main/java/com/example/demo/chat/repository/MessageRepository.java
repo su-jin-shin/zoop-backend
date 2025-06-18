@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface MessageRepository extends JpaRepository<Message, Long> {
 
@@ -18,6 +19,9 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
 
     // 로그인한 유저가 특정 채팅방을 조회할 때 삭제되지 않은 메세지만 조회
     List<Message> findByChatRoom_ChatRoomIdAndDeletedAtIsNull(Long chatRoomId);
+
+    Optional<Message>  findTopByChatRoomAndContentContainingIgnoreCaseOrderByMessageIdDesc(ChatRoom chatRoom, String searchText);
+
 
     // 검색어가 채팅방에서 채팅한 내용과 동일할 때 조회
     boolean existsByChatRoomAndContentContainingIgnoreCase(ChatRoom chatRoom, String searchText);
