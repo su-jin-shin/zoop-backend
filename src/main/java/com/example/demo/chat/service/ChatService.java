@@ -7,6 +7,7 @@ import com.example.demo.chat.domain.ChatRoom;
 import com.example.demo.chat.domain.Message;
 import com.example.demo.chat.dto.ChatRoomDetailResponseDto;
 import com.example.demo.chat.dto.ChatRoomDto;
+import com.example.demo.chat.dto.ChatRoomSearchDto;
 import com.example.demo.chat.dto.MessageDto;
 import com.example.demo.chat.exception.ChatRoomNotFoundException;
 import com.example.demo.chat.exception.ChatServiceException;
@@ -24,6 +25,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -35,26 +38,26 @@ public class ChatService {
     private final UserInfoRepository userInfoRepository;
 
     // 채팅방 생성
-        @Transactional
-        public Long createChatRoom(Long userId) {
-            try {
-                // 사용자 조회
-                UserInfo userInfo = userInfoRepository.findByUserId(userId)
-                        .orElseThrow(UserNotFoundException::new);
+    @Transactional
+    public Long createChatRoom(Long userId) {
+        try {
+            // 사용자 조회
+            UserInfo userInfo = userInfoRepository.findByUserId(userId)
+                    .orElseThrow(UserNotFoundException::new);
 
-                // 채팅방 생성
-                ChatRoom chatRoom = new ChatRoom(userInfo);
-                ChatRoom saved = chatRoomRepository.save(chatRoom);
+            // 채팅방 생성
+            ChatRoom chatRoom = new ChatRoom(userInfo);
+            ChatRoom saved = chatRoomRepository.save(chatRoom);
 
-                return saved.getChatRoomId();
+            return saved.getChatRoomId();
 
-            } catch (Exception e) {
-                throw new ChatServiceException(
-                        String.format("%s. userId=%d", ErrorMessages.CHAT_CREATE_FAILED, userId),
-                        e
-                );
-            }
+        } catch (Exception e) {
+            throw new ChatServiceException(
+                    String.format("%s. userId=%d", ErrorMessages.CHAT_CREATE_FAILED, userId),
+                    e
+            );
         }
+    }
 
     private ChatRoom findByChatRoomId(Long chatRoomId, String context) {
         return chatRoomRepository.findById(chatRoomId)
@@ -132,7 +135,7 @@ public class ChatService {
 
         // 용자의 채팅방인지 확인 후 조회
         ChatRoom chatRoom = chatRoomRepository.findByChatRoomIdAndUserInfo(chatRoomId, userInfo);
-        if(chatRoom == null){
+        if (chatRoom == null) {
             throw new NotFoundException();
         }
 
@@ -150,23 +153,33 @@ public class ChatService {
 
     // 채팅방 검색( 제목 및 채팅내용으로 검색)
     @Transactional(readOnly = true)
-    public List<ChatRoomDto> searchChatRooms(Long userId, String searchText) {
+    public List<ChatRoomSearchDto> searchChatRooms(Long userId, String searchText) {
 
         // 사용자 조회
         UserInfo userInfo = userInfoRepository.findByUserId(userId)
                 .orElseThrow(UserNotFoundException::new);
-        // 사용자의 채팅방 전체 조회
-        List<ChatRoom> chatRooms = chatRoomRepository.findByUserInfoAndIsDeletedFalseOrderByLastMessageAtDesc(userInfo);
 
-        return chatRooms.stream()
-                .filter(chatRoom -> isMatchingChatRoom(chatRoom, searchText))
-                .map(ChatRoomDto::fromEntity)
+        // 삭제되지 않은 채팅방 전체 조회 (생성일 내림차순 정렬)
+        return chatRoomRepository.findByUserInfoAndIsDeletedFalseOrderByCreatedAtDesc(userInfo).stream()
+                .map(chatRoom -> {
+                    String title = chatRoom.getTitle();
+                    boolean matchesTitle = title.contains(searchText);
+
+                    // 사용자가 검색한 검색어와 매칭되는 채팅방 내용중에서 가장 최신의 데이터 담기
+                    Optional<Message> lastMatchingMessage = messageRepository
+                            .findTopByChatRoomAndContentContainingIgnoreCaseOrderByMessageIdDesc(chatRoom, searchText);
+
+                    if (matchesTitle || lastMatchingMessage.isPresent()) {
+                        String messageContent = lastMatchingMessage
+                                .map(Message::getContent)
+                                .orElse(null);
+                        return ChatRoomSearchDto.fromEntity(chatRoom, messageContent);
+
+                    }
+
+                    return null;
+                })
+                .filter(Objects::nonNull)
                 .toList();
-    }
-
-    // 로그인한 사용자의 채팅방 중에서 채팅방 제목이나 채팅내용이 동일할 때 조회
-    private boolean isMatchingChatRoom(ChatRoom chatRoom, String searchText) {
-        return chatRoom.getTitle().contains(searchText) ||
-                messageRepository.existsByChatRoomAndContentContainingIgnoreCase(chatRoom, searchText);
     }
 }

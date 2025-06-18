@@ -3,6 +3,7 @@ package com.example.demo.chat.controller;
 import com.example.demo.auth.dto.LoginUser;
 import com.example.demo.chat.dto.ChatRoomDetailResponseDto;
 import com.example.demo.chat.dto.ChatRoomDto;
+import com.example.demo.chat.dto.ChatRoomSearchDto;
 import com.example.demo.chat.dto.MessageDto;
 import com.example.demo.chat.service.ChatService;
 import com.example.demo.chat.type.SenderType;
@@ -102,7 +103,7 @@ public class ChatController {
                                             @RequestParam String searchText) {
         //Long userId = Long.valueOf(loginUser.getUsername());
         Long userId = 4L;
-        List<ChatRoomDto> chatRooms = chatService.searchChatRooms(userId, searchText);
+        List<ChatRoomSearchDto> chatRooms = chatService.searchChatRooms(userId, searchText);
 
         return ResponseEntity.ok(
                 ResponseResult.success(

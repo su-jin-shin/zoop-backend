@@ -2,14 +2,12 @@ package com.example.demo.mypage.controller;
 
 import com.example.demo.auth.dto.LoginUser;
 import com.example.demo.common.excel.ExcelGenerator;
-import com.example.demo.common.excel.ExcelResponseDto;
 import com.example.demo.common.excel.PropertyExcelDto;
 import com.example.demo.common.excel.PropertyExcelMetaProvider;
 import com.example.demo.mypage.dto.PropertyMapResponse;
-import com.example.demo.mypage.dto.BookmarkedPropertyPageResponse;
+import com.example.demo.mypage.dto.MyPropertyPageResponse;
 import com.example.demo.mypage.dto.MapPropertyDto;
 import com.example.demo.mypage.service.BookmarkedPropertyService;
-import com.example.demo.property.dto.PropertyListItemDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.web.PageableDefault;
@@ -25,7 +23,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.function.Function;
 
@@ -42,7 +41,7 @@ public class BookmarkedPropertyController {
 
 //    GET /mypage/histories/bookmarked-properties?page=2
     @GetMapping
-    public ResponseEntity<BookmarkedPropertyPageResponse> getBookmarkedPropertiesByPageable(
+    public ResponseEntity<MyPropertyPageResponse> getBookmarkedPropertiesByPageable(
             @AuthenticationPrincipal LoginUser loginUser,
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {
@@ -63,16 +62,12 @@ public class BookmarkedPropertyController {
         // 1. 지도용 전체 좌표 리스트
         List<MapPropertyDto> mapDtos = bookmarkedPropertyService.getMapProperties(userId);
 
-        List<PropertyListItemDto> converted = mapDtos.stream()
-                .map(MapPropertyDto::toPropertyListItemDto)
-                .toList();
-
         // 2. 바텀시트용 페이지 목록
-        BookmarkedPropertyPageResponse bottomSheet = bookmarkedPropertyService.getPagedProperties(userId, page, size, sort);
+        MyPropertyPageResponse bottomSheet = bookmarkedPropertyService.getPagedProperties(userId, page, size, sort);
 
         return ResponseEntity.ok(PropertyMapResponse.builder()
-                .mapProperties(converted)
-                .bookmarkedPageResponse(bottomSheet)
+                .mapProperties(mapDtos)
+                .myPropertyPageResponse(bottomSheet)
                 .build());
     }
 
@@ -95,8 +90,10 @@ public class BookmarkedPropertyController {
         long end = System.currentTimeMillis();
         log.info("📤 [엑셀 생성 완료] 소요 시간 = {} ms", (end - start));
 
+        String filename = URLEncoder.encode("찜한_매물_정보.xlsx", StandardCharsets.UTF_8);
+
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=찜한_매물_정보.xlsx")
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''" + filename)
                 .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
                 .body(in.readAllBytes());
     }
