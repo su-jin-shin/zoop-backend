@@ -6,6 +6,7 @@ import com.example.demo.property.domain.Property;
 import com.example.demo.property.domain.PropertySummary;
 import com.example.demo.property.dto.ImageDto;
 import com.example.demo.property.util.PropertyDtoConverter;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -18,7 +19,9 @@ import java.util.List;
 
 import static com.example.demo.property.util.PropertyDtoConverter.convertImages;
 import static com.example.demo.property.util.PropertyDtoConverter.convertSummary;
-
+@SuppressFBWarnings({
+        "EI_EXPOSE_REP", "EI_EXPOSE_REP2"
+})
 @Getter
 @Builder
 @NoArgsConstructor
