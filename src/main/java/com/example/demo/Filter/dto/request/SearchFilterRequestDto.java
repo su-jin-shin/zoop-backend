@@ -61,13 +61,17 @@ public class SearchFilterRequestDto {
         StringBuilder sb = new StringBuilder();
         sb.append(placeName);
         sb.append("/").append(tradeTypeName);
-        sb.append("/").append(realEstateTypeName);
-
-        if (rentPrice.compareTo(BigDecimal.ZERO) == 0) {
-            sb.append("/").append(rentPrice);
-        }else{
-            sb.append("/").append(dealOrWarrantPrc);
-        }
+        sb.append("/").append(realEstateTypeName)
+                .append("/")
+                .append((rentPrice.compareTo(BigDecimal.ZERO) == 0)
+                ? dealOrWarrantPrc
+                        :rentPrice);
+//
+//        if (rentPrice.compareTo(BigDecimal.ZERO) == 0) {
+//            sb.append("/").append(rentPrice);
+//        }else{
+//            sb.append("/").append(dealOrWarrantPrc);
+//        }
 
         return sb.toString();
     }
