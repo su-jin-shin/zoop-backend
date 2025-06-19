@@ -86,6 +86,7 @@ public class ReviewMapper {
                 .build();
     }
 
+
     public ReviewLikeResponse likeResponse(Long reviewId, Long userId, Boolean isLiked, Long likeCount) {
         return ReviewLikeResponse.builder()
                 .reviewId(reviewId)
