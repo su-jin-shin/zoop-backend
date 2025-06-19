@@ -1,9 +1,9 @@
 package com.example.demo.chat.dto;
 
 import lombok.Data;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -20,9 +20,17 @@ public class PropertyDto {
     private List<String> tagList; // summary
     private String articleName;
     private String realEstateTypeName;
-    private int netArea; // 전용면적(area2)
+    private int area2; // 전용면적
     private String imageUrl;
     private Double latitude;
     private Double longitude;
+
+    public List<String> getTagList() {
+        return tagList == null ? null : new ArrayList<>(tagList); // 복사본 반환
+    }
+
+    public void setTagList(List<String> tagList) {
+        this.tagList = tagList == null ? null : new ArrayList<>(tagList); // 복사본 저장
+    }
 
 }
