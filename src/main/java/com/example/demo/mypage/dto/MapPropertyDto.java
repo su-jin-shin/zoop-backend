@@ -1,6 +1,6 @@
 package com.example.demo.mypage.dto;
 
-import com.example.demo.property.dto.PropertyListItemDto;
+import com.example.demo.realty.dto.PropertyListItemDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

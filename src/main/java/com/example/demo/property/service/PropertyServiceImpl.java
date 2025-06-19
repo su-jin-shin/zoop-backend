@@ -139,6 +139,7 @@ public class PropertyServiceImpl  implements PropertyService{
         return PropertyAgentNumberResponseDto.of(property);
     }
 
+    //매물 비교
     @Override
     public List<PropertyCompareResponseDto> getCompareProperties(List<Long> propertyIds) {
         List<PropertyCompareResponseDto> result = new ArrayList<>();
@@ -207,6 +208,14 @@ public class PropertyServiceImpl  implements PropertyService{
         List<Image> selectedImage = images.isEmpty() ? List.of() : List.of(images.get(0));
 
         return PropertyOgResponseDto.of(property,selectedImage);
+    }
+
+    //부동산별 매물보기(부동산정보)
+    @Override
+    public RealtyWithPropertiesResponseDto getRealtyWithProperties(Long propertyId) {
+       Property property = propertyRepository.findById(propertyId).orElseThrow(NotFoundException::new);
+
+       return RealtyWithPropertiesResponseDto.of(property);
     }
 
 

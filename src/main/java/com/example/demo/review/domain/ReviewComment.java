@@ -6,7 +6,7 @@ import com.example.demo.auth.dto.LoginUser;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.persistence.*;
 import lombok.*;
-
+import org.hibernate.annotations.ColumnDefault;
 
 
 import java.time.LocalDateTime;
@@ -37,13 +37,20 @@ public class ReviewComment {
 
     private String content;
 
-    @Column(name = "is_resident")
+    @Column(name = "like_count")
+    @ColumnDefault("0")
     @Builder.Default
-    private boolean isResident = false;
+    private Long likeCount = 0L;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "has_children")
     @Builder.Default
-    private boolean hasChildren = false;
+    private HasChildren hasChildren = HasChildren.NO_CHILDREN;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "is_resident")
+    @Builder.Default
+    private IsResident isResident = IsResident.NON_RESIDENT;
 
 
 
@@ -64,9 +71,6 @@ public class ReviewComment {
 
 
     //본인 확인
-    public boolean isMine(LoginUser currentUser) {
-        return isMine(currentUser.getUserInfo());
-    }
 
     public boolean isMine(UserInfo currentUser) {
         return user != null && user.getUserId().equals(currentUser.getUserId());

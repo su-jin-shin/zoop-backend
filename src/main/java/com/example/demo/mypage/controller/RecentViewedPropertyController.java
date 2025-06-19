@@ -5,9 +5,13 @@ import com.example.demo.common.excel.ExcelGenerator;
 import com.example.demo.common.excel.PropertyExcelDto;
 import com.example.demo.common.excel.PropertyExcelMetaProvider;
 import com.example.demo.common.exception.UserNotFoundException;
+
 import com.example.demo.mypage.dto.*;
+
+import com.example.demo.mypage.dto.RecentViewedPropertyRequest;
+
 import com.example.demo.mypage.service.RecentViewedPropertyService;
-import com.example.demo.property.dto.PropertyListItemDto;
+import com.example.demo.realty.dto.PropertyListItemDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;

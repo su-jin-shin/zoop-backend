@@ -26,8 +26,9 @@ public class FilterController {
     private final FilterService filterService;
 
     // 필터 조건 등록시 키워드 필터 히스토리 등록
-    @PostMapping("keyword-filters")
-    public ResponseEntity<?> saveSearchFilter(@AuthenticationPrincipal LoginUser loginUser, @RequestBody SearchFilterRequestDto searchFilterRequestDto) {
+    @PostMapping("/keyword-filters")
+    public ResponseEntity<?> saveSearchFilter(@AuthenticationPrincipal LoginUser loginUser,
+                                              @RequestBody SearchFilterRequestDto searchFilterRequestDto) {
 
         // 로그인한 유저의 userId 추출
         Long userId = Long.valueOf(loginUser.getUsername());

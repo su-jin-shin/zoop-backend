@@ -2,7 +2,12 @@ package com.example.demo.review.dto.Review;
 
 
 
+import com.example.demo.review.domain.HasChildren;
+import com.example.demo.review.domain.IsResident;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import jakarta.persistence.Column;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -26,7 +31,10 @@ public class ReviewCreateRequest {
     @NotBlank(message = "내용은 필수입니다.")
     private String content;
 
-    private Boolean hasChildren = false;
-    private Boolean isResident = false;
+    @NotNull(message = "자녀 여부는 필수입니다.")
+    private HasChildren hasChildren;
+
+    @NotNull(message = "거주 여부는 필수입니다.")
+    private IsResident isResident;
 }
 

@@ -50,4 +50,5 @@ public class CustomExceptionHandler {
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ResponseResult.failed(HttpStatus.INTERNAL_SERVER_ERROR,INTERNAL_SERVER_ERROR.getMessage(), null));
     }
+
 }

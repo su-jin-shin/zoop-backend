@@ -1,7 +1,8 @@
 package com.example.demo.property.service;
 
 import com.example.demo.property.dto.*;
-import com.example.demo.realty.dto.RealtyWithPropertiesResponseDto;
+import com.example.demo.property.dto.RealtyWithPropertiesResponseDto;
+import com.example.demo.property.dto.RealtyWithPropertiesResponseDto;
 
 import java.util.List;
 
@@ -44,5 +45,8 @@ public interface PropertyService {
 
     //매물 OG 조회
     PropertyOgResponseDto getPropertyOg(Long propertyId);
+
+    //부동산 별 매물 (부동산 정보) 조회
+    RealtyWithPropertiesResponseDto getRealtyWithProperties(Long propertyId);
 
 }
