@@ -37,10 +37,15 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build & Push Docker Image
+      - name: Build & Push FastAPI Image
         run: |
-          IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/zoop_server
-          docker build --platform linux/amd64 -t $IMAGE:latest .
-          docker tag $IMAGE:latest $IMAGE:${{ github.sha }}
-          docker push $IMAGE:latest
-          docker push $IMAGE:${{ github.sha }}
+          set -e                     # 오류 나면 즉시 실패
+          export FASTAPI_IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/zoop_fastapi
+          # 1) 빌드
+          docker build --platform linux/amd64 \
+            -t $FASTAPI_IMAGE:latest \
+            -t $FASTAPI_IMAGE:${{ github.sha }} \
+            ./fastapi_service
+          # 2) 푸시
+          docker push $FASTAPI_IMAGE:latest
+          docker push $FASTAPI_IMAGE:${{ github.sha }}

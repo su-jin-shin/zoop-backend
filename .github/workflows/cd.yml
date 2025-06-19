@@ -44,7 +44,7 @@ jobs:
 
             # 2) 최신 이미지 pull -------------------------------------------
             sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/zoop_server:latest
-
+            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/zoop_fastapi:latest
             # 3) 컨테이너 정리(볼륨 유지) ------------------------------------
             sudo docker compose -f docker-compose.yml down --remove-orphans || true
             sudo docker rm -f postgres-db zoop-app 2>/dev/null || true
