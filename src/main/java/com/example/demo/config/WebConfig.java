@@ -23,10 +23,13 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("http://localhost:3000")          // dev 프런트
+                .allowedOrigins(
+                        "http://localhost:3000",   // React dev 서버
+                        "http://localhost:8000"    // FastAPI Swagger 등 브라우저 접근 시
+                )
                 .allowedMethods("GET","POST","PUT","DELETE","OPTIONS","PATCH")
-                .allowedHeaders("*", "Authorization")             // ← 명시
-                .allowCredentials(false);                         // ← 쿠키 안 씀
+                .allowedHeaders("*", "Authorization")
+                .allowCredentials(false);
     }
 }
 

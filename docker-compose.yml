@@ -36,5 +36,17 @@ services:
       FRONT_NICKNAME_PATH: /login/set-nickname
       FRONT_HOME_PATH: /login/complete
 
+  fastapi:
+    image: jungyeons/zoop_fastapi:latest   # 서버에 직접 빌드 안 할 경우
+    # build:
+    #   context: ./fastapi_service        # 이미지를 사전에 빌드·푸시했다면 주석 처리
+    container_name: fastapi
+    depends_on: [db]
+    environment:
+      DB_URL: postgresql://myuser:mypass@db:5432/mydb
+    # 외부에서 직접 호출하거나 리버스 프록시 할 경우만 포트 노출
+    # ports:
+    #   - "8000:8000"
+
 volumes:
   postgres-data:

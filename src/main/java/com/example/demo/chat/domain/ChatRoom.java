@@ -25,6 +25,7 @@ public class ChatRoom {
     private UserInfo userInfo;
 
     @Column(columnDefinition = "TEXT")
+    @Setter
     private String title;
 
     @Column

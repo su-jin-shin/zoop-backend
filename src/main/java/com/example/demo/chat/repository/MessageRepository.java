@@ -2,6 +2,7 @@ package com.example.demo.chat.repository;
 
 import com.example.demo.chat.domain.ChatRoom;
 import com.example.demo.chat.domain.Message;
+import com.example.demo.chat.type.SenderType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -25,4 +26,6 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
 
     // 검색어가 채팅방에서 채팅한 내용과 동일할 때 조회
     boolean existsByChatRoomAndContentContainingIgnoreCase(ChatRoom chatRoom, String searchText);
+
+    Message findTop1ByChatRoom_ChatRoomIdAndSenderTypeOrderByCreatedAtDesc(Long chatRoomId, SenderType senderType);
 }
