@@ -59,6 +59,9 @@ springdoc:
     tags-sorter: alpha
     doc-expansion: none
 
+app:
+  base-url: http://43.201.121.201
+
 jwt:
   secret: ${JWT_SECRET_KEY}  # prod 환경에서는 환경변수로 주입
 
@@ -84,6 +87,7 @@ spring:
     url: jdbc:postgresql://localhost:6543/mydb
     username: myuser
     password: mypass
+
 
 jwt:
   secret: Z6z3q5Lg7FscPqaLfJl5yFjO3PrMnxKfaThgq9e02ZbJY5GgnM0IMK3PMkSzr8lq

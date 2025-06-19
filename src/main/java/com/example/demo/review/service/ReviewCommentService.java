@@ -177,7 +177,10 @@ public class ReviewCommentService {
         UserInfo loginUser = userInfoRepository.findByUserId(userId)
                 .orElseThrow(UserNotFoundException::new);
 
-        return likeRepository.findByReviewCommentIdAndUser(commentId, loginUser)
+        ReviewComment comment = commentRepository.findActiveCommentWithAliveReview(commentId)
+                .orElseThrow(CommentNotFoundException::new);
+
+        return likeRepository.findByReviewCommentIdAndUser(comment.getId(), loginUser)
                 .map(ReviewCommentLike::isLiked)
                 .orElse(false);
     }

@@ -14,6 +14,7 @@ import com.example.demo.common.exception.NotFoundException;
 import com.example.demo.common.exception.UnauthorizedAccessException;
 import com.example.demo.common.exception.UserNotFoundException;
 import com.example.demo.common.exception.ReviewNotFoundException;
+import com.example.demo.property.domain.Property;
 import com.example.demo.property.repository.PropertyRepository;
 import com.example.demo.review.domain.*;
 import com.example.demo.review.dto.Review.*;
@@ -44,41 +45,90 @@ public class ReviewService {
     private final UserInfoRepository userInfoRepository;
 
 
+//    public ReviewListResponse getReviews(Long userId, Long propertyId) {
+//        // 사용자 검증 : userId로 UserInfo 조회
+//        UserInfo loginUser = userInfoRepository.findByUserId(userId)
+//                .orElseThrow(UserNotFoundException::new);  // 유저가 없으면 예외 처리
+//
+//        // 매물 존재 여부 확인 (propertyId로 매물 조회)
+//        Property property = propertyRepository.findById(propertyId)
+//                .orElseThrow(NotFoundException::new);
+//
+//        Long complexId = property.getComplex() != null ? property.getComplex().getId() : null;
+//
+//        // 해당 propertyId에 대한 리뷰 목록 조회
+//        var reviewPage = reviewRepository.findReviewsByPropertyId(propertyId, "like", 0, 10); // propertyId로 리뷰 조회
+//
+//        List<Review> reviews = reviewPage.getContent();
+//        List<Long> reviewIds = reviews.stream().map(Review::getId).toList();
+//
+//        // 좋아요, 댓글 개수 미리 조회 (N+1 방지)
+//        Map<Long, Long> likeCountMap = reviewLikeRepository.countLikesMap(reviewIds);
+//        Map<Long, Long> commentCountMap = reviewCommentRepository.countCommentsMap(reviewIds);
+//
+//        // 로그인한 경우 좋아요 여부 미리 조회
+//        Map<Long, Boolean> isLikedMap = reviewLikeRepository.getIsLikedMapByReviewIds(reviewIds, loginUser);
+//
+//        List<ReviewCreateResponse> reviewCreateRespons = reviews.stream().map(review -> {
+//            Long reviewId = review.getId();
+//
+//            long likeCount = likeCountMap.getOrDefault(reviewId, 0L);
+//            long commentCount = commentCountMap.getOrDefault(reviewId, 0L);
+//            boolean isLiked = isLikedMap.getOrDefault(reviewId, false);
+//            boolean isMyReview = review.getUser().getUserId().equals(loginUser.getUserId());
+//
+//            return reviewMapper.toDto(review, likeCount, commentCount, isLiked, isMyReview);
+//        }).toList();
+//
+//        return reviewMapper.toListResponse(reviewPage, reviewCreateRespons, complexId, propertyId);
+//
+//    }
     public ReviewListResponse getReviews(Long userId, Long propertyId) {
-        // 사용자 검증 : userId로 UserInfo 조회
+        // 사용자 검증
         UserInfo loginUser = userInfoRepository.findByUserId(userId)
-                .orElseThrow(UserNotFoundException::new);  // 유저가 없으면 예외 처리
+                .orElseThrow(UserNotFoundException::new);
 
-        // 매물 존재 여부 확인 (propertyId로 매물 조회)
-        propertyRepository.findById(propertyId)
-                .orElseThrow(NotFoundException::new);  // 매물이 없으면 예외 처리
+        // 매물 조회
+        Property property = propertyRepository.findById(propertyId)
+                .orElseThrow(NotFoundException::new);
 
+        Long complexId = property.getComplex() != null ? property.getComplex().getId() : null;
 
-        // 해당 propertyId에 대한 리뷰 목록 조회
-        var reviewPage = reviewRepository.findReviewsByPropertyId(propertyId, "like", 0, 10); // propertyId로 리뷰 조회
+        // 정렬 조건 및 페이징 설정 (임시 고정값)
+        String sort = "latest";
+        int page = 0;
+        int size = 10;
+
+        Page<Review> reviewPage;
+
+        if (complexId != null) {
+            // 같은 단지 내 모든 매물에 대한 리뷰 조회
+            reviewPage = reviewRepository.findReviewsByComplexId(complexId, sort, page, size);
+        } else {
+            // 개별 매물 리뷰 조회
+            reviewPage = reviewRepository.findReviewsByPropertyId(propertyId, sort, page, size);
+        }
 
         List<Review> reviews = reviewPage.getContent();
         List<Long> reviewIds = reviews.stream().map(Review::getId).toList();
 
-        // 좋아요, 댓글 개수 미리 조회 (N+1 방지)
         Map<Long, Long> likeCountMap = reviewLikeRepository.countLikesMap(reviewIds);
         Map<Long, Long> commentCountMap = reviewCommentRepository.countCommentsMap(reviewIds);
-
-        // 로그인한 경우 좋아요 여부 미리 조회
         Map<Long, Boolean> isLikedMap = reviewLikeRepository.getIsLikedMapByReviewIds(reviewIds, loginUser);
 
-        List<ReviewCreateResponse> reviewCreateRespons = reviews.stream().map(review -> {
-            Long reviewId = review.getId();
+        List<ReviewCreateResponse> reviewCreateRespons = reviews.stream()
+                .map(review -> {
+                    Long reviewId = review.getId();
+                    long likeCount = likeCountMap.getOrDefault(reviewId, 0L);
+                    long commentCount = commentCountMap.getOrDefault(reviewId, 0L);
+                    boolean isLiked = isLikedMap.getOrDefault(reviewId, false);
+                    boolean isMyReview = review.getUser().getUserId().equals(loginUser.getUserId());
 
-            long likeCount = likeCountMap.getOrDefault(reviewId, 0L);
-            long commentCount = commentCountMap.getOrDefault(reviewId, 0L);
-            boolean isLiked = isLikedMap.getOrDefault(reviewId, false);
-            boolean isMyReview = review.getUser().getUserId().equals(loginUser.getUserId());
+                    return reviewMapper.toDto(review, likeCount, commentCount, isLiked, isMyReview);
+                })
+                .toList();
 
-            return reviewMapper.toDto(review, likeCount, commentCount, isLiked, isMyReview);
-        }).toList();
-
-        return reviewMapper.toListResponse(reviewPage, reviewCreateRespons, null, propertyId); // complexId는 null로 처리
+        return reviewMapper.toListResponse(reviewPage, reviewCreateRespons, complexId, propertyId);
     }
 
 
