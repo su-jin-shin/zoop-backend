@@ -15,7 +15,7 @@ public interface RecentViewedPropertyService {
     void save(Long userId, Long propertyId);
     List<PropertyListItemDto> getRecentViewedList(Long userId);
 
-    PropertyMapResponse getRecentViewedPropertiesWithMap(Long userId, String sort);
+    PropertyMapResponse getRecentViewedPropertiesWithMap(Long userId);
 
     List<PropertyExcelDto> getRecentViewedPropertiesForExcel(Long userId);
 }
