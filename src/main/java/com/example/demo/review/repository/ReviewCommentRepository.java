@@ -19,12 +19,14 @@ public interface ReviewCommentRepository extends JpaRepository<ReviewComment, Lo
 //            "JOIN FETCH c.review r " +
 //            "WHERE c.id = :commentId AND c.user.userId = :userId AND r.deletedAt IS NULL")
 //    Optional<ReviewComment> findActiveCommentWithAliveReview(Long commentId);
-    @Query("SELECT c FROM ReviewComment c JOIN FETCH c.review WHERE c.id = :id AND c.deletedAt IS NULL")
-    Optional<ReviewComment> findActiveCommentWithAliveReview(@Param("id") Long id);
+    @Query("SELECT c FROM ReviewComment c " +
+            "JOIN FETCH c.review r " +
+            "WHERE c.id = :commentId AND r.deletedAt IS NULL AND c.deletedAt IS NULL ORDER BY c.createdAt DESC ")
+    Optional<ReviewComment> findActiveCommentWithAliveReview(@Param("commentId") Long commentId);
 
 
     // 댓글 목록 조회
-    @Query("SELECT rc FROM ReviewComment rc WHERE rc.review.id = :reviewId AND rc.deletedAt IS NULL")
+    @Query("SELECT rc FROM ReviewComment rc WHERE rc.review.id = :reviewId AND rc.deletedAt IS NULL ORDER BY rc.createdAt DESC")
     List<ReviewComment> findByReviewId(Long reviewId);
 
     // 댓글에 개수 조회 == 중복 가능성 존재. 후에 변경 또는 삭제 예정

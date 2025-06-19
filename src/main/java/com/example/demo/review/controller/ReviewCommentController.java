@@ -121,11 +121,11 @@ public class ReviewCommentController {
                 .body(ResponseResult.success(status, SuccessMessage.COMMENT_LIKE_STATUS_UPDATED.getMessage(), response));
     }
 
-    @GetMapping("/count")   // review댓글 세기랑 중복됨. 후에 리팩토링시 변경 예정
-    public ResponseEntity<?> getCommentCount(@PathVariable Long reviewId) {
-        Long count = commentService.getCommentCount(reviewId);
-        return ResponseEntity.ok(ResponseResult.success(HttpStatus.OK, SuccessMessage.GET_COMMENT_COUNT.getMessage(), count));
-    }
+//    @GetMapping("/count")   // review댓글 세기랑 중복됨. 후에 리팩토링시 변경 예정
+//    public ResponseEntity<?> getCommentCount(@PathVariable Long reviewId) {
+//        Long count = commentService.getCommentCount(reviewId);
+//        return ResponseEntity.ok(ResponseResult.success(HttpStatus.OK, SuccessMessage.GET_COMMENT_COUNT.getMessage(), count));
+//    }
 
     //좋아요 개수 조회
     @GetMapping("/{commentId}/likes/counts")
