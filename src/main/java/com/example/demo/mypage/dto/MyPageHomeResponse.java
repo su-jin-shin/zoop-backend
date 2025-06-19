@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Getter
-@AllArgsConstructor
 public class MyPageHomeResponse {
     private MyPageUserDto userInfo;
     private List<?> reviewOrComments;
@@ -19,16 +18,14 @@ public class MyPageHomeResponse {
     private List<PropertyListItemDto> recentViewedProperties;
 
     @Builder
-    public static MyPageHomeResponse create(MyPageUserDto userInfo,
-                                            List<?> reviewOrComments,
-                                            List<PropertyListItemDto> bookmarkedProperties,
-                                            List<PropertyListItemDto> recentViewedProperties) {
-        return new MyPageHomeResponse(
-                userInfo,
-                reviewOrComments == null ? null : new ArrayList<>(reviewOrComments),
-                bookmarkedProperties == null ? null : new ArrayList<>(bookmarkedProperties),
-                recentViewedProperties == null ? null : new ArrayList<>(recentViewedProperties)
-        );
+    public MyPageHomeResponse(MyPageUserDto userInfo,
+                              List<?> reviewOrComments,
+                              List<PropertyListItemDto> bookmarkedProperties,
+                              List<PropertyListItemDto> recentViewedProperties) {
+        this.userInfo = userInfo == null ? null : new MyPageUserDto(userInfo); // 복사 생성자 필요
+        this.reviewOrComments = reviewOrComments == null ? null : new ArrayList<>(reviewOrComments);
+        this.bookmarkedProperties = bookmarkedProperties == null ? null : new ArrayList<>(bookmarkedProperties);
+        this.recentViewedProperties = recentViewedProperties == null ? null : new ArrayList<>(recentViewedProperties);
     }
 
     public List<?> getReviewOrComments() {
@@ -41,5 +38,9 @@ public class MyPageHomeResponse {
 
     public List<PropertyListItemDto> getRecentViewedProperties() {
         return recentViewedProperties == null ? null : new ArrayList<>(recentViewedProperties);
+    }
+
+    public MyPageUserDto getUserInfo() {
+        return userInfo == null ? null : new MyPageUserDto(userInfo);
     }
 }

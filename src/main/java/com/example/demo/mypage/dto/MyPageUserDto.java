@@ -9,4 +9,8 @@ import lombok.Setter;
 @AllArgsConstructor
 public class MyPageUserDto {
     private String nickname;
+
+    public MyPageUserDto(MyPageUserDto other) {
+        this.nickname = other.nickname;
+    }
 }
