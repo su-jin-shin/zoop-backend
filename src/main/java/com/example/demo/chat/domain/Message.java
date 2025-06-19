@@ -1,14 +1,18 @@
 package com.example.demo.chat.domain;
 
+import com.example.demo.chat.dto.PropertyDto;
 import com.example.demo.chat.type.SenderType;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.JdbcType;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.dialect.PostgreSQLEnumJdbcType;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Entity
@@ -23,6 +27,14 @@ public class Message {
         this.content = content;
     }
 
+    public Message(ChatRoom chatRoom, SenderType senderType, String content, List<PropertyDto> properties) {
+        this.chatRoom = chatRoom;
+        this.senderType = senderType;
+        this.content = content;
+        this.properties = properties;
+    }
+
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column
@@ -34,11 +46,18 @@ public class Message {
     private ChatRoom chatRoom;
 
     @Enumerated(EnumType.STRING)
+    @JdbcType(PostgreSQLEnumJdbcType.class)
+    @Getter
     private SenderType senderType;
 
     @Column(columnDefinition = "TEXT")
     @Getter
     private String content;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "jsonb")
+    @Getter
+    private List<PropertyDto> properties;
 
     @Column
     @Getter
@@ -50,6 +69,10 @@ public class Message {
     @PrePersist
     public void prePersist() {
         if (createdAt == null) createdAt = LocalDateTime.now();
+    }
+
+    public void updateProperties(List<PropertyDto> properties) {
+        this.properties = properties;
     }
 
 }

@@ -1,12 +1,10 @@
 package com.example.demo.chat.controller;
 
 import com.example.demo.auth.dto.LoginUser;
-import com.example.demo.chat.dto.ChatRoomDetailResponseDto;
-import com.example.demo.chat.dto.ChatRoomDto;
-import com.example.demo.chat.dto.ChatRoomSearchDto;
-import com.example.demo.chat.dto.MessageDto;
+import com.example.demo.chat.dto.*;
 import com.example.demo.chat.service.ChatService;
 import com.example.demo.chat.type.SenderType;
+import com.example.demo.chat.util.UserFilterSender;
 import com.example.demo.common.response.ResponseResult;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.RequiredArgsConstructor;
@@ -17,12 +15,11 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 import static com.example.demo.common.response.SuccessMessage.GET_SUCCESS;
 
 @RestController
-@RequestMapping("/chats")
+@RequestMapping("/chat")
 @Slf4j
 @RequiredArgsConstructor
 @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "Spring DI에서 안전하게 관리됨")
@@ -31,30 +28,47 @@ public class ChatController {
     private final ChatService chatService;
 
     @PostMapping
-    public ResponseEntity<Map<String, Object>> sendMessage(@AuthenticationPrincipal LoginUser loginUser, @RequestBody MessageDto requestMessageDto) {
-        //Long userId = requestMessageDto.getUserId();
-        Long userId = Long.valueOf(loginUser.getUsername());
-        Long chatRoomId = requestMessageDto.getChatRoomId();
-        SenderType senderType = requestMessageDto.getSenderType();
-        String content = requestMessageDto.getContent();
+    public ResponseEntity<MessageResponseDto> sendMessage(@RequestBody MessageRequestDto request) {
+        log.info("request: {}", request);
+
+        // TODO: 현재는 임시의 userId 값을 사용하지만, 추후 JWT에서 추출하도록 수정 예정
+        Long userId = 2L;
+        Long chatRoomId = request.getChatRoomId();
+        SenderType senderType = request.getSenderType();
+        String content = request.getContent();
+        FilterDto filters = request.getFilters();
 
         log.info("chatRoomId: {}, senderType: {}, content: {}", chatRoomId, senderType, content);
 
         // 1. 채팅방 생성
         if (chatRoomId == null) {
-            chatRoomId = chatService.createChatRoom(userId);
+            chatRoomId = chatService.createChatRoom(userId, request.getTitle());
             log.info("{}번 채팅방이 생성됨", chatRoomId);
-            requestMessageDto.setChatRoomId(chatRoomId);
+            request.setChatRoomId(chatRoomId);
         }
 
         // 2. 메시지 저장
-        MessageDto responseMessageDto = chatService.saveMessage(requestMessageDto);
+        MessageResponseDto response = chatService.saveMessage(request);
 
-        return ResponseEntity.ok(Map.of(
-                "chatRoomId", chatRoomId,
-                "messageId", responseMessageDto.getMessageId(),
-                "createdAt", responseMessageDto.getCreatedAt()
-        ));
+        // 3. AI 답변 호출
+        if (filters == null) {
+            chatService.generateAndSaveAiResponse(request);
+        } else {
+            // 크롤링 로직 시작
+            log.info("filters: {}", filters);
+            List<PropertyDto> properties = null;
+            try {
+                properties = UserFilterSender.send(filters);
+                chatService.updateMessage(response.getMessageId(), properties);
+                log.info("properties: {}", properties);
+            } catch(Exception e) {
+                log.error("크롤링 실패", e);
+            } finally {
+                chatService.generateAndSaveAiResponse(request, properties);
+            }
+        }
+        log.info("response: {}", response);
+        return ResponseEntity.ok(response);
     }
 
     // 채팅방 제목 수정
@@ -112,6 +126,13 @@ public class ChatController {
                         chatRooms
                 )
         );
+    }
+
+    // 특정 채팅방의 가장 최근 챗봇 메시지 조회
+    @GetMapping("/{chatRoomId}/recent")
+    public ResponseEntity<MessageDto> getRecentChatMessage(@PathVariable Long chatRoomId) {
+        MessageDto message = chatService.getRecentMessage(chatRoomId);
+        return ResponseEntity.ok(message);
     }
 
 }
