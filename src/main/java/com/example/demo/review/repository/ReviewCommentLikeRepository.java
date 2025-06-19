@@ -34,6 +34,9 @@ public interface ReviewCommentLikeRepository extends JpaRepository<ReviewComment
     // 좋아요 개수 조회
     long countByReviewCommentIdAndIsLikedTrue(Long commentId);
 
+
+
+
     //  여러 댓글 좋아요 수 조회
     @Query("SELECT rcl.reviewComment.id, COUNT(rcl) " +
             "FROM ReviewCommentLike rcl " +

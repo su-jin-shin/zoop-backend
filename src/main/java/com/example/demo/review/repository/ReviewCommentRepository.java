@@ -15,10 +15,13 @@ import java.util.*;
 public interface ReviewCommentRepository extends JpaRepository<ReviewComment, Long> {
 
     // 삭제되지 않은 리뷰에 대해서만 댓글 조회 가능
-    @Query("SELECT c FROM ReviewComment c " +
-            "JOIN FETCH c.review r " +
-            "WHERE c.id = :commentId AND c.user.userId = :userId AND r.deletedAt IS NULL")
-    Optional<ReviewComment> findActiveCommentWithAliveReview(Long commentId);
+//    @Query("SELECT c FROM ReviewComment c " +
+//            "JOIN FETCH c.review r " +
+//            "WHERE c.id = :commentId AND c.user.userId = :userId AND r.deletedAt IS NULL")
+//    Optional<ReviewComment> findActiveCommentWithAliveReview(Long commentId);
+    @Query("SELECT c FROM ReviewComment c JOIN FETCH c.review WHERE c.id = :id AND c.deletedAt IS NULL")
+    Optional<ReviewComment> findActiveCommentWithAliveReview(@Param("id") Long id);
+
 
     // 댓글 목록 조회
     @Query("SELECT rc FROM ReviewComment rc WHERE rc.review.id = :reviewId AND rc.deletedAt IS NULL")

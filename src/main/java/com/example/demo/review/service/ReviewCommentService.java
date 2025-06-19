@@ -8,10 +8,7 @@ import com.example.demo.property.repository.PropertyRepository;
 import com.example.demo.review.domain.Review;
 import com.example.demo.review.domain.ReviewComment;
 import com.example.demo.review.domain.ReviewCommentLike;
-import com.example.demo.review.dto.ReviewComment.ReviewCommentCreateRequest;
-import com.example.demo.review.dto.ReviewComment.ReviewCommentLikeResponse;
-import com.example.demo.review.dto.ReviewComment.ReviewCommentCreateResponse;
-import com.example.demo.review.dto.ReviewComment.ReviewCommentUpdateRequest;
+import com.example.demo.review.dto.ReviewComment.*;
 import com.example.demo.review.mapper.ReviewCommentMapper;
 import com.example.demo.review.repository.ReviewCommentLikeRepository;
 import com.example.demo.review.repository.ReviewCommentRepository;
@@ -152,6 +149,26 @@ public class ReviewCommentService {
     }
 
 
+    //좋아요 여부 확인
+    public CommentLikeStatusResponse getLikeStatus(Long commentId, Long userId) {
+        UserInfo user = userInfoRepository.findByUserId(userId)
+                .orElseThrow(UserNotFoundException::new);
+
+        ReviewComment comment = commentRepository.findActiveCommentWithAliveReview(commentId)
+                .orElseThrow(CommentNotFoundException::new);
+
+        boolean isLiked = likeRepository.findByReviewCommentIdAndUser(commentId, user)
+                .map(ReviewCommentLike::isLiked)
+                .orElse(false);
+
+        return CommentLikeStatusResponse.builder()
+                .reviewId(comment.getReview().getId())
+                .commentId(commentId)
+                .isLiked(isLiked)
+                .build();
+    }
+
+
 
     /**
      * 댓글 좋아요 여부 조회 (단건)
@@ -174,12 +191,21 @@ public class ReviewCommentService {
     /**
      * 댓글 좋아요 수 조회
      */
-    public Long getLikeCount(Long commentId) {
+    public CommentLikeCountResponse commentLikeCount(Long commentId) {
         ReviewComment comment = commentRepository.findActiveCommentWithAliveReview(commentId)
                 .orElseThrow(CommentNotFoundException::new);
 
-        return likeRepository.countByReviewCommentIdAndIsLikedTrue(comment.getId());
+        long likeCount = likeRepository.countByReviewCommentIdAndIsLikedTrue(commentId);
+
+        return CommentLikeCountResponse.builder()
+                .commentId(commentId)
+                .reviewId(comment.getReview().getId())
+                .likeCount(likeCount)
+                .build();
     }
+
+
+
 
 
 
