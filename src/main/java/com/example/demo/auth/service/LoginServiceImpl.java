@@ -11,7 +11,6 @@ import com.example.demo.auth.factory.UserInfoFactory;
 import com.example.demo.auth.repository.LoginHistoryRepository;
 import com.example.demo.auth.repository.UserInfoRepository;
 import com.example.demo.auth.util.JwtUtil;
-import com.example.demo.mypage.service.NicknameService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.transaction.Transactional;

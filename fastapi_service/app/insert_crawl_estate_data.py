@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 CURRENT_DIR = Path(__file__).resolve().parent
 MODULE_BASE_DIR = CURRENT_DIR.parent
 sys.path.insert(0, str(MODULE_BASE_DIR))
-from config.loader import DB_CONFIG
+from .config.loader import DB_CONFIG
 
 if not DB_CONFIG:
     raise ValueError('DB 설정이 누락되었습니다. .env 파일 또는 DB_CONFIG를 확인해주세요.')

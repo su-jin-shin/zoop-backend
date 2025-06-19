@@ -8,7 +8,7 @@ import aiohttp
 from aiohttp import ClientSession, ClientTimeout
 from more_itertools import chunked
 
-from insert_crawl_estate_data import insert_many_properties
+from .insert_crawl_estate_data import insert_many_properties
 
 CURRENT_DIR = Path(__file__).resolve().parent
 
