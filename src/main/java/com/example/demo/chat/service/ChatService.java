@@ -223,7 +223,7 @@ public class ChatService {
 
     @Async
     public void generateAndSaveAiResponse(MessageRequestDto request) {
-        String userMessageContent = request.getContent();
+        //String userMessageContent = request.getContent();
         //String aiReply = customAI.generateReply(userMessageContent); // AI 호출
 
         String aiReply = ++CHATBOT_MESSAGE_ORDER + ". ai의 답변입니다.";
@@ -235,7 +235,7 @@ public class ChatService {
 
     @Async
     public void generateAndSaveAiResponse(MessageRequestDto request, List<PropertyDto> properties) {
-        String userMessageContent = request.getContent();
+        //String userMessageContent = request.getContent();
         //String aiReply = customAI.generateReply(userMessageContent); // AI 호출
 
         String aiReply;

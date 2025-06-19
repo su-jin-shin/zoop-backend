@@ -19,7 +19,7 @@ import java.util.List;
 import static com.example.demo.common.response.SuccessMessage.GET_SUCCESS;
 
 @RestController
-@RequestMapping("/chat")
+@RequestMapping("/chats")
 @Slf4j
 @RequiredArgsConstructor
 @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "Spring DI에서 안전하게 관리됨")
@@ -28,10 +28,10 @@ public class ChatController {
     private final ChatService chatService;
 
     @PostMapping
-    public ResponseEntity<MessageResponseDto> sendMessage(@RequestBody MessageRequestDto request) {
+    public ResponseEntity<MessageResponseDto> sendMessage(@AuthenticationPrincipal LoginUser loginUser, @RequestBody MessageRequestDto request) {
         log.info("request: {}", request);
 
-        // TODO: 현재는 임시의 userId 값을 사용하지만, 추후 JWT에서 추출하도록 수정 예정
+        //Long userId = Long.valueOf(loginUser.getUsername());
         Long userId = 2L;
         Long chatRoomId = request.getChatRoomId();
         SenderType senderType = request.getSenderType();
@@ -115,8 +115,8 @@ public class ChatController {
     @GetMapping("/search")
     public ResponseEntity<?> searchChatRoom(@AuthenticationPrincipal LoginUser loginUser,
                                             @RequestParam String searchText) {
-        //Long userId = Long.valueOf(loginUser.getUsername());
-        Long userId = 4L;
+        Long userId = Long.valueOf(loginUser.getUsername());
+        //Long userId = 4L;
         List<ChatRoomSearchDto> chatRooms = chatService.searchChatRooms(userId, searchText);
 
         return ResponseEntity.ok(

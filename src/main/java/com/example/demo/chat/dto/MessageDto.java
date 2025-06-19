@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -17,5 +18,13 @@ public class MessageDto {
     private SenderType senderType;
     private List<PropertyDto> properties;
     private LocalDateTime createdAt;
+
+    public List<PropertyDto> getProperties() {
+        return properties == null ? null : new ArrayList<>(properties); // 복사본 반환
+    }
+
+    public void setProperties(List<PropertyDto> properties) {
+        this.properties = properties == null ? null : new ArrayList<>(properties); // 복사본 저장
+    }
 
 }
