@@ -5,6 +5,7 @@ import com.example.demo.mypage.dto.MyPageAccountResponse;
 import com.example.demo.mypage.repository.MypageUserInfoRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,6 +14,9 @@ import org.springframework.transaction.annotation.Transactional;
 public class MypageAccountService {
 
     private final MypageUserInfoRepository userInfoRepository;
+
+    @Value("${app.base-url}")
+    private String baseUrl;
 
     @Transactional(readOnly = true)
     public MyPageAccountResponse getAccountInfo(Long userId) {
@@ -24,7 +28,6 @@ public class MypageAccountService {
             imageUrl = "/images/default-profile.png";
         }
         if (!imageUrl.startsWith("http")) {
-            String baseUrl = "http://localhost:8080"; // 운영 환경에서는 설정값으로 대체
             imageUrl = baseUrl + imageUrl;
         }
 
