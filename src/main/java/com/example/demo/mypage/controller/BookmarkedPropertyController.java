@@ -14,6 +14,7 @@ import com.example.demo.realty.dto.PropertyListItemDto;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -45,14 +46,15 @@ public class BookmarkedPropertyController {
     private final PropertyExcelMetaProvider propertyExcelMetaProvider;
     private final ExcelGenerator excelGenerator;
 
-//    GET /mypage/histories/bookmarked-properties?page=2
     @GetMapping
     public ResponseEntity<MyPropertyPageResponse> getBookmarkedPropertiesByPageable(
             @AuthenticationPrincipal LoginUser loginUser,
-            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
     ) {
         Long userId = Long.valueOf(loginUser.getUsername());
         log.info("😀😀userId = {}", userId);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         return ResponseEntity.ok(bookmarkedPropertyService.getBookmarkedProperties(userId, pageable));
     }
 
@@ -60,8 +62,7 @@ public class BookmarkedPropertyController {
     public ResponseEntity<PropertyMapResponse> getBookmarkedPropertiesForMap(
             @AuthenticationPrincipal LoginUser loginUser,
             @RequestParam(value = "page", defaultValue = "0") int page,
-            @RequestParam(value = "size", defaultValue = "20") int size,
-            @RequestParam(value = "sort", defaultValue = "recent") String sort
+            @RequestParam(value = "size", defaultValue = "20") int size
     ) {
         Long userId = Long.valueOf(loginUser.getUsername());
         log.info("😀😀userId = {}", userId);
@@ -69,7 +70,7 @@ public class BookmarkedPropertyController {
         List<MapPropertyDto> mapDtos = bookmarkedPropertyService.getMapProperties(userId);
 
         // 2. 바텀시트용 페이지 목록
-        MyPropertyPageResponse bottomSheet = bookmarkedPropertyService.getPagedProperties(userId, page, size, sort);
+        MyPropertyPageResponse bottomSheet = bookmarkedPropertyService.getPagedProperties(userId, page, size);
 
         return ResponseEntity.ok(PropertyMapResponse.builder()
                 .mapProperties(mapDtos)

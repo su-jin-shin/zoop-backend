@@ -47,8 +47,6 @@ public class PropertyListItemDto {
 
     private String articleName; //매물이름
     private String imageUrl; //이미지 경로
-    private ImageDto thumbnail;
-
 
     //빌더
     public static PropertyListItemDto of(

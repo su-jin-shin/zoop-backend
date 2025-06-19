@@ -16,8 +16,8 @@ public interface BookmarkedPropertyService {
     // 지도용 전체 리스트
     List<MapPropertyDto> getMapProperties(Long userId);
 
-    // 바텀시트용 정렬 + 페이지
-    MyPropertyPageResponse getPagedProperties(Long userId, int page, int size, String sort);
+    // 바텀시트용 페이지
+    MyPropertyPageResponse getPagedProperties(Long userId, int page, int size);
 
     List<PropertyListItemDto> getAllBookmarkedPropertyResponses(Long userId);
 
