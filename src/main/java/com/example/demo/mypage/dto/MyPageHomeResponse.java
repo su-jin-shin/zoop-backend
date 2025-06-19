@@ -17,49 +17,54 @@ public class MyPageHomeResponse {
     private final List<PropertyListItemDto> bookmarkedProperties;
     private final List<PropertyListItemDto> recentViewedProperties;
 
-    private MyPageHomeResponse(MyPageUserDto userInfo,
-                               List<?> reviewOrComments,
-                               List<PropertyListItemDto> bookmarkedProperties,
-                               List<PropertyListItemDto> recentViewedProperties) {
-        this.userInfo = userInfo == null ? null : new MyPageUserDto(userInfo);
-        this.reviewOrComments = reviewOrComments == null ? null : new ArrayList<>(reviewOrComments);
+    @Builder
+    public MyPageHomeResponse(MyPageUserDto userInfo,
+                              List<?> reviewOrComments,
+                              List<PropertyListItemDto> bookmarkedProperties,
+                              List<PropertyListItemDto> recentViewedProperties) {
+        this.userInfo = userInfo == null ? null : new MyPageUserDto(userInfo); // ✅ 방어적 복사
+        this.reviewOrComments = reviewOrComments == null ? null : new ArrayList<>(reviewOrComments); // ✅ 방어적 복사
         this.bookmarkedProperties = bookmarkedProperties == null ? null : new ArrayList<>(bookmarkedProperties);
         this.recentViewedProperties = recentViewedProperties == null ? null : new ArrayList<>(recentViewedProperties);
     }
 
-    public static Builder builder() {
-        return new Builder();
+    // ✅ getter도 복사본 반환
+    public MyPageUserDto getUserInfo() {
+        return userInfo == null ? null : new MyPageUserDto(userInfo);
     }
 
-    public static class Builder {
-        private MyPageUserDto userInfo;
-        private List<?> reviewOrComments;
-        private List<PropertyListItemDto> bookmarkedProperties;
-        private List<PropertyListItemDto> recentViewedProperties;
+    public List<?> getReviewOrComments() {
+        return reviewOrComments == null ? null : new ArrayList<>(reviewOrComments);
+    }
 
-        public Builder userInfo(MyPageUserDto userInfo) {
+    public List<PropertyListItemDto> getBookmarkedProperties() {
+        return bookmarkedProperties == null ? null : new ArrayList<>(bookmarkedProperties);
+    }
+
+    public List<PropertyListItemDto> getRecentViewedProperties() {
+        return recentViewedProperties == null ? null : new ArrayList<>(recentViewedProperties);
+    }
+
+    // ✅ Builder 내부도 방어적 복사 적용 필요 (아래 추가)
+    public static class MyPageHomeResponseBuilder {
+        public MyPageHomeResponseBuilder userInfo(MyPageUserDto userInfo) {
             this.userInfo = userInfo == null ? null : new MyPageUserDto(userInfo);
             return this;
         }
 
-        public Builder reviewOrComments(List<?> reviewOrComments) {
+        public MyPageHomeResponseBuilder reviewOrComments(List<?> reviewOrComments) {
             this.reviewOrComments = reviewOrComments == null ? null : new ArrayList<>(reviewOrComments);
             return this;
         }
 
-        public Builder bookmarkedProperties(List<PropertyListItemDto> bookmarkedProperties) {
+        public MyPageHomeResponseBuilder bookmarkedProperties(List<PropertyListItemDto> bookmarkedProperties) {
             this.bookmarkedProperties = bookmarkedProperties == null ? null : new ArrayList<>(bookmarkedProperties);
             return this;
         }
 
-        public Builder recentViewedProperties(List<PropertyListItemDto> recentViewedProperties) {
+        public MyPageHomeResponseBuilder recentViewedProperties(List<PropertyListItemDto> recentViewedProperties) {
             this.recentViewedProperties = recentViewedProperties == null ? null : new ArrayList<>(recentViewedProperties);
             return this;
         }
-
-        public MyPageHomeResponse build() {
-            return new MyPageHomeResponse(userInfo, reviewOrComments, bookmarkedProperties, recentViewedProperties);
-        }
     }
-
 }
