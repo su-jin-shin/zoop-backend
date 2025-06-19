@@ -1,6 +1,7 @@
 package com.example.demo.property.domain;
 
 import com.example.demo.Filter.domain.Filter;
+import com.example.demo.auth.domain.UserInfo;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -19,7 +20,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(
         name = "recommended_property",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"property_id"})
+        uniqueConstraints = @UniqueConstraint(columnNames = {"user_id","property_id"})
 )
 @Getter
 @Builder
@@ -34,6 +35,10 @@ public class RecommendedProperty {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "property_id")
     private Property property; //매물 아이디(외래키)
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private UserInfo userInfo; //유저 아이디(외래키)
 
     @ManyToOne(fetch =   FetchType.LAZY)
     @JoinColumn(name = "filter_id")
