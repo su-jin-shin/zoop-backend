@@ -60,15 +60,13 @@ public class BookmarkedPropertyServiceImpl implements BookmarkedPropertyService 
                 .toList();
     }
 
-//    정렬키: price_asc, price_desc, area_asc, area_desc, recent
     @Override
     @Transactional(readOnly = true)
-    public MyPropertyPageResponse getPagedProperties(Long userId, int page, int size, String sort) {
+    public MyPropertyPageResponse getPagedProperties(Long userId, int page, int size) {
         List<BookmarkedProperty> bookmarks = bookmarkedPropertyRepository.findAllWithPropertyByUserId(userId);
         log.info("List<BookmarkedProperty> bookmarks" + bookmarks);
-        // 1️⃣ 정렬 처리 (Java 쪽에서)
-        List<BookmarkedProperty> sorted = sortBookmarks(bookmarks, sort);
-        log.info("sorted" + sorted);
+
+        List<BookmarkedProperty> sorted = sortBookmarks(bookmarks, "recent"); // sort 하드코딩
         // 2️⃣ 페이지네이션 수동 처리
         int start = page * size;
         int end = Math.min(start + size, sorted.size());
@@ -78,29 +76,6 @@ public class BookmarkedPropertyServiceImpl implements BookmarkedPropertyService 
         log.info("pageResult " + pageResult);
         return convertToResponse(userId, pageResult, page, size);
     }
-
-    private List<BookmarkedProperty> sortBookmarks(List<BookmarkedProperty> bookmarks, String sortKey) {
-        Comparator<BookmarkedProperty> comparator = switch (sortKey) {
-            case "price_asc", "price_desc" -> Comparator.comparing(bp -> {
-                Property p = bp.getProperty();
-                return switch (p.getTradeTypeName()) {
-                    case "월세" -> p.getRentPrice();
-                    case "전세" -> p.getWarrantPrice();
-                    case "매매" -> p.getDealPrice();
-                    default -> BigDecimal.ZERO;
-                };
-            }, Comparator.nullsLast(Comparator.naturalOrder()));
-            case "area_asc", "area_desc" -> Comparator.comparing(bp -> bp.getProperty().getArea2());
-            default -> Comparator.comparing(BookmarkedProperty::getCreatedAt).reversed();
-        };
-
-        if (sortKey.endsWith("_desc")) {
-            comparator = comparator.reversed();
-        }
-
-        return bookmarks.stream().sorted(comparator).toList();
-    }
-
 
     private MyPropertyPageResponse convertToResponse(Long userId, Page<BookmarkedProperty> pageResult) {
         return convertToResponse(userId, pageResult, pageResult.getNumber(), pageResult.getSize());
@@ -112,10 +87,11 @@ public class BookmarkedPropertyServiceImpl implements BookmarkedPropertyService 
                 .map(bp -> bp.getProperty().getPropertyId())
                 .toList();
 
-        Map<Long, String> imageMap = imageRepository.findThumbnailsByPropertyIds(propertyIds).stream()
+        // 썸네일 매핑
+        Map<Long, Image> thumbnailMap = imageRepository.findThumbnailsByPropertyIds(propertyIds).stream()
                 .collect(Collectors.toMap(
                         img -> img.getProperty().getPropertyId(),
-                        Image::getImageUrl,
+                        img -> img,
                         (v1, v2) -> v1
                 ));
 
@@ -123,6 +99,8 @@ public class BookmarkedPropertyServiceImpl implements BookmarkedPropertyService 
                 .mapToObj(i -> {
                     Property p = content.get(i).getProperty();
                     Long pid = p.getPropertyId();
+                    Image thumbnail = thumbnailMap.get(pid);
+
                     return PropertyListItemDto.builder()
                             .order(i + 1 + page * size)
                             .propertyId(pid)
@@ -140,12 +118,7 @@ public class BookmarkedPropertyServiceImpl implements BookmarkedPropertyService 
                             .latitude(p.getLatitude())
                             .longitude(p.getLongitude())
                             .isBookmarked(true)
-                            .thumbnail(imageMap.get(pid) == null ? null : ImageDto.builder()
-                                    .imageUrl(imageMap.get(pid))
-                                    .imageType("THUMBNAIL")
-                                    .imageOrder(0)
-                                    .isMain(true)
-                                    .build())
+                            .imageUrl(thumbnail != null ? thumbnail.getImageUrl() : null)
                             .build();
                 })
                 .toList();
@@ -167,10 +140,10 @@ public class BookmarkedPropertyServiceImpl implements BookmarkedPropertyService 
                 .map(bp -> bp.getProperty().getPropertyId())
                 .toList();
 
-        Map<Long, String> imageMap = imageRepository.findThumbnailsByPropertyIds(propertyIds).stream()
+        Map<Long, Image> thumbnailMap = imageRepository.findThumbnailsByPropertyIds(propertyIds).stream()
                 .collect(Collectors.toMap(
                         img -> img.getProperty().getPropertyId(),
-                        Image::getImageUrl,
+                        img -> img,
                         (v1, v2) -> v1
                 ));
 
@@ -178,6 +151,8 @@ public class BookmarkedPropertyServiceImpl implements BookmarkedPropertyService 
                 .mapToObj(i -> {
                     Property p = bookmarks.get(i).getProperty();
                     Long pid = p.getPropertyId();
+                    Image thumbnail = thumbnailMap.get(pid);
+
                     return PropertyListItemDto.builder()
                             .order(i + 1)
                             .propertyId(pid)
@@ -190,12 +165,7 @@ public class BookmarkedPropertyServiceImpl implements BookmarkedPropertyService 
                             .realEstateTypeName(p.getRealEstateTypeName())
                             .latitude(p.getLatitude())
                             .longitude(p.getLongitude())
-                            .thumbnail(imageMap.get(pid) == null ? null : ImageDto.builder()
-                                    .imageUrl(imageMap.get(pid))
-                                    .imageType("THUMBNAIL")
-                                    .imageOrder(0)
-                                    .isMain(true)
-                                    .build())
+                            .imageUrl(thumbnail != null ? thumbnail.getImageUrl() : null)
                             .isBookmarked(true)
                             .build();
                 })
@@ -213,6 +183,13 @@ public class BookmarkedPropertyServiceImpl implements BookmarkedPropertyService 
                     Realty realtor = property.getRealty(); // 연관된 중개사
                     return PropertyExcelDto.from(property, realtor, i + 1);
                 })
+                .toList();
+    }
+
+    private List<BookmarkedProperty> sortBookmarks(List<BookmarkedProperty> bookmarks, String sortKey) {
+        // 현재는 sortKey 무시하고 createdAt DESC 기준 고정
+        return bookmarks.stream()
+                .sorted(Comparator.comparing(BookmarkedProperty::getCreatedAt).reversed())
                 .toList();
     }
 

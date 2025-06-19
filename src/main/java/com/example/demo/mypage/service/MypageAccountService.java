@@ -23,6 +23,10 @@ public class MypageAccountService {
         if (imageUrl == null || imageUrl.isBlank()) {
             imageUrl = "/images/default-profile.png";
         }
+        if (!imageUrl.startsWith("http")) {
+            String baseUrl = "http://localhost:8080"; // 운영 환경에서는 설정값으로 대체
+            imageUrl = baseUrl + imageUrl;
+        }
 
         return MyPageAccountResponse.builder()
                 .email(user.getEmail())

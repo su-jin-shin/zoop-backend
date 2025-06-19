@@ -30,6 +30,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static com.example.demo.property.domain.QProperty.property;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -58,6 +60,7 @@ public class RecentViewedPropertyServiceImpl implements RecentViewedPropertyServ
                             RecentViewedProperty newOne = RecentViewedProperty.builder()
                                     .user(user)
                                     .property(property)
+                                    .viewedAt(LocalDateTime.now())
                                     .build();
                             recentViewedPropertyRepository.save(newOne);
                         }
@@ -77,68 +80,17 @@ public class RecentViewedPropertyServiceImpl implements RecentViewedPropertyServ
         if (recentList.isEmpty()) {
             log.warn("⚠️ 최근 본 매물이 없습니다.");
         }
-
-        List<Long> propertyIds = recentList.stream()
-                .map(rvp -> rvp.getProperty().getPropertyId())
-                .toList();
-
-        Map<Long, String> imageMap = imageRepository.findThumbnailsByPropertyIds(propertyIds).stream()
-                .collect(Collectors.toMap(
-                        img -> img.getProperty().getPropertyId(),
-                        Image::getImageUrl,
-                        (v1, v2) -> v1
-                ));
-
-        // ✳ 찜 여부 조회 (propertyId -> true)
-        Set<Long> bookmarkedPropertyIds = bookmarkedPropertyRepository
-                .findBookmarkedPropertyIds(userId, propertyIds);
-
-        log.info("❤️ 찜한 매물 ID 수 = {}", bookmarkedPropertyIds.size());
-
-        return IntStream.range(0, recentList.size())
-                .mapToObj(i -> {
-                    RecentViewedProperty entity = recentList.get(i);
-                    Property p = entity.getProperty();
-                    Long pid = p.getPropertyId();
-
-                    return PropertyListItemDto.builder()
-                            .order(i + 1)
-                            .propertyId(pid)
-                            .articleName(p.getArticleName())
-                            .aptName(p.getAptName())
-                            .buildingName(p.getBuildingName())
-                            .realEstateTypeName(p.getRealEstateTypeName())
-                            .tradeTypeName(p.getTradeTypeName())
-                            .dealOrWarrantPrc(p.getDealOrWarrantPrc())
-                            .rentPrice(p.getRentPrice())
-                            .warrantPrice(p.getWarrantPrice())
-                            .dealPrice(p.getDealPrice())
-                            .latitude(p.getLatitude())
-                            .longitude(p.getLongitude())
-                            .summary(p.getTagList() == null ? List.of() : List.copyOf(p.getTagList()))
-                            .area2(p.getArea2())
-                            .isBookmarked(bookmarkedPropertyIds.contains(pid))
-                            .thumbnail(imageMap.get(pid) == null ? null : ImageDto.builder()
-                                    .imageUrl(imageMap.get(pid))
-                                    .imageType("THUMBNAIL")
-                                    .imageOrder(0)
-                                    .isMain(true)
-                                    .build())
-                            .build();
-                })
-                .toList();
+        return convertToListDtos(userId, recentList);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public PropertyMapResponse getRecentViewedPropertiesWithMap(Long userId, String sort){
+    public PropertyMapResponse getRecentViewedPropertiesWithMap(Long userId){
 
         List<RecentViewedProperty> recentList =
                 recentViewedPropertyRepository.findTop20ByUser_UserIdAndDeletedAtIsNullOrderByViewedAtDesc(userId);
 
-        List<RecentViewedProperty> sorted = sortRecentList(recentList, sort);
-
-        List<PropertyListItemDto> listDtos = convertToListDtos(userId, sorted);
+        List<PropertyListItemDto> listDtos = convertToListDtos(userId, recentList);
 
         List<MapPropertyDto> mapDtos = listDtos.stream()
                 .map(dto -> MapPropertyDto.builder()
@@ -156,39 +108,20 @@ public class RecentViewedPropertyServiceImpl implements RecentViewedPropertyServ
                 .build();
     }
 
-    private List<RecentViewedProperty> sortRecentList(List<RecentViewedProperty> list, String sort) {
-        Comparator<RecentViewedProperty> comparator = switch (sort) {
-            case "price_asc", "price_desc" -> Comparator.comparing(rvp -> {
-                Property p = rvp.getProperty();
-                return switch (p.getTradeTypeName()) {
-                    case "월세" -> p.getRentPrice();
-                    case "전세" -> p.getWarrantPrice();
-                    case "매매" -> p.getDealPrice();
-                    default -> BigDecimal.ZERO;
-                };
-            }, Comparator.nullsLast(Comparator.naturalOrder()));
-
-            case "area_asc", "area_desc" -> Comparator.comparing(rvp -> rvp.getProperty().getArea2());
-            default -> Comparator.comparing(RecentViewedProperty::getViewedAt).reversed();
-        };
-        if (sort.endsWith("_desc")) {
-            comparator = comparator.reversed();
-        }
-        return list.stream().sorted(comparator).toList();
-    }
-
     private List<PropertyListItemDto> convertToListDtos(Long userId, List<RecentViewedProperty> recentList) {
         List<Long> propertyIds = recentList.stream()
                 .map(rvp -> rvp.getProperty().getPropertyId())
                 .toList();
 
-        Map<Long, String> imageMap = imageRepository.findThumbnailsByPropertyIds(propertyIds).stream()
+        // 썸네일 매핑
+        Map<Long, Image> thumbnailMap = imageRepository.findThumbnailsByPropertyIds(propertyIds).stream()
                 .collect(Collectors.toMap(
                         img -> img.getProperty().getPropertyId(),
-                        Image::getImageUrl,
+                        img -> img,
                         (v1, v2) -> v1
                 ));
 
+        // 찜 여부
         Set<Long> bookmarkedPropertyIds = bookmarkedPropertyRepository
                 .findBookmarkedPropertyIds(userId, propertyIds);
 
@@ -197,6 +130,7 @@ public class RecentViewedPropertyServiceImpl implements RecentViewedPropertyServ
                     RecentViewedProperty entity = recentList.get(i);
                     Property p = entity.getProperty();
                     Long pid = p.getPropertyId();
+                    Image thumbnail = thumbnailMap.get(pid);
 
                     return PropertyListItemDto.builder()
                             .order(i + 1)
@@ -215,16 +149,12 @@ public class RecentViewedPropertyServiceImpl implements RecentViewedPropertyServ
                             .summary(p.getTagList() == null ? List.of() : List.copyOf(p.getTagList()))
                             .area2(p.getArea2())
                             .isBookmarked(bookmarkedPropertyIds.contains(pid))
-                            .thumbnail(imageMap.get(pid) == null ? null : ImageDto.builder()
-                                    .imageUrl(imageMap.get(pid))
-                                    .imageType("THUMBNAIL")
-                                    .imageOrder(0)
-                                    .isMain(true)
-                                    .build())
+                            .imageUrl(thumbnail != null ? thumbnail.getImageUrl() : null)
                             .build();
                 })
                 .toList();
     }
+
 
     @Override
     public List<PropertyExcelDto> getRecentViewedPropertiesForExcel(Long userId) {

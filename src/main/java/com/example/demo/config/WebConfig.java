@@ -13,10 +13,10 @@ public class WebConfig implements WebMvcConfigurer {
     // 정적 리소스 매핑 (예: /uploads/** → 실제 경로)
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        String uploadDir = Paths.get(System.getProperty("user.dir"), "uploads").toUri().toString();
+        String uploadDir = Paths.get(System.getProperty("user.dir"), "uploads").toAbsolutePath().toString();
 
         registry.addResourceHandler("/uploads/**")
-                .addResourceLocations(uploadDir);
+                .addResourceLocations("file:" + uploadDir + "/");
     }
 
     // CORS 설정 (프론트에서 API 호출 허용)

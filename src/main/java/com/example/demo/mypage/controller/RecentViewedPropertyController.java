@@ -69,11 +69,10 @@ public class RecentViewedPropertyController {
 
     @GetMapping("/map")
     public ResponseEntity<PropertyMapResponse> getRecentViewedPropertiesForMap(
-            @AuthenticationPrincipal LoginUser loginUser,
-            @RequestParam(value = "sort", defaultValue = "recent") String sort
+            @AuthenticationPrincipal LoginUser loginUser
     ) {
         Long userId = parseUserId(loginUser);
-        PropertyMapResponse response = recentViewedPropertyService.getRecentViewedPropertiesWithMap(userId, sort);
+        PropertyMapResponse response = recentViewedPropertyService.getRecentViewedPropertiesWithMap(userId);
         return ResponseEntity.ok(response);
     }
 
