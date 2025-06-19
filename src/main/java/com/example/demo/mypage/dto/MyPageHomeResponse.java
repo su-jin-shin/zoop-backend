@@ -12,10 +12,10 @@ import java.util.List;
 
 @Getter
 public class MyPageHomeResponse {
-    private MyPageUserDto userInfo;
-    private List<?> reviewOrComments;
-    private List<PropertyListItemDto> bookmarkedProperties;
-    private List<PropertyListItemDto> recentViewedProperties;
+    private final MyPageUserDto userInfo;
+    private final List<?> reviewOrComments;
+    private final List<PropertyListItemDto> bookmarkedProperties;
+    private final List<PropertyListItemDto> recentViewedProperties;
 
     @Builder
     public MyPageHomeResponse(MyPageUserDto userInfo,
