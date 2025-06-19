@@ -31,8 +31,7 @@ public class ChatController {
     public ResponseEntity<MessageResponseDto> sendMessage(@AuthenticationPrincipal LoginUser loginUser, @RequestBody MessageRequestDto request) {
         log.info("request: {}", request);
 
-        //Long userId = Long.valueOf(loginUser.getUsername());
-        Long userId = 2L;
+        Long userId = Long.valueOf(loginUser.getUsername());
         Long chatRoomId = request.getChatRoomId();
         SenderType senderType = request.getSenderType();
         String content = request.getContent();
