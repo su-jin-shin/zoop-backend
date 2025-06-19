@@ -1,0 +1,31 @@
+# IntelliJ IDEA
+.idea/
+*.iml
+out/
+
+# Python 기본
+__pycache__/
+*.py[cod]
+*.log
+*.tmp
+
+# 가상환경
+venv/
+.venv/
+.env/
+
+# IDE 설정
+.vscode/
+.idea/
+.DS_Store
+
+# 빌드
+build/
+dist/
+*.egg-info/
+
+# 민감 정보 & 캐시
+estate_crawling/secrets/
+
+# 크롤링 결과
+estate_crawling/output/
