@@ -24,15 +24,25 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     @Query("SELECT r FROM Review r WHERE r.id = :id AND r.deletedAt IS NULL")
     Optional<Review> findActiveById(@Param("id") Long id);
 
+    @Query("""
+    SELECT r FROM Review r
+    JOIN Property p ON r.propertyId = p.propertyId
+    WHERE p.complex.id = :complexId
+      AND r.deletedAt IS NULL
+      AND p.deletedAt IS NULL
+        """)
+    Page<Review> findReviewsByComplexId(@Param("complexId") Long complexId, Pageable pageable);
+
+
 
     // 복합단지 ID로 리뷰 조회
     @Query("SELECT r FROM Review r " +
-            "WHERE r.complex.id = :complexId AND r.deletedAt IS NULL")
+            "WHERE r.complex.id = :complexId AND r.deletedAt IS NULL ORDER BY r.createdAt DESC")
     Page<Review> findByComplexId(@Param("complexId") Long complexId, Pageable pageable);
 
     // 매물 ID로 리뷰 조회
     @Query("SELECT r FROM Review r " +
-            "WHERE r.propertyId = :propertyId AND r.deletedAt IS NULL")
+            "WHERE r.propertyId = :propertyId AND r.deletedAt IS NULL ORDER BY r.createdAt DESC")
     Page<Review> findByPropertyId(@Param("propertyId") Long propertyId, Pageable pageable);
 
     // 특정 유저의 리뷰 조회
@@ -50,7 +60,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
             default -> Sort.by(Sort.Direction.DESC, "likeCount");
         };
         Pageable pageable = PageRequest.of(page, size, sortOption);
-        return findByComplexId(complexId, pageable);
+        return findReviewsByComplexId(complexId, pageable);
     }
 
     // 매물에 대한 리뷰 조회
