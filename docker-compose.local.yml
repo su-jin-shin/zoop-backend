@@ -38,5 +38,19 @@ services:
       FRONT_NICKNAME_PATH: /nickname.html
       FRONT_HOME_PATH: /home.html
 
+  fastapi:
+    build:
+      context: ./fastapi_service
+    container_name: fastapi-local
+    depends_on: [db]
+    environment:
+      # FastAPI 쪽 DB 접속
+      DB_URL: postgresql://myuser:mypass@db:5432/mydb
+    ports:
+      - "18000:8000"                     # http://localhost:18000
+
+
+
+
 volumes:
   postgres-data-local:

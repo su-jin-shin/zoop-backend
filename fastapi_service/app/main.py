@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 
-from crawler_api import main as crawl_main
+from .crawler_api import main as crawl_main
 
 app = FastAPI()
 

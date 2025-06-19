@@ -16,7 +16,7 @@ try:
         'user': os.getenv('SPRING_DATASOURCE_USERNAME'),
         'password': os.getenv('SPRING_DATASOURCE_PASSWORD'),
         'host': os.getenv('POSTGRES_HOST', 'localhost'),
-        'port': os.getenv('POSTGRES_PORT', 6543)
+        'port': os.getenv('POSTGRES_PORT', 5432)
     }
 except Exception as e:
     print(f'DB 환경 변수 설정 중 에러 발생: {e}')
