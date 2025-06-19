@@ -127,14 +127,24 @@ public class ReviewCommentController {
         return ResponseEntity.ok(ResponseResult.success(HttpStatus.OK, SuccessMessage.GET_COMMENT_COUNT.getMessage(), count));
     }
 
+    //좋아요 개수 조회
     @GetMapping("/{commentId}/likes/counts")
-    public ResponseEntity<?> getLikeCount(@PathVariable Long commentId) {
-        Long count = commentService.getLikeCount(commentId);
-        return ResponseEntity.ok(ResponseResult.success(HttpStatus.OK, SuccessMessage.GET_COMMENT_LIKE_COUNT.getMessage(), count));
+    public ResponseEntity<?> getCommentLikeCount(@PathVariable Long commentId) {
+        CommentLikeCountResponse response = commentService.commentLikeCount(commentId);
+
+        return ResponseEntity.ok(
+                ResponseResult.success(HttpStatus.OK, "요청이 정상적으로 처리되었습니다.", response)
+        );
     }
 
+
+
+    //좋아요 여부 확인
     @GetMapping("/{commentId}/likes")
-    public ResponseEntity<?> isLiked(@PathVariable Long commentId, @AuthenticationPrincipal LoginUser loginUser) {
+    public ResponseEntity<?> getCommentLikeStatus(
+            @PathVariable Long commentId,
+            @AuthenticationPrincipal LoginUser loginUser
+    ) {
         Long userId = Long.valueOf(loginUser.getUsername());
 
         if (userId == null) {
@@ -142,9 +152,14 @@ public class ReviewCommentController {
                     .body(ResponseResult.failed(HttpStatus.UNAUTHORIZED, FailedMessage.LOGIN_REQUIRED.getMessage(), null));
         }
 
-        boolean liked = commentService.isLiked(commentId, userId);
-        return ResponseEntity.ok(ResponseResult.success(HttpStatus.OK, SuccessMessage.GET_COMMENT_LIKE_STATUS.getMessage(), liked));
+        CommentLikeStatusResponse response = commentService.getLikeStatus(commentId, userId);
+
+        return ResponseEntity.ok(
+                ResponseResult.success(HttpStatus.OK, "요청이 정상적으로 처리되었습니다.", response)
+        );
     }
+
+
 
 
     //내 댓글 조회

@@ -85,6 +85,16 @@ public class ReviewMapper {
                 .isLiked(isLiked)  // 좋아요 여부
                 .build();
     }
+
+    public ReviewLikeResponse LikeResponse(Long reviewId, Long userId, Boolean isLiked, Long likeCount) {
+        return ReviewLikeResponse.builder()
+                .reviewId(reviewId)
+                .userId(userId)
+                .isLiked(isLiked)
+                .likeCount(likeCount)
+                .build();
+    }
+
 }
 
 

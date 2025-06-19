@@ -90,6 +90,9 @@ public class ReviewService {
         UserInfo loginUser = userInfoRepository.findByUserId(userId)
                 .orElseThrow(UserNotFoundException::new);  // 유저가 없으면 예외 처리
 
+        // 매물 존재 여부 확인 (propertyId로 매물 조회)
+        propertyRepository.findById(propertyId)
+                .orElseThrow(NotFoundException::new);  // 매물이 없으면 예외 처리
 
         Review review = reviewMapper.toEntity(propertyId, request, loginUser);
         reviewRepository.save(review);
@@ -169,15 +172,25 @@ public class ReviewService {
     /**
      * 좋아요 여부
      */
-    public boolean isLiked(Long reviewId, Long userId) {
+    public ReviewLikeResponse getLikeStatus(Long reviewId, Long userId) {
 
+        // 유저 검증
         UserInfo loginUser = userInfoRepository.findByUserId(userId)
-                .orElseThrow(UserNotFoundException::new);  // 유저가 없으면 예외 처리
+                .orElseThrow(UserNotFoundException::new);
 
-        return reviewLikeRepository.findByReviewIdAndUser(reviewId, loginUser)
+        // 좋아요 여부 조회
+        boolean isLiked = reviewLikeRepository.findByReviewIdAndUser(reviewId, loginUser)
                 .map(ReviewLike::isLiked)
                 .orElse(false);
+
+        // DTO로 리턴
+        return ReviewLikeResponse.builder()
+                .reviewId(reviewId)
+                .userId(userId)
+                .isLiked(isLiked)
+                .build();
     }
+
 
     /**
      * 좋아요 개수

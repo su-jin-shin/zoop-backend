@@ -15,6 +15,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
+
+import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -25,7 +27,8 @@ public class ReviewController {
 
     private final ReviewService reviewService;
 
-    @GetMapping("/{propertyId}")   //성공
+    //리뷰 리스트 조회(전체)
+    @GetMapping("/{propertyId}")
     public ResponseEntity<?> getReviews(
             @PathVariable Long propertyId,
             @AuthenticationPrincipal LoginUser loginUser
@@ -37,7 +40,7 @@ public class ReviewController {
         return ResponseEntity.ok(ResponseResult.success(HttpStatus.OK, SuccessMessage.REVIEW_FETCHED.getMessage(), response));
     }
 
-    @PostMapping("/{propertyId}")  //성공
+    @PostMapping("/{propertyId}")
     public ResponseEntity<?> createReview(
             @PathVariable Long propertyId,
             @RequestBody @Valid ReviewCreateRequest request,
@@ -124,15 +127,28 @@ public class ReviewController {
                     .body(ResponseResult.failed(HttpStatus.UNAUTHORIZED, FailedMessage.LOGIN_REQUIRED.getMessage(), null));
         }
 
-        boolean liked = reviewService.isLiked(reviewId, userId);
-        return ResponseEntity.ok(ResponseResult.success(HttpStatus.OK, SuccessMessage.REVIEW_LIKE_STATUS_FETCHED.getMessage(), liked));
+        // DTO 바로 받아서 응답
+        ReviewLikeResponse response = reviewService.getLikeStatus(reviewId, userId);
+
+        return ResponseEntity.ok(
+                ResponseResult.success(HttpStatus.OK, SuccessMessage.REVIEW_LIKE_STATUS_FETCHED.getMessage(), response)
+        );
     }
+
 
     @GetMapping("/{reviewId}/likes/counts")
     public ResponseEntity<?> getLikeCount(@PathVariable Long reviewId) {
-        long count = reviewService.getLikeCount(reviewId);
-        return ResponseEntity.ok(ResponseResult.success(HttpStatus.OK, SuccessMessage.REVIEW_LIKE_COUNT_FETCHED.getMessage(), count));
+        long likeCount = reviewService.getLikeCount(reviewId);
+
+        Map<String, Object> responseData = new HashMap<>();
+        responseData.put("reviewId", reviewId);
+        responseData.put("likeCount", likeCount);
+
+        return ResponseEntity.ok(
+                ResponseResult.success(HttpStatus.OK, SuccessMessage.REVIEW_LIKE_COUNT_FETCHED.getMessage(), responseData)
+        );
     }
+
 
     @GetMapping("/{reviewId}/comments/counts")
     public ResponseEntity<?> getCommentCount(@PathVariable Long reviewId) {
