@@ -27,4 +27,11 @@ public class MessageDto {
         this.properties = properties == null ? null : new ArrayList<>(properties); // 복사본 저장
     }
 
+    public static class MessageDtoBuilder {
+        public MessageDtoBuilder properties(List<PropertyDto> properties) {
+            this.properties = properties == null ? null : new ArrayList<>(properties);
+            return this;
+        }
+    }
+
 }
