@@ -21,7 +21,7 @@ services:
       db:
         condition: service_healthy       # DB OK 확인 뒤 기동
     ports:
-      - "8080:8080"
+      - "80:8080"
     environment:
       PROFILES: prod                     # 그대로 두되…
       SPRING_PROFILES_ACTIVE: prod       # 표준 키도 병행
