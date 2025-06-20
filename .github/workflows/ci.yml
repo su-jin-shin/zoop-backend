@@ -46,31 +46,26 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # 8) QEMU + Buildx (멀티 플랫폼 지원)
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+      # 8.5) FastAPI 변경 여부 감지
+      - name: Check if FastAPI Changed
+        id: fastapi_changed
+        run: |
+          git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '^fastapi_service/' > /dev/null && \
+          echo "changed=true" >> $GITHUB_OUTPUT || echo "changed=false" >> $GITHUB_OUTPUT
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      # 9) FastAPI 이미지 빌드 & 푸시
+      # 9) FastAPI 이미지 빌드 & 푸시 (조건부 실행)
       - name: Build & Push FastAPI Image
+        if: steps.fastapi_changed.outputs.changed == 'true'
         env:
           FASTAPI_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/zoop_fastapi
         run: |
-          set -e
-          docker buildx build --platform linux/amd64 \
-            -t $FASTAPI_IMAGE:latest \
-            -t $FASTAPI_IMAGE:${{ github.sha }} \
-            --push ./fastapi_service
+          docker build -t $FASTAPI_IMAGE:latest ./fastapi_service
+          docker push $FASTAPI_IMAGE:latest
 
-      # 10) 서버 이미지 빌드 & 푸시
+      # 10) 서버 이미지 빌드 & 푸시 (항상 실행)
       - name: Build & Push Server Image
         env:
           IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/zoop_server
         run: |
-          set -e
-          docker buildx build --platform linux/amd64 \
-            -t $IMAGE:latest \
-            -t $IMAGE:${{ github.sha }} \
-            --push .
+          docker build -t $IMAGE:latest .
+          docker push $IMAGE:latest
