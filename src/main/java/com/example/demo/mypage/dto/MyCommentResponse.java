@@ -12,13 +12,15 @@ public class MyCommentResponse {
     private final LocalDate createdAt;
     private final Integer likeCount;
     private final Review review;
+    private final boolean isLiked;
 
-    public MyCommentResponse(Long commentId, String content, LocalDate createdAt, Integer likeCount, Review review) {
+    public MyCommentResponse(Long commentId, String content, LocalDate createdAt, Integer likeCount, Review review, boolean isLiked) {
         this.commentId = commentId;
         this.content = content;
         this.createdAt = createdAt;
         this.likeCount = likeCount;
         this.review = review;
+        this.isLiked = isLiked;
     }
 
     @Getter
