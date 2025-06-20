@@ -20,34 +20,42 @@ import java.util.List;
 @AllArgsConstructor
 public class PropertyExcelDto {
 
-    private Integer order;
-    private Long propertyId;
-    private String articleName;
-    private String tradeTypeName;
-    private BigDecimal rentPrice;
-    private BigDecimal warrantPrice;
-    private BigDecimal dealPrice;
-    private BigDecimal etcFeeAmount;
-    private String moveInPossibleYmd;
-    private String articleFeatureDesc;
-    private String detailDescription;
-    private String area1;
-    private String area2;
-    private String direction;
-    private String floorInfo;
-    private String exposureAddress;
-    private Double latitude;
-    private Double longitude;
-    private List<String> tagList;
+    private Integer order; // 정렬 순서
+    private Long propertyId; // 매물 아이디
+    private String tradeTypeName; //거래유형명
+    private BigDecimal rentPrice; //월세
+    private BigDecimal warrantPrice; //보증금
+    private BigDecimal dealPrice; //매매가
+    private String dealOrWarrantPrc; //거래 또는 보증금 가격
+    private List<String> summary; //요약 키워드
+    private String aptName; //아파트이름
+    private String buildingName; //건물이름
+    private String realEstateTypeName;//부동산 유형명
+    private String area2; //전용면적
+    private Double latitude; //위도
+    private Double longitude; //경도
 
-    private String realtorName;
-    private String representativeName;
-    private String establishRegistrationNo;
-    private String realtorAddress;
-    private String representativeTelNo;
-    private String cellPhoneNo;
-    private BigDecimal maxBrokerFee;
-    private BigDecimal brokerFee;
+    private Boolean isBookmarked; // 찜 여부
+
+    private String articleName; //매물이름
+    private String imageUrl; //이미지 경로
+
+    private String direction; //방향
+    private String floorInfo; //층정보
+    private String exposureAddress; //노출주소
+
+    private BigDecimal etcFeeAmount; //관리비(기타비용)
+    private String moveInPossibleYmd; //입주가능일
+    private String articleFeatureDesc; //매물특징요약
+    private String detailDescription; //상세설명
+
+    private String realtorName; //중개사이름
+    private String representativeName; //대표 이름
+    private String realtorAddress; //중개사주소
+    private String representativeTelNo; //대표전화번호
+    private String cellPhoneNo; //휴대전화번호
+    private BigDecimal maxBrokerFee; //최대 중개보수
+    private BigDecimal brokerFee; //중개보수
 
     public static PropertyExcelDto from(Property property, Realty realtor, int order) {
         return PropertyExcelDto.builder()
@@ -62,17 +70,15 @@ public class PropertyExcelDto {
                 .moveInPossibleYmd(property.getMoveInPossibleYmd())
                 .articleFeatureDesc(property.getArticleFeatureDesc())
                 .detailDescription(property.getDetailDescription())
-                .area1(property.getArea1())
                 .area2(property.getArea2())
                 .direction(property.getDirection())
                 .floorInfo(property.getFloorInfo())
                 .exposureAddress(property.getExposureAddress())
                 .latitude(property.getLatitude())
                 .longitude(property.getLongitude())
-                .tagList(property.getTagList() == null ? null : new ArrayList<>(property.getTagList()))
+                .summary(property.getTagList() == null ? null : new ArrayList<>(property.getTagList()))
                 .realtorName(realtor.getRealtorName())
                 .representativeName(realtor.getRepresentativeName())
-                .establishRegistrationNo(realtor.getEstablishRegistrationNo())
                 .realtorAddress(realtor.getAddress())
                 .representativeTelNo(realtor.getRepresentativeTelNo())
                 .cellPhoneNo(realtor.getCellPhoneNo())
@@ -81,11 +87,11 @@ public class PropertyExcelDto {
                 .build();
     }
     public void setTagList(List<String> tagList) {
-        this.tagList = tagList == null ? null : new ArrayList<>(tagList);
+        this.summary = tagList == null ? null : new ArrayList<>(tagList);
     }
 
     public List<String> getTagList() {
-        return tagList == null ? null : new ArrayList<>(tagList);
+        return summary == null ? null : new ArrayList<>(summary);
     }
 
 }

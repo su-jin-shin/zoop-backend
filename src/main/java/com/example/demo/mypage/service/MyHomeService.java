@@ -33,22 +33,27 @@ public class MyHomeService {
     public MyPageHomeResponse getHomeInfo(Long userId) {
         log.info("📌 [getHomeInfo] userId = {}", userId);
 
-        // 1. 사용자 닉네임 정보 조회
-        String nickname = userInfoRepository.findById(userId)
-                .map(UserInfo::getNickname)
+        // 1. 사용자 닉네임 및 프로필 이미지 조회
+        UserInfo user = userInfoRepository.findById(userId)
                 .orElseThrow(UserNotFoundException::new);
+        String nickname = user.getNickname();
+        String profileImage = user.getProfileImage();
+
         log.info("✅ 사용자 이름 = {}", nickname);
 
         // 3. 찜한 매물 20개
         log.info("🔍 찜한 매물 조회 시도");
-        List<PropertyListItemDto> bookmarked = bookmarkedPropertyService.getAllBookmarkedPropertyResponses(userId)
-                .stream().limit(20).toList();
-        log.info("✅ 찜한 매물 수 = {}", bookmarked.size());
+        List<PropertyListItemDto> allBookmarked = bookmarkedPropertyService.getAllBookmarkedPropertyResponses(userId);
+        List<PropertyListItemDto> bookmarked = allBookmarked.stream().limit(20).toList();
+        int bookmarkedCount = allBookmarked.size();
+        log.info("✅ 찜한 매물 수 = {}", bookmarkedCount);
 
         // 4. 최근 본 매물 20개
         log.info("🔍 최근 본 매물 조회 시도");
-        List<PropertyListItemDto> recentViewed = recentViewedPropertyService.getRecentViewedList(userId);
-        log.info("✅ 최근 본 매물 수 = {}", recentViewed.size());
+        List<PropertyListItemDto> allRecentViewed = recentViewedPropertyService.getRecentViewedList(userId);
+        List<PropertyListItemDto> recentViewed = allRecentViewed.stream().limit(20).toList();
+        int recentViewedCount = Math.min(allRecentViewed.size(), 20);
+        log.info("✅ 최근 본 매물 수 = {}", recentViewedCount);
 
 
         // 2. 리뷰 2개 또는 코멘트 2개
@@ -67,10 +72,12 @@ public class MyHomeService {
         }
 
         return MyPageHomeResponse.builder()
-                .userInfo(new MyPageUserDto(nickname))
+                .userInfo(new MyPageUserDto(nickname, profileImage))
                 .reviewOrComments(reviewOrComments)
                 .bookmarkedProperties(bookmarked)
+                .bookmarkedCount(bookmarkedCount)
                 .recentViewedProperties(recentViewed)
+                .recentViewedCount(recentViewedCount)
                 .build();
     }
 

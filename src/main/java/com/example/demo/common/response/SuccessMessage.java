@@ -31,7 +31,11 @@ public enum SuccessMessage {
     COMMENT_LIKE_STATUS_UPDATED("댓글 좋아요 상태가 업데이트되었습니다."),
     GET_COMMENT_COUNT("댓글 개수 조회에 성공했습니다."),
     GET_COMMENT_LIKE_COUNT("댓글 좋아요 개수 조회에 성공했습니다."),
-    GET_COMMENT_LIKE_STATUS("댓글 좋아요 여부 조회에 성공했습니다.");
+    GET_COMMENT_LIKE_STATUS("댓글 좋아요 여부 조회에 성공했습니다."),
+
+    BOOKMARKED_PROPERTIES_FETCHED("찜한 매물 목록 조회에 성공했습니다."),
+    BOOKMARKED_PROPERTIES_EXPORTED("찜한 매물 엑셀 다운로드가 완료되었습니다."),
+    BOOKMARKED_PROPERTIES_FOR_MAP_FETCHED("찜한 매물 지도 정보 조회에 성공했습니다.");
 
 
     private final String message;
