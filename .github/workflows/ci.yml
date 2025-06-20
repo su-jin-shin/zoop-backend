@@ -1,48 +1,72 @@
+name: Maven CI All Checks
+
+on:
+  push:
+  pull_request:
+
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+
     steps:
-      # ↓↓↓ 기존 스텝들 그대로 ↓↓↓
+      # 1) 소스 체크아웃
       - uses: actions/checkout@v4
+
+      # 2) JDK 17 설치
       - uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
+
+      # 3) Maven 캐시
       - uses: actions/cache@v3
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-maven-
+
+      # 4) Maven Wrapper 실행권한
       - name: Grant execute permission for Maven Wrapper
         run: chmod +x ./mvnw
+
+      # 5) 빌드 & 테스트
       - name: Build and Test
         run: ./mvnw clean verify
+
+      # 6) 정적 분석(SpotBugs)
       - name: SpotBugs
         run: ./mvnw spotbugs:check
-      # 1) **Docker Hub 로그인** (이미 있음)
+
+      # ───── Docker 이미지 빌드 & 배포 ─────
+      # 7) Docker Hub 로그인
       - name: Docker Hub Login
-        uses: docker/login-action@v1
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      # 2) **Spring 이미지 빌드·푸시** ← ★ 여기 추가 ★
-      - name: Build & Push Spring Image
-        run: |
-          set -e
-          export SPRING_IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/zoop_server
-          ./mvnw -q -DskipTests package          # JAR 생성
-          docker build --platform linux/amd64 \
-            -t $SPRING_IMAGE:latest \
-            -t $SPRING_IMAGE:${{ github.sha }} .
-          docker push $SPRING_IMAGE:latest
-          docker push $SPRING_IMAGE:${{ github.sha }}
-      # 3) **FastAPI 이미지 빌드·푸시** (기존 스텝 유지)
+
+      # 8) Buildx 준비(멀티 플랫폼 빌드용)
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # 9) FastAPI 이미지 빌드 & 푸시
       - name: Build & Push FastAPI Image
+        env:
+          FASTAPI_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/zoop_fastapi
         run: |
           set -e
-          export FASTAPI_IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/zoop_fastapi
-          docker build --platform linux/amd64 \
+          docker buildx build --platform linux/amd64 \
             -t $FASTAPI_IMAGE:latest \
             -t $FASTAPI_IMAGE:${{ github.sha }} \
-            ./fastapi_service
-          docker push $FASTAPI_IMAGE:latest
+            --push ./fastapi_service
+
+      # 10) 서버 이미지 빌드 & 푸시
+      - name: Build & Push Server Image
+        env:
+          IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/zoop_server
+        run: |
+          set -e
+          docker buildx build --platform linux/amd64 \
+            -t $IMAGE:latest \
+            -t $IMAGE:${{ github.sha }} \
+            --push .
