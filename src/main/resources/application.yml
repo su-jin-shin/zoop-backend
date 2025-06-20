@@ -31,16 +31,18 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
+#    baseline-on-migrate: true
 
   servlet:
     multipart:
       max-file-size: 5MB
       max-request-size: 5MB
 
-#logging:
-#  level:
-#    org.hibernate.SQL: debug
-#    org.hibernate.type.descriptor.sql: trace
+logging:
+  level:
+    root: INFO
+    org.springframework.web: DEBUG
+    com.example.demo: DEBUG
     # logging 다 없애기
 
 server:
