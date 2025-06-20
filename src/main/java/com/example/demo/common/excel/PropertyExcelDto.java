@@ -73,7 +73,8 @@ public class PropertyExcelDto {
                 .exposureAddress(property.getExposureAddress())
                 .latitude(property.getLatitude())
                 .longitude(property.getLongitude())
-                .summary(safeList(property.getTagList())).realtorName(realtor.getRealtorName())
+                .summary(safeList(property.getTagList())) // ✅ 복사 안전하게 처리
+                .realtorName(realtor.getRealtorName())
                 .representativeName(realtor.getRepresentativeName())
                 .realtorAddress(realtor.getAddress())
                 .representativeTelNo(realtor.getRepresentativeTelNo())
@@ -83,11 +84,22 @@ public class PropertyExcelDto {
                 .build();
     }
 
-    private static List<String> safeList(List<String> list){
-        return  list == null ? Collections.emptyList() : list;
+    private static List<String> safeList(List<String> list) {
+        return list == null ? Collections.emptyList() : new ArrayList<>(list);
     }
 
     public List<String> getSummary() {
         return summary == null ? Collections.emptyList() : new ArrayList<>(summary);
+    }
+
+    public void setSummary(List<String> summary) {
+        this.summary = summary == null ? null : new ArrayList<>(summary);
+    }
+
+    public static class PropertyExcelDtoBuilder {
+        public PropertyExcelDtoBuilder summary(List<String> summary) {
+            this.summary = summary == null ? null : new ArrayList<>(summary);
+            return this;
+        }
     }
 }
