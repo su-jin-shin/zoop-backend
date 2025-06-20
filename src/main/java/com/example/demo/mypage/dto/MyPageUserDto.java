@@ -9,10 +9,8 @@ import lombok.Setter;
 @AllArgsConstructor
 public class MyPageUserDto {
     private String nickname;
-    private String profileImage;
 
     public MyPageUserDto(MyPageUserDto other) {
         this.nickname = other.nickname;
-        this.profileImage = other.profileImage;
     }
 }

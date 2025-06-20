@@ -13,6 +13,7 @@ public class MyReviewResponse {
     private LocalDate createdAt;
     private int likeCount;
     private int commentCount;
+    private boolean isLiked;
 
     private ItemDto item;
 

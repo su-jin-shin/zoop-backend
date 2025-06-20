@@ -1,0 +1,75 @@
+<!-- templates/mypage/account.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>내 정보</title>
+    <style>
+        body {
+            font-family: 'Pretendard', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f4;
+        }
+        .card {
+            background-color: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 2rem;
+            width: 360px;
+            text-align: center;
+        }
+        .profile-img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 1rem;
+            border: 1px solid #ddd;
+        }
+        .nickname {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        .email {
+            font-size: 0.95rem;
+            color: #666;
+            margin-bottom: 1.5rem;
+        }
+        드 (문제 있음):
+                 return "/" + UPLOAD_DIR + storedFileName;  .btn {
+            display: inline-block;
+            margin: 0.3rem;
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+            border: none;
+            border-radius: 8px;
+            background-color: #4a90e2;
+            color: white;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .btn:hover {
+            background-color: #3a78c2;
+        }
+    </style>
+</head>
+<body>
+<div class="card">
+    <img th:src="@{${profileImageUrl}}" alt="프로필 이미지" class="profile-img"/>
+
+    <div class="nickname" th:text="${nickname}">닉네임</div>
+    <div class="email" th:text="${email}">이메일</div>
+
+    <!-- 닉네임 변경 페이지로 이동 -->
+    <a th:href="@{/mypage/nickname-edit}" class="btn">닉네임 변경</a>
+
+    <!-- 이미지 URL 변경 페이지로 이동 -->
+    <a th:href="@{/mypage/image-url-edit}" class="btn">이미지 변경</a>
+</div>
+</body>
+</html>
