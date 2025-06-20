@@ -2,8 +2,8 @@ package com.example.demo.mypage.controller;
 
 import com.example.demo.auth.dto.LoginUser;
 import com.example.demo.common.exception.DuplicatedNicknameException;
-import com.example.demo.common.exception.UserNotFoundException;
 import com.example.demo.common.response.FailedMessage;
+import com.example.demo.common.response.ResponseResult;
 import com.example.demo.common.response.SuccessMessage;
 import com.example.demo.mypage.dto.MyPageAccountResponse;
 import com.example.demo.mypage.dto.NicknameCheckResponse;
@@ -24,7 +24,6 @@ import java.io.IOException;
 
 import static com.example.demo.common.response.FailedMessage.CHECK_AVAILABLE_NICKNAME;
 import static com.example.demo.common.response.FailedMessage.DUPLICATED_NICKNAME;
-import static com.example.demo.common.response.SuccessMessage.GET_SUCCESS;
 
 @RestController
 @RequestMapping("/mypage")
@@ -51,17 +50,19 @@ public class MyPageAccountController {
 
         Long userId = parseUserId(loginUser);
 
-        if (userId == null) {
-            throw new UserNotFoundException();
-        }
-
         if (nicknameService.isNicknameDuplicate(request.getNickname())) {
             throw new DuplicatedNicknameException();
         }
 
         nicknameService.updateNickname(userId, request.getNickname());
 
-        return ResponseEntity.ok(SuccessMessage.GET_SUCCESS.getMessage());
+        return ResponseEntity.ok(
+                ResponseResult.success(
+                        HttpStatus.OK,
+                        SuccessMessage.UPDATE_NICKNAME_SUCCESS.getMessage(),
+                        null
+                )
+        );
     }
 
     // 닉네임 중복 확인
@@ -75,7 +76,12 @@ public class MyPageAccountController {
                 ? DUPLICATED_NICKNAME.getMessage()
                 : CHECK_AVAILABLE_NICKNAME.getMessage();
 
-        return ResponseEntity.ok(new NicknameCheckResponse(isDuplicated, message));
+        return ResponseEntity.ok(
+                ResponseResult.success(
+                        HttpStatus.OK,
+                        message,
+                        new NicknameCheckResponse(isDuplicated, message)
+        ));
     }
 
     // 프로필 이미지 수정
@@ -86,19 +92,21 @@ public class MyPageAccountController {
 
         Long userId = parseUserId(loginUser);
 
-        if (userId == null) {
-            throw new UserNotFoundException();
-        }
-        if (file.isEmpty()) {
-            return ResponseEntity.badRequest().body(FailedMessage.FILE_NOT_FOUND.getMessage());
-        }
-
         try {
             String savedUrl = profileImageService.uploadAndSave(userId, file);
-            return ResponseEntity.ok(new ProfileImageResponse(savedUrl));
+            return ResponseEntity.ok(ResponseResult.success(
+                    HttpStatus.OK,
+                    SuccessMessage.PROFILE_IMAGE_UPDATED.getMessage(),
+                    new ProfileImageResponse(savedUrl)
+            ));
         } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(FailedMessage.FILE_UPLOAD_FAILED.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    ResponseResult.failed(
+                            HttpStatus.INTERNAL_SERVER_ERROR,
+                            FailedMessage.FILE_UPLOAD_FAILED.getMessage(),
+                            null
+                    )
+            );
         }
     }
 
@@ -109,12 +117,12 @@ public class MyPageAccountController {
 
         Long userId = parseUserId(loginUser);
 
-        if (userId == null) {
-            throw new UserNotFoundException();
-        }
-
         String defaultUrl = profileImageService.resetToDefaultImage(userId);
-        return ResponseEntity.ok().body(new ProfileImageResponse(defaultUrl));
+        return ResponseEntity.ok(ResponseResult.success(
+                HttpStatus.OK,
+                SuccessMessage.PROFILE_IMAGE_RESET.getMessage(),
+                new ProfileImageResponse(defaultUrl)
+        ));
     }
 
     // 내 정보 조회
@@ -122,14 +130,12 @@ public class MyPageAccountController {
     public ResponseEntity<?> getAccountInfo(@AuthenticationPrincipal LoginUser loginUser) {
 
         Long userId = parseUserId(loginUser);
-
-        if (userId == null) {
-            throw new UserNotFoundException();
-        }
-
         MyPageAccountResponse response = myPageService.getAccountInfo(userId);
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(ResponseResult.success(
+                HttpStatus.OK,
+                SuccessMessage.GET_ACCOUNT_INFO_SUCCESS.getMessage(),
+                response
+        ));
     }
-
 }
