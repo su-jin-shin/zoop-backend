@@ -7,6 +7,7 @@ import com.example.demo.common.response.ResponseResult;
 import com.example.demo.common.response.SuccessMessage;
 import com.example.demo.review.dto.Review.*;
 import com.example.demo.review.service.ReviewService;
+import com.example.demo.review.service.ReviewSummaryService;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -26,6 +27,7 @@ import java.util.Map;
 public class ReviewController {
 
     private final ReviewService reviewService;
+    private final ReviewSummaryService reviewSummaryService;
 
     //리뷰 리스트 조회(전체)
     @GetMapping("/{propertyId}")
@@ -158,11 +160,13 @@ public class ReviewController {
         return ResponseEntity.ok(ResponseResult.success(HttpStatus.OK, SuccessMessage.COMMENT_COUNT_FETCHED.getMessage(), response));
     }
 
-    //AI 리뷰 요약
+    // AI 리뷰 요약
     @GetMapping("/{propertyId}/summary")
     public ResponseEntity<?> getSummary(@PathVariable Long propertyId) {
-        AiSummaryResponse summary = reviewService.getSummary(propertyId);
-        return ResponseEntity.ok(ResponseResult.success(HttpStatus.OK, "요청이 정상적으로 처리되었습니다.", summary));
+        AiSummaryResponse summary = reviewSummaryService.getOrFetchSummary(propertyId);
+        return ResponseEntity.ok(
+                ResponseResult.success(HttpStatus.OK, "요청이 정상적으로 처리되었습니다.", summary)
+        );
     }
 
 
