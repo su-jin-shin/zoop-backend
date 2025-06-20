@@ -7,8 +7,8 @@ app = FastAPI()
 
 
 class Filter(BaseModel):
-    regionName: str
-    regionCode: str
+    placeName: str
+    bCode: str
     tradeTypeName: str
     tradeTypeCode: str
     realEstateTypeName: str
@@ -22,8 +22,8 @@ async def crawl_estate_data(data: Filter):
 
     search_condition = {
         "dong": {
-            "code": data.regionCode,
-            "name": data.regionName
+            "code": data.bCode,
+            "name": data.placeName
         },
         "trade_type": {
             "code": data.tradeTypeCode,
