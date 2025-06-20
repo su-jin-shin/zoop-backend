@@ -10,23 +10,27 @@ package com.example.demo.review.service;
 
 import com.example.demo.auth.domain.UserInfo;
 import com.example.demo.auth.repository.UserInfoRepository;
-import com.example.demo.common.exception.NotFoundException;
-import com.example.demo.common.exception.UnauthorizedAccessException;
-import com.example.demo.common.exception.UserNotFoundException;
-import com.example.demo.common.exception.ReviewNotFoundException;
+import com.example.demo.common.exception.*;
 import com.example.demo.property.domain.Property;
 import com.example.demo.property.repository.PropertyRepository;
 import com.example.demo.review.domain.*;
 import com.example.demo.review.dto.Review.*;
 import com.example.demo.review.mapper.ReviewMapper;
 import com.example.demo.review.repository.*;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -43,46 +47,16 @@ public class ReviewService {
     private final PropertyRepository propertyRepository;
     private final ReviewMapper reviewMapper;
     private final UserInfoRepository userInfoRepository;
+    private final RestTemplate restTemplate;
+
+    private final ObjectMapper objectMapper;
 
 
-//    public ReviewListResponse getReviews(Long userId, Long propertyId) {
-//        // 사용자 검증 : userId로 UserInfo 조회
-//        UserInfo loginUser = userInfoRepository.findByUserId(userId)
-//                .orElseThrow(UserNotFoundException::new);  // 유저가 없으면 예외 처리
-//
-//        // 매물 존재 여부 확인 (propertyId로 매물 조회)
-//        Property property = propertyRepository.findById(propertyId)
-//                .orElseThrow(NotFoundException::new);
-//
-//        Long complexId = property.getComplex() != null ? property.getComplex().getId() : null;
-//
-//        // 해당 propertyId에 대한 리뷰 목록 조회
-//        var reviewPage = reviewRepository.findReviewsByPropertyId(propertyId, "like", 0, 10); // propertyId로 리뷰 조회
-//
-//        List<Review> reviews = reviewPage.getContent();
-//        List<Long> reviewIds = reviews.stream().map(Review::getId).toList();
-//
-//        // 좋아요, 댓글 개수 미리 조회 (N+1 방지)
-//        Map<Long, Long> likeCountMap = reviewLikeRepository.countLikesMap(reviewIds);
-//        Map<Long, Long> commentCountMap = reviewCommentRepository.countCommentsMap(reviewIds);
-//
-//        // 로그인한 경우 좋아요 여부 미리 조회
-//        Map<Long, Boolean> isLikedMap = reviewLikeRepository.getIsLikedMapByReviewIds(reviewIds, loginUser);
-//
-//        List<ReviewCreateResponse> reviewCreateRespons = reviews.stream().map(review -> {
-//            Long reviewId = review.getId();
-//
-//            long likeCount = likeCountMap.getOrDefault(reviewId, 0L);
-//            long commentCount = commentCountMap.getOrDefault(reviewId, 0L);
-//            boolean isLiked = isLikedMap.getOrDefault(reviewId, false);
-//            boolean isMyReview = review.getUser().getUserId().equals(loginUser.getUserId());
-//
-//            return reviewMapper.toDto(review, likeCount, commentCount, isLiked, isMyReview);
-//        }).toList();
-//
-//        return reviewMapper.toListResponse(reviewPage, reviewCreateRespons, complexId, propertyId);
-//
-//    }
+
+    /*
+        **리뷰 목록 조회
+    */
+
     public ReviewListResponse getReviews(Long userId, Long propertyId) {
         // 사용자 검증
         UserInfo loginUser = userInfoRepository.findByUserId(userId)
@@ -128,7 +102,15 @@ public class ReviewService {
                 })
                 .toList();
 
-        return reviewMapper.toListResponse(reviewPage, reviewCreateRespons, complexId, propertyId);
+        //평균 리뷰 별점
+        BigDecimal avgRating;
+        if (complexId != null) {
+            avgRating = reviewRepository.calculateAverageRatingByComplex(complexId);
+        } else {
+            avgRating = reviewRepository.calculateAverageRating(propertyId);
+        }
+
+        return reviewMapper.toListResponse(reviewPage, reviewCreateRespons, complexId, propertyId,avgRating);
     }
 
 
@@ -169,6 +151,14 @@ public class ReviewService {
         if (request.getRating() != null) {
             review.updateRating(request.getRating());
         }
+        if (request.getIsResident() != null) {
+            review.updateIsResident(request.getIsResident());
+        }
+
+        if (request.getHasChildren() != null) {
+            review.updateHasChildren(request.getHasChildren());
+        }
+
 
         Long likeCount = reviewLikeRepository.countByReviewIdAndIsLikedTrue(reviewId);
         Long commentCount = reviewCommentRepository.commentCount(reviewId);
@@ -228,6 +218,9 @@ public class ReviewService {
         UserInfo loginUser = userInfoRepository.findByUserId(userId)
                 .orElseThrow(UserNotFoundException::new);
 
+        reviewRepository.findActiveById(reviewId)
+                .orElseThrow(ReviewNotFoundException::new);
+
         // 좋아요 여부 조회
         boolean isLiked = reviewLikeRepository.findByReviewIdAndUser(reviewId, loginUser)
                 .map(ReviewLike::isLiked)
@@ -246,6 +239,9 @@ public class ReviewService {
      * 좋아요 개수
      */
     public Long getLikeCount(Long reviewId) {
+
+        reviewRepository.findActiveById(reviewId)
+                .orElseThrow(ReviewNotFoundException::new);
         return reviewLikeRepository.countByReviewIdAndIsLikedTrue(reviewId);
     }
 
@@ -253,8 +249,42 @@ public class ReviewService {
      * 댓글 개수
      */
     public Long getCommentCount(Long reviewId) {
+        reviewRepository.findActiveById(reviewId)
+                .orElseThrow(ReviewNotFoundException::new);
+
         return reviewCommentRepository.commentCount(reviewId);
     }
+
+    // 리뷰 요약(AI)
+    public AiSummaryResponse getSummary(Long propertyId) {
+        Property property = propertyRepository.findById(propertyId)
+                .orElseThrow(() -> new NotFoundException());
+
+        String district = property.getDivisionName(); // 예: "강동구"
+        String articleNo = "LISTING_" + propertyId;
+        String url = "http://1.230.77.225:8000/metajson/" + district + "/summaries";
+
+        ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
+
+        if (response.getStatusCode() != HttpStatus.OK || response.getBody() == null) {
+            throw new NotFoundException();
+        }
+
+        try {
+            JsonNode root = objectMapper.readTree(response.getBody());
+            JsonNode summaryNode = root.path(articleNo).path("summary");
+
+            if (summaryNode.isMissingNode() || summaryNode.isNull()) {
+                throw new RuntimeException("AI 요약 결과 없음");
+            }
+
+            return objectMapper.treeToValue(summaryNode, AiSummaryResponse.class);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("AI 요약 JSON 파싱 오류", e);
+        }
+    }
+
+
 
 
     //내 리뷰 조회

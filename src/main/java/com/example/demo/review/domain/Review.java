@@ -86,7 +86,7 @@ public class Review {
     }
 
 
-    //리뷰 수정: 내용(content), 별점(rating)
+    //리뷰 수정: 내용(content), 별점(rating), 거주여부, 자녀여부
     public void updateContent(String content){
         this.content = content;
         onUpdate();
@@ -95,6 +95,19 @@ public class Review {
         this.rating = rating;
         onUpdate();
     }
+    // 자녀 여부
+    public void updateHasChildren(HasChildren hasChildren) {
+        this.hasChildren = hasChildren;
+        onUpdate();
+    }
+
+    // 거주 여부
+    public void updateIsResident(IsResident isResident) {
+        this.isResident = isResident;
+        onUpdate();
+    }
+
+
 
     // 리뷰 삭제
     public void deleteReview() {
