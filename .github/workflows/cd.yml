@@ -1,35 +1,42 @@
-name: cd
+name: CD (manual & push)
 
 on:
-  workflow_run:
-    workflows: ["Maven CI All Checks"]
-    types: [completed]
+  # 1) main 브랜치에 푸시될 때
+  push:
     branches: [main]
+
+  # 2) Actions → Workflow → Run workflow 버튼으로 수동 실행
+  workflow_dispatch:
+
+# 필요 권한(도커 이미지·코드 풀 전용)
+permissions:
+  contents: read
+  packages: read
 
 jobs:
   deploy:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
 
     steps:
+      # --- Docker Hub 로그인 -----------------------------
       - name: Docker Hub Login
         uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      # --- 원격 서버에 배포 --------------------------------
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1
         env:
-          GH_PAT: ${{ secrets.GH_PAT }}
+          GH_PAT: ${{ secrets.GH_PAT }}   # 개인/봇 PAT
         with:
           host: ${{ secrets.ZOOP_SERVER_IP }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
-          envs: GH_PAT
+          envs: GH_PAT                    # ↑ env 전달
           script: |
             set -e
-
             REPO="FC-DEV3-Final-Project/zoop-backend"
             APP_DIR="/home/ubuntu/zoop-app"
             TOKEN=$GH_PAT
@@ -40,18 +47,22 @@ jobs:
             fi
             cd "$APP_DIR"
             git remote set-url origin https://${TOKEN}@github.com/${REPO}.git
+            git fetch --tags --force
+            git checkout -f main
             git pull --ff-only origin main
 
             # 2) 최신 이미지 pull -------------------------------------------
             sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/zoop_server:latest
             sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/zoop_fastapi:latest
-            # 3) 컨테이너 정리(볼륨 유지) ------------------------------------
+
+            # 3) 기존 컨테이너 정리(볼륨 유지) -------------------------------
             sudo docker compose -f docker-compose.yml down --remove-orphans || true
             sudo docker rm -f postgres-db zoop-app 2>/dev/null || true
 
             # 4) 재기동 ------------------------------------------------------
             sudo docker compose -f docker-compose.yml up -d --pull=never --force-recreate
 
+      # --- 헬스 체크 --------------------------------------
       - name: Health-check 8080
         uses: jtalk/url-health-check-action@v3
         with:
