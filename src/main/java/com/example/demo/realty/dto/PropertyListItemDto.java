@@ -13,6 +13,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.List;
 
 import static com.example.demo.property.util.PropertyDtoConverter.convertImages;
@@ -44,14 +45,13 @@ public class PropertyListItemDto {
 
     private Boolean isBookmarked; // 찜 여부
 
-
     private String articleName; //매물이름
     private String imageUrl; //이미지 경로
 
     //빌더
     public static PropertyListItemDto of(
             Property property,
-            PropertySummary summary,
+
             List<Image> images,
             Boolean isBookmarked,
             int order
@@ -66,7 +66,7 @@ public class PropertyListItemDto {
                 .warrantPrice(property.getWarrantPrice())
                 .dealPrice(property.getDealPrice())
                 .dealOrWarrantPrc(property.getDealOrWarrantPrc())
-                .summary(List.copyOf(convertSummary(summary)))
+                .summary(safeList(property.getTagList()))
                 .aptName(property.getAptName())
                 .buildingName(property.getBuildingName())
                 .realEstateTypeName(property.getRealEstateTypeName())
@@ -77,6 +77,11 @@ public class PropertyListItemDto {
                 .articleName(property.getArticleName())
                 .imageUrl(imageUrl)
                 .build();
+    }
+
+    //null 방지 메서드
+    private static List<String> safeList(List<String> list){
+        return  list == null ? Collections.emptyList() : list;
     }
 
 

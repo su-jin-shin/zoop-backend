@@ -53,7 +53,7 @@ public class PropertyBasicInfoResponseDto {
 
 
      //빌더
-    public static PropertyBasicInfoResponseDto of(Property property, PropertySummary summary, List<Image> images, Boolean isBookmarked){
+    public static PropertyBasicInfoResponseDto of(Property property, List<Image> images, Boolean isBookmarked){
         return PropertyBasicInfoResponseDto.builder()
                 .propertyId(property.getPropertyId())
                 .complexId(property.getComplex() != null ? property.getComplex().getId() : null)
@@ -70,14 +70,17 @@ public class PropertyBasicInfoResponseDto {
                 .parkingPossibleYN(property.getParkingPossibleYN())
                 .isBookmarked(isBookmarked)
                 .exposeStartYMD(property.getExposeStartYMD())
-                .summary(List.copyOf(convertSummary(summary)))
+                .summary(safeList(property.getTagList()))
                 .images(List.copyOf(convertImages(images)))
                 .build();
     }
 
     //오버로딩 메서드
-    public static PropertyBasicInfoResponseDto of (Property property , PropertySummary summary, List<Image> images ){
-     return  of(property,summary,images , false);
+    public static PropertyBasicInfoResponseDto of (Property property , List<Image> images ){
+     return  of(property,images , false);
     }
-
+    //null 방지 메서드
+    private static List<String> safeList(List<String> list){
+        return  list == null ? Collections.emptyList() : list;
+    }
 }

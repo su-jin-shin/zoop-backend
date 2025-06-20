@@ -67,8 +67,6 @@ public class RealtyServiceImpl implements RealtyService {
                 .map(Property::getPropertyId)
                 .toList();
 
-        // 요약 정보 가져오기
-        List<PropertySummary> summaries = propertySummaryRepository.findByProperty_PropertyIdIn(propertyIds);
 
         // 썸네일 이미지 가져오기
         List<Image> thumbnailImages = imageRepository.findThumbnailsByPropertyIds(propertyIds);
@@ -89,7 +87,7 @@ public class RealtyServiceImpl implements RealtyService {
 
         for (int i = 0; i < propertyPage.getContent().size(); i++) {
             Property property = propertyPage.getContent().get(i);
-            PropertySummary summary = (i < summaries.size()) ? summaries.get(i) : null;
+
             Image thumbnail = thumbnailMap.get(property.getPropertyId());
             List<Image> imageList = (thumbnail != null) ? List.of(thumbnail) : List.of();
 
@@ -97,7 +95,7 @@ public class RealtyServiceImpl implements RealtyService {
 
             PropertyListItemDto dto = PropertyListItemDto.of(
                     property,
-                    summary,
+
                     imageList,
                     isBookmarked,
                     order++

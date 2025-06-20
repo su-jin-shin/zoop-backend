@@ -38,13 +38,12 @@ public class PropertyServiceImpl  implements PropertyService{
     public PropertyBasicInfoResponseDto getPropertyBasicInfo(Long propertyId){
         Property property = propertyRepository.findById(propertyId).orElseThrow(NotFoundException::new);
 
-        //Optional을 사용해 summary처리
-        PropertySummary summary = summaryRepository.findByProperty_PropertyId(propertyId).orElse(null);
+
 
         //매물 아이디 통해 이미지 조회;
         List<Image> images = imageRepository.findByProperty_PropertyId(propertyId);
 
-        return PropertyBasicInfoResponseDto.of(property,summary,images);
+        return PropertyBasicInfoResponseDto.of(property,images);
     }
 
     //매물 상세조회 (기본 정보)
@@ -53,7 +52,7 @@ public class PropertyServiceImpl  implements PropertyService{
 
 
         Property property = propertyRepository.findById(propertyId).orElseThrow(NotFoundException::new);
-        PropertySummary summary = summaryRepository.findByProperty_PropertyId(propertyId).orElse(null);
+
         List<Image> images = imageRepository.findByProperty_PropertyId(propertyId);
 
         boolean isBookmarked = false;
@@ -62,7 +61,7 @@ public class PropertyServiceImpl  implements PropertyService{
         }
 
 
-        return PropertyBasicInfoResponseDto.of(property, summary, images, isBookmarked);
+        return PropertyBasicInfoResponseDto.of(property,  images, isBookmarked);
     }
 
 
