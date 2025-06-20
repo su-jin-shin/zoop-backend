@@ -2,7 +2,8 @@ name: CD on main (self-hosted)
 
 on:
   push:
-    branches: [main]          # dev → main 머지(또는 main 직접 푸시) 시 실행
+    branches:
+      - main            # dev → main 머지, 또는 main에 직접 푸시 시 실행
 
 jobs:
   deploy:
@@ -28,7 +29,7 @@ jobs:
           TOKEN="$GH_PAT"
           BRANCH="main"
 
-          # 1-1) 매번 깨끗하게 가져오기(문제의 근본 해결)
+          # 1-1) 폴더 초기화 후 main 브랜치 shallow-clone
           rm -rf "$APP_DIR"
           git clone --depth 1 -b "$BRANCH" \
             https://${TOKEN}@github.com/${REPO}.git "$APP_DIR"
@@ -44,10 +45,16 @@ jobs:
           # 1-4) 재기동
           docker compose -f "$APP_DIR/docker-compose.yml" up -d --pull=never --force-recreate
 
-      # 2) 헬스 체크 ----------------------------------------------------
+      # 2) 애플리케이션 워밍업 -----------------------------------------
+      - name: Wait for app warm-up
+        run: sleep 30      # 필요하면 20~60초 사이로 조정
+
+      # 3) 헬스체크 ----------------------------------------------------
       - name: Health-check 8080
         uses: jtalk/url-health-check-action@v3
         with:
-          url: http://localhost:8080/hc
-          max-attempts: 30
+          url: http://localhost:8080/hc      # 스프링 컨트롤러에서 제공하는 /hc
+          max-attempts: 60                  # 5초 × 60 = 최대 5분 재시도
           retry-delay: 5s
+          follow-redirect: false
+          retry-all: false
