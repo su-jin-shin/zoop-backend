@@ -217,7 +217,7 @@ async def insert_many_properties(article_list, real_estate_type_code):
                 "tagList": item.get('tagList'), #summary
                 'articleName': article_name,
                 'realEstateTypeName': item.get('realEstateTypeName'),
-                "netArea": item.get('area2'), #area2
+                "area2": item.get('area2'), #area2
                 "imageUrl": IMAGE_BASE_URL + item.get('representativeImgUrl') if item.get('representativeImgUrl') else None,
                 "latitude": safe_float(item.get('latitude')),
                 "longitude": safe_float(item.get('longitude'))
