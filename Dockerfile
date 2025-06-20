@@ -1,6 +1,9 @@
 # 경량 JDK 17
 FROM amazoncorretto:17-alpine-jdk
 
+# curl 추가 (단독 4-5 MB)
+RUN apk add --no-cache curl
+
 # CI에서 빌드된 JAR 복사
 ARG JAR_FILE=target/*.jar
 COPY ${JAR_FILE} /app.jar
