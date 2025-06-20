@@ -38,12 +38,12 @@ public class RealtyPropertyListResponseDto {
 
         for (int i = 0; i < propertyPage.getContent().size(); i++) {
             Property property = propertyPage.getContent().get(i);
-            PropertySummary summary = i < summaries.size() ? summaries.get(i) : null;
+
             List<Image> images = i < imageLists.size() ? imageLists.get(i) : Collections.emptyList();
 
             PropertyListItemDto dto = PropertyListItemDto.of(
                     property,
-                    summary,
+
                     images,
                     false,
                     order++
