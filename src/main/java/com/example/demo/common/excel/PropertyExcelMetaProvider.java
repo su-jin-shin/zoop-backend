@@ -13,7 +13,11 @@ public class PropertyExcelMetaProvider {
                 "순번", "매물명", "거래유형", "월세", "보증금", "매매가", "기타비용", "입주가능일",
                 "매물특징", "상세설명", "공급면적", "전용면적", "방향", "층정보", "노출주소",
                 "위도", "경도", "태그",
-                "중개사명", "대표자명", "개설등록번호", "중개사주소", "대표전화번호", "휴대폰번호", "최대중개보수", "중개보수"
+                "중개사명", "대표자명", "개설등록번호", "중개사주소", "대표전화번호", "휴대폰번호", "최대중개보수", "중개보수",
+                "거래 유형", "월세", "보증금", "매매가", "매매 또는 보증금 가격", "요약 키워드",
+                "아파트 이름", "건물 이름", "부동산 유형", "전용 면적", "매물 이름", "방향", "층 정보", "노출 주소",
+                "관리비(기타 비용)", "입주 가능일", "매물 특징 요약", "상세 설명",
+                "중개사명", "대표자명", "중개사 주소", "대표 전화번호", "휴대폰 번호", "최대 중개보수", "중개보수"
         );
     }
 
@@ -30,19 +34,29 @@ public class PropertyExcelMetaProvider {
 
                 PropertyExcelDto::getArticleFeatureDesc,
                 PropertyExcelDto::getDetailDescription,
-                PropertyExcelDto::getArea1,
+                PropertyExcelDto::getDealOrWarrantPrc,
+                dto -> String.join(", ", dto.getSummary()),
+                PropertyExcelDto::getAptName,
+                PropertyExcelDto::getBuildingName,
+                PropertyExcelDto::getRealEstateTypeName,
                 PropertyExcelDto::getArea2,
+
+                PropertyExcelDto::getArticleName,
+
                 PropertyExcelDto::getDirection,
                 PropertyExcelDto::getFloorInfo,
                 PropertyExcelDto::getExposureAddress,
 
                 PropertyExcelDto::getLatitude,
                 PropertyExcelDto::getLongitude,
-                dto -> String.join(", ", dto.getTagList() == null ? List.of() : dto.getTagList()),
+                dto -> String.join(", ", dto.getSummary()),
+                PropertyExcelDto::getEtcFeeAmount,
+                PropertyExcelDto::getMoveInPossibleYmd,
+                PropertyExcelDto::getArticleFeatureDesc,
+                PropertyExcelDto::getDetailDescription,
 
                 PropertyExcelDto::getRealtorName,
                 PropertyExcelDto::getRepresentativeName,
-                PropertyExcelDto::getEstablishRegistrationNo,
                 PropertyExcelDto::getRealtorAddress,
                 PropertyExcelDto::getRepresentativeTelNo,
                 PropertyExcelDto::getCellPhoneNo,
