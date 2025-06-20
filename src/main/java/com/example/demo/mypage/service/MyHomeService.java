@@ -39,6 +39,18 @@ public class MyHomeService {
                 .orElseThrow(UserNotFoundException::new);
         log.info("✅ 사용자 이름 = {}", nickname);
 
+        // 3. 찜한 매물 20개
+        log.info("🔍 찜한 매물 조회 시도");
+        List<PropertyListItemDto> bookmarked = bookmarkedPropertyService.getAllBookmarkedPropertyResponses(userId)
+                .stream().limit(20).toList();
+        log.info("✅ 찜한 매물 수 = {}", bookmarked.size());
+
+        // 4. 최근 본 매물 20개
+        log.info("🔍 최근 본 매물 조회 시도");
+        List<PropertyListItemDto> recentViewed = recentViewedPropertyService.getRecentViewedList(userId);
+        log.info("✅ 최근 본 매물 수 = {}", recentViewed.size());
+
+
         // 2. 리뷰 2개 또는 코멘트 2개
         log.info("🔍 리뷰 조회 시도");
         List<MyReviewResponse> reviews = myReviewService.getMyReviews(userId);
@@ -54,16 +66,6 @@ public class MyHomeService {
             reviewOrComments = comments.stream().limit(2).toList();
         }
 
-        // 3. 찜한 매물 20개
-        log.info("🔍 찜한 매물 조회 시도");
-        List<PropertyListItemDto> bookmarked = bookmarkedPropertyService.getAllBookmarkedPropertyResponses(userId)
-                .stream().limit(20).toList();
-        log.info("✅ 찜한 매물 수 = {}", bookmarked.size());
-
-        // 4. 최근 본 매물 20개
-        log.info("🔍 최근 본 매물 조회 시도");
-        List<PropertyListItemDto> recentViewed = recentViewedPropertyService.getRecentViewedList(userId);
-        log.info("✅ 최근 본 매물 수 = {}", recentViewed.size());
         return MyPageHomeResponse.builder()
                 .userInfo(new MyPageUserDto(nickname))
                 .reviewOrComments(reviewOrComments)

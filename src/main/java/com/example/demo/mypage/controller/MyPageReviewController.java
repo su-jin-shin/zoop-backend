@@ -5,6 +5,7 @@ import com.example.demo.common.exception.UserNotFoundException;
 import com.example.demo.mypage.dto.MyReviewResponse;
 import com.example.demo.mypage.service.MyReviewService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/mypage")
@@ -35,6 +37,8 @@ public class MyPageReviewController {
         if (userId == null) {
             throw new UserNotFoundException();
         }
+        log.debug("🔍 loginUser = {}", loginUser);
+
         List<MyReviewResponse> reviews = myReviewService.getMyReviews(userId);
         return ResponseEntity.ok().body(reviews);
     }
