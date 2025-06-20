@@ -20,9 +20,15 @@ import org.springframework.web.client.RestTemplate;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
-@Slf4j
+@SuppressFBWarnings(
+        value = {"EI_EXPOSE_REP2"},
+        justification = "Spring DI로 주입된 객체는 변경 불가한 의도로 사용되므로 문제 없음"
+)
 public class ReviewSummaryService {
 
     private final PropertyRepository propertyRepository;
