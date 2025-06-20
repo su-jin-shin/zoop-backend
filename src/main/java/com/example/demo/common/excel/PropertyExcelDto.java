@@ -14,7 +14,6 @@ import java.util.List;
 @Setter
 @Builder(toBuilder = true)
 @NoArgsConstructor
-@AllArgsConstructor
 public class PropertyExcelDto {
 
     private Integer order; // 정렬 순서
@@ -53,6 +52,50 @@ public class PropertyExcelDto {
     private String cellPhoneNo; //휴대전화번호
     private BigDecimal maxBrokerFee; //최대 중개보수
     private BigDecimal brokerFee; //중개보수
+
+    public PropertyExcelDto(
+            Integer order, Long propertyId, String tradeTypeName,
+            BigDecimal rentPrice, BigDecimal warrantPrice, BigDecimal dealPrice,
+            String dealOrWarrantPrc, List<String> summary,
+            String aptName, String buildingName, String realEstateTypeName,
+            String area2, Double latitude, Double longitude, Boolean isBookmarked,
+            String articleName, String imageUrl, String direction, String floorInfo, String exposureAddress,
+            BigDecimal etcFeeAmount, String moveInPossibleYmd, String articleFeatureDesc, String detailDescription,
+            String realtorName, String representativeName, String realtorAddress, String representativeTelNo,
+            String cellPhoneNo, BigDecimal maxBrokerFee, BigDecimal brokerFee
+    ) {
+        this.order = order;
+        this.propertyId = propertyId;
+        this.tradeTypeName = tradeTypeName;
+        this.rentPrice = rentPrice;
+        this.warrantPrice = warrantPrice;
+        this.dealPrice = dealPrice;
+        this.dealOrWarrantPrc = dealOrWarrantPrc;
+        this.summary = summary == null ? null : new ArrayList<>(summary); // ✅ 방어적 복사
+        this.aptName = aptName;
+        this.buildingName = buildingName;
+        this.realEstateTypeName = realEstateTypeName;
+        this.area2 = area2;
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.isBookmarked = isBookmarked;
+        this.articleName = articleName;
+        this.imageUrl = imageUrl;
+        this.direction = direction;
+        this.floorInfo = floorInfo;
+        this.exposureAddress = exposureAddress;
+        this.etcFeeAmount = etcFeeAmount;
+        this.moveInPossibleYmd = moveInPossibleYmd;
+        this.articleFeatureDesc = articleFeatureDesc;
+        this.detailDescription = detailDescription;
+        this.realtorName = realtorName;
+        this.representativeName = representativeName;
+        this.realtorAddress = realtorAddress;
+        this.representativeTelNo = representativeTelNo;
+        this.cellPhoneNo = cellPhoneNo;
+        this.maxBrokerFee = maxBrokerFee;
+        this.brokerFee = brokerFee;
+    }
 
     public static PropertyExcelDto from(Property property, Realty realtor, int order) {
         return PropertyExcelDto.builder()

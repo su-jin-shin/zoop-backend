@@ -93,16 +93,12 @@ public class BookmarkedPropertyController {
     ) {
         Long userId = Long.valueOf(loginUser.getUsername());
 
-        long start = System.currentTimeMillis();
-
         List<PropertyExcelDto> dtoList = bookmarkedPropertyService.getBookmarkedPropertiesForExcel(userId);
 
         List<String> headers = propertyExcelMetaProvider.getHeaders();
         List<Function<PropertyExcelDto, Object>> extractors = propertyExcelMetaProvider.getExtractors();
 
         ByteArrayInputStream in = excelGenerator.generateExcel(dtoList, headers, extractors);
-
-        long end = System.currentTimeMillis();
 
         String filename = URLEncoder.encode("찜한_매물_정보.xlsx", StandardCharsets.UTF_8);
 
