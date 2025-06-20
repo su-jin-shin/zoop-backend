@@ -3,6 +3,7 @@ package com.example.demo.review.dto.Review;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 //리뷰 전체 리스트 응답 DTO
@@ -14,6 +15,7 @@ import java.util.List;
 public class ReviewListResponse {
     private Long propertyId;
     private Long complexId;
+    private BigDecimal avgRating; //평균 별점
     private List<ReviewCreateResponse> reviews;
     private Long page;
     private Long size;

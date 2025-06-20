@@ -158,6 +158,14 @@ public class ReviewController {
         return ResponseEntity.ok(ResponseResult.success(HttpStatus.OK, SuccessMessage.COMMENT_COUNT_FETCHED.getMessage(), response));
     }
 
+    //AI 리뷰 요약
+    @GetMapping("/{propertyId}/summary")
+    public ResponseEntity<?> getSummary(@PathVariable Long propertyId) {
+        AiSummaryResponse summary = reviewService.getSummary(propertyId);
+        return ResponseEntity.ok(ResponseResult.success(HttpStatus.OK, "요청이 정상적으로 처리되었습니다.", summary));
+    }
+
+
 
     //내 리뷰 조회
     @GetMapping("/my")

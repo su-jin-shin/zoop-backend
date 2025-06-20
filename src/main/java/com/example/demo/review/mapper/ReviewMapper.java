@@ -50,10 +50,12 @@ public class ReviewMapper {
     public ReviewListResponse toListResponse(Page<Review> page,
                                              List<ReviewCreateResponse> reviewCreateRespons,
                                              Long complexId,
-                                             Long propertyId) {
+                                             Long propertyId,
+                                             BigDecimal avgRating) {
         return ReviewListResponse.builder()
                 .complexId(complexId)  // 복합단지 ID
                 .propertyId(propertyId)  // 매물 ID
+                .avgRating(avgRating)
                 .reviews(reviewCreateRespons)  // 리뷰 목록
                 .page((long) page.getNumber())  // 현재 페이지 (int -> Long으로 형변환)
                 .size((long)page.getSize())  // 페이지 크기
