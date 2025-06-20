@@ -30,5 +30,6 @@ public enum FailedMessage {
     COMMENT_NOT_FOUND("댓글을 찾을 수 없습니다."),
 
     EXCEL_EXPORT_FAILED("액셀 생성 실패");
+
     private final String message;
 }
