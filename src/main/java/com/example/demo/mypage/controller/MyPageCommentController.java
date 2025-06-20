@@ -16,7 +16,9 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
+@SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "Spring DI로 주입된 Service는 외부 노출 위험 없음")
 @Slf4j
 @RestController
 @RequiredArgsConstructor
