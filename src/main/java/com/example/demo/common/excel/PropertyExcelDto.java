@@ -7,12 +7,9 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-@SuppressFBWarnings(
-        value = "EI_EXPOSE_REP2",
-        justification = "tagList는 방어적 복사 getter/setter로 보호됨"
-)
 @Getter
 @Setter
 @Builder(toBuilder = true)
@@ -76,8 +73,7 @@ public class PropertyExcelDto {
                 .exposureAddress(property.getExposureAddress())
                 .latitude(property.getLatitude())
                 .longitude(property.getLongitude())
-                .summary(property.getTagList() == null ? null : new ArrayList<>(property.getTagList()))
-                .realtorName(realtor.getRealtorName())
+                .summary(safeList(property.getTagList())).realtorName(realtor.getRealtorName())
                 .representativeName(realtor.getRepresentativeName())
                 .realtorAddress(realtor.getAddress())
                 .representativeTelNo(realtor.getRepresentativeTelNo())
@@ -86,12 +82,12 @@ public class PropertyExcelDto {
                 .brokerFee(realtor.getBrokerFee())
                 .build();
     }
-    public void setTagList(List<String> tagList) {
-        this.summary = tagList == null ? null : new ArrayList<>(tagList);
+
+    private static List<String> safeList(List<String> list){
+        return  list == null ? Collections.emptyList() : list;
     }
 
-    public List<String> getTagList() {
-        return summary == null ? null : new ArrayList<>(summary);
+    public List<String> getSummary() {
+        return summary == null ? Collections.emptyList() : new ArrayList<>(summary);
     }
-
 }
