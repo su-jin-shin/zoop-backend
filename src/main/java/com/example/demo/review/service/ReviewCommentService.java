@@ -185,12 +185,7 @@ public class ReviewCommentService {
                 .orElse(false);
     }
 
-    /**
-     * 댓글 개수 조회  --> 전체 리뷰 조회와 중복된 로직. 후에 변경 또는 삭제 예정
-     */
-    public Long getCommentCount(Long reviewId) {
-        return commentRepository.commentCount(reviewId);
-    }
+
     /**
      * 댓글 좋아요 수 조회
      */
