@@ -131,6 +131,7 @@ public class PropertyExcelDto {
         return list == null ? Collections.emptyList() : new ArrayList<>(list);
     }
 
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "방어적 복사 적용됨")
     public List<String> getSummary() {
         return summary == null ? Collections.emptyList() : new ArrayList<>(summary);
     }
