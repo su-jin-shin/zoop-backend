@@ -4,19 +4,19 @@ import com.example.demo.auth.dto.LoginUser;
 import com.example.demo.common.excel.ExcelGenerator;
 import com.example.demo.common.excel.PropertyExcelDto;
 import com.example.demo.common.excel.PropertyExcelMetaProvider;
-import com.example.demo.common.response.ResponseResult;
-import com.example.demo.common.response.SuccessMessage;
 import com.example.demo.mypage.dto.PropertyMapResponse;
 import com.example.demo.mypage.dto.MyPropertyPageResponse;
 import com.example.demo.mypage.dto.MapPropertyDto;
 import com.example.demo.mypage.service.BookmarkedPropertyService;
 
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
+import com.example.demo.realty.dto.PropertyListItemDto;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -35,6 +35,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.function.Function;
 
+
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/mypage/histories/bookmarked-properties")
@@ -45,46 +47,35 @@ public class BookmarkedPropertyController {
     private final ExcelGenerator excelGenerator;
 
     @GetMapping
-    public ResponseEntity<ResponseResult> getBookmarkedPropertiesByPageable(
+    public ResponseEntity<MyPropertyPageResponse> getBookmarkedPropertiesByPageable(
             @AuthenticationPrincipal LoginUser loginUser,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size
     ) {
         Long userId = Long.valueOf(loginUser.getUsername());
+        log.info("😀😀userId = {}", userId);
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        MyPropertyPageResponse result = bookmarkedPropertyService.getBookmarkedProperties(userId, pageable);
-
-        return ResponseEntity.ok(
-                ResponseResult.success(
-                        HttpStatus.OK,
-                        SuccessMessage.BOOKMARKED_PROPERTIES_FETCHED.getMessage(),
-                        result
-                )
-        );
+        return ResponseEntity.ok(bookmarkedPropertyService.getBookmarkedProperties(userId, pageable));
     }
 
     @GetMapping("/map")
-    public ResponseEntity<ResponseResult> getBookmarkedPropertiesForMap(
+    public ResponseEntity<PropertyMapResponse> getBookmarkedPropertiesForMap(
             @AuthenticationPrincipal LoginUser loginUser,
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "20") int size
     ) {
         Long userId = Long.valueOf(loginUser.getUsername());
+        log.info("😀😀userId = {}", userId);
         // 1. 지도용 전체 좌표 리스트
         List<MapPropertyDto> mapDtos = bookmarkedPropertyService.getMapProperties(userId);
 
         // 2. 바텀시트용 페이지 목록
         MyPropertyPageResponse bottomSheet = bookmarkedPropertyService.getPagedProperties(userId, page, size);
 
-        return ResponseEntity.ok(
-                ResponseResult.success(
-                        HttpStatus.OK,
-                        SuccessMessage.BOOKMARKED_PROPERTIES_FOR_MAP_FETCHED.getMessage(),
-                        PropertyMapResponse.builder()
-                                .mapProperties(mapDtos)
-                                .myPropertyPageResponse(bottomSheet)
-                                .build())
-                );
+        return ResponseEntity.ok(PropertyMapResponse.builder()
+                .mapProperties(mapDtos)
+                .myPropertyPageResponse(bottomSheet)
+                .build());
     }
 
     @GetMapping("/excel-export")
@@ -92,6 +83,9 @@ public class BookmarkedPropertyController {
             @AuthenticationPrincipal LoginUser loginUser
     ) {
         Long userId = Long.valueOf(loginUser.getUsername());
+        log.info("😀😀userId = {}", userId);
+
+        long start = System.currentTimeMillis();
 
         List<PropertyExcelDto> dtoList = bookmarkedPropertyService.getBookmarkedPropertiesForExcel(userId);
 
@@ -99,6 +93,9 @@ public class BookmarkedPropertyController {
         List<Function<PropertyExcelDto, Object>> extractors = propertyExcelMetaProvider.getExtractors();
 
         ByteArrayInputStream in = excelGenerator.generateExcel(dtoList, headers, extractors);
+
+        long end = System.currentTimeMillis();
+        log.info("📤 [엑셀 생성 완료] 소요 시간 = {} ms", (end - start));
 
         String filename = URLEncoder.encode("찜한_매물_정보.xlsx", StandardCharsets.UTF_8);
 
