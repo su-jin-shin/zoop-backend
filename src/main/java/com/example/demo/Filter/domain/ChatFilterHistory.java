@@ -1,5 +1,6 @@
 package com.example.demo.Filter.domain;
 
+import com.example.demo.auth.domain.UserInfo;
 import com.example.demo.chat.domain.ChatRoom;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.persistence.*;
@@ -31,4 +32,11 @@ public class ChatFilterHistory {
     private Filter filter;                                 // 필터와 연관관계
 
     private LocalDateTime usedAt;                          // 필터 사용시각
+
+
+    public ChatFilterHistory(Filter filter, ChatRoom chatRoom) {
+        this.chatRoom = chatRoom;
+        this.filter = filter;
+        this.usedAt = LocalDateTime.now();
+    }
 }

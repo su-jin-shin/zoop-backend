@@ -1,9 +1,9 @@
 package com.example.demo.Filter.controller;
 
 
-import com.example.demo.Filter.dto.request.SearchFilterRequestDto;
+import com.example.demo.Filter.dto.request.FilterRequestDto;
 
-import com.example.demo.Filter.dto.response.KeywordFilterHistoryResponseDto;
+//import com.example.demo.Filter.dto.response.KeywordFilterHistoryResponseDto;
 import com.example.demo.Filter.service.FilterService;
 import com.example.demo.auth.dto.LoginUser;
 import com.example.demo.common.response.ResponseResult;
@@ -27,13 +27,13 @@ public class FilterController {
 
     // 필터 조건 등록시 키워드 필터 히스토리 등록
     @PostMapping("/keyword-filters")
-    public ResponseEntity<?> saveSearchFilter(@AuthenticationPrincipal LoginUser loginUser,
-                                              @RequestBody SearchFilterRequestDto searchFilterRequestDto) {
+    public ResponseEntity<?> saveKeywordFilter(@AuthenticationPrincipal LoginUser loginUser,
+                                              @RequestBody FilterRequestDto searchFilterRequestDto) {
 
         // 로그인한 유저의 userId 추출
         Long userId = Long.valueOf(loginUser.getUsername());
 
-        filterService.saveSearchFilter(userId, searchFilterRequestDto);
+        filterService.saveKeywordFilter(userId, searchFilterRequestDto);
         return ResponseEntity.ok(
                 ResponseResult.success(
                         HttpStatus.CREATED,
@@ -43,11 +43,12 @@ public class FilterController {
         );
     }
 
+
     // 기존 키워드 필터 히스토리 수정
     @PutMapping("/{keywordFilterHistoryId}")
     public ResponseEntity<?> updateKeywordFilter(@AuthenticationPrincipal LoginUser loginUser,
                                                  @PathVariable("keywordFilterHistoryId") Long keywordFilterHistoryId,
-                                                 @RequestBody SearchFilterRequestDto updateRequestDto) {
+                                                 @RequestBody FilterRequestDto updateRequestDto) {
         Long userId = Long.valueOf(loginUser.getUsername());
 
         filterService.modifyKeywordFilter(userId, keywordFilterHistoryId, updateRequestDto);
@@ -93,19 +94,19 @@ public class FilterController {
     }
 
     // 로그인한 사용자의 필터 히스토리(키워드 목록) 중에서 하나를 선택하고 상세정보 조회
-    @GetMapping("/{keywordFilterHistoryId}")
-    public ResponseEntity<?> getKeywordFilterDetail(@AuthenticationPrincipal LoginUser loginUser,
-                                                    @PathVariable("keywordFilterHistoryId") Long keywordFilterHistoryId){
-        Long userId = Long.valueOf(loginUser.getUsername());
-        KeywordFilterHistoryResponseDto keywordFilterHistoryResponseDto = filterService.getKeywordFilterDetail(userId, keywordFilterHistoryId);
-        return ResponseEntity.ok(
-                ResponseResult.success(
-                        HttpStatus.OK,
-                        GET_SUCCESS.getMessage(),
-                        keywordFilterHistoryResponseDto
-                )
-        );
-    }
+//    @GetMapping("/{keywordFilterHistoryId}")
+//    public ResponseEntity<?> getKeywordFilterDetail(@AuthenticationPrincipal LoginUser loginUser,
+//                                                    @PathVariable("keywordFilterHistoryId") Long keywordFilterHistoryId){
+//        Long userId = Long.valueOf(loginUser.getUsername());
+//        KeywordFilterHistoryResponseDto keywordFilterHistoryResponseDto = filterService.getKeywordFilterDetail(userId, keywordFilterHistoryId);
+//        return ResponseEntity.ok(
+//                ResponseResult.success(
+//                        HttpStatus.OK,
+//                        GET_SUCCESS.getMessage(),
+//                        keywordFilterHistoryResponseDto
+//                )
+//        );
+//    }
 
 }
 

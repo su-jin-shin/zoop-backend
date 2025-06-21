@@ -9,6 +9,8 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 
 @SuppressFBWarnings(value = "EI_EXPOSE_REP2")
@@ -22,20 +24,26 @@ public class FilterRepositoryImpl implements FilterRepositoryCustom {
     public Optional<Filter> findDuplicate(Filter filter) {
         QFilter q = QFilter.filter;
 
-        return Optional.ofNullable(
-                queryFactory.selectFrom(q)
-                        .where(
-                                q.region.eq(filter.getRegion()),
-                                q.x.eq(filter.getX()),
-                                q.y.eq(filter.getY()),
-                                q.bCode.eq(filter.getBCode()),
-                                q.hCode.eq(filter.getHCode()),
-                                q.tradeTypeName.eq(filter.getTradeTypeName()),
-                                q.realEstateTypeName.eq(filter.getRealEstateTypeName()),
-                                q.dealOrWarrantPrc.eq(filter.getDealOrWarrantPrc()),
-                                q.rentPrice.eq(filter.getRentPrice())
-                        )
-                        .fetchFirst()
-        );
+        // 1차 필터 데이터와 비교
+        List<Filter> candidates = queryFactory.selectFrom(q)
+                .where(
+                        q.region.eq(filter.getRegion()),
+                        q.longitude.eq(filter.getLongitude()),
+                        q.latitude.eq(filter.getLatitude()),
+                        q.bCode.eq(filter.getBCode()),
+                        q.hCode.eq(filter.getHCode()),
+                        q.tradeTypeName.eq(filter.getTradeTypeName()),
+                        q.dealOrWarrantPrc.eq(filter.getDealOrWarrantPrc()),
+                        q.rentPrice.eq(filter.getRentPrice())
+                )
+                .fetch();
+
+        // 2차 매물 타입 순서 상관없이 비교
+        return candidates.stream()
+                .filter(existing ->
+                        new HashSet<>(existing.getRealEstateTypeName())
+                                .equals(new HashSet<>(filter.getRealEstateTypeName()))
+                )
+                .findFirst();
     }
 }
