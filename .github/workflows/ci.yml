@@ -6,7 +6,6 @@ on:
 
 jobs:
   build-and-test:
-    # ── 셀프-호스티드 러너 태그(대소문자 그대로) ──
     runs-on: [self-hosted, Linux, X64]
 
     steps:

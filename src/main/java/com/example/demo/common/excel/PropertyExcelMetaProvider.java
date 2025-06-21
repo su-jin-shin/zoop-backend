@@ -18,13 +18,12 @@ public class PropertyExcelMetaProvider {
     }
 
     public List<Function<PropertyExcelDto, Object>> getExtractors() {
-
         return List.of(
                 PropertyExcelDto::getTradeTypeName,
                 PropertyExcelDto::getRentPrice,
                 PropertyExcelDto::getWarrantPrice,
                 PropertyExcelDto::getDealOrWarrantPrc,
-                dto -> String.join(", ", dto.getTagList() == null ? List.of() : dto.getTagList()),
+                dto -> String.join(", ", dto.getSummary()),
                 PropertyExcelDto::getAptName,
                 PropertyExcelDto::getBuildingName,
                 PropertyExcelDto::getRealEstateTypeName,

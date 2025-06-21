@@ -7,17 +7,13 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-@SuppressFBWarnings(
-        value = "EI_EXPOSE_REP2",
-        justification = "tagList는 방어적 복사 getter/setter로 보호됨"
-)
 @Getter
 @Setter
 @Builder(toBuilder = true)
 @NoArgsConstructor
-@AllArgsConstructor
 public class PropertyExcelDto {
 
     private Integer order; // 정렬 순서
@@ -49,13 +45,57 @@ public class PropertyExcelDto {
     private String articleFeatureDesc; //매물특징요약
     private String detailDescription; //상세설명
 
-    private String realtorName; //중개사 이름
+    private String realtorName; //중개사이름
     private String representativeName; //대표 이름
     private String realtorAddress; //중개사주소
     private String representativeTelNo; //대표전화번호
     private String cellPhoneNo; //휴대전화번호
     private BigDecimal maxBrokerFee; //최대 중개보수
     private BigDecimal brokerFee; //중개보수
+
+    public PropertyExcelDto(
+            Integer order, Long propertyId, String tradeTypeName,
+            BigDecimal rentPrice, BigDecimal warrantPrice, BigDecimal dealPrice,
+            String dealOrWarrantPrc, List<String> summary,
+            String aptName, String buildingName, String realEstateTypeName,
+            String area2, Double latitude, Double longitude, Boolean isBookmarked,
+            String articleName, String imageUrl, String direction, String floorInfo, String exposureAddress,
+            BigDecimal etcFeeAmount, String moveInPossibleYmd, String articleFeatureDesc, String detailDescription,
+            String realtorName, String representativeName, String realtorAddress, String representativeTelNo,
+            String cellPhoneNo, BigDecimal maxBrokerFee, BigDecimal brokerFee
+    ) {
+        this.order = order;
+        this.propertyId = propertyId;
+        this.tradeTypeName = tradeTypeName;
+        this.rentPrice = rentPrice;
+        this.warrantPrice = warrantPrice;
+        this.dealPrice = dealPrice;
+        this.dealOrWarrantPrc = dealOrWarrantPrc;
+        this.summary = summary == null ? null : new ArrayList<>(summary); // ✅ 방어적 복사
+        this.aptName = aptName;
+        this.buildingName = buildingName;
+        this.realEstateTypeName = realEstateTypeName;
+        this.area2 = area2;
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.isBookmarked = isBookmarked;
+        this.articleName = articleName;
+        this.imageUrl = imageUrl;
+        this.direction = direction;
+        this.floorInfo = floorInfo;
+        this.exposureAddress = exposureAddress;
+        this.etcFeeAmount = etcFeeAmount;
+        this.moveInPossibleYmd = moveInPossibleYmd;
+        this.articleFeatureDesc = articleFeatureDesc;
+        this.detailDescription = detailDescription;
+        this.realtorName = realtorName;
+        this.representativeName = representativeName;
+        this.realtorAddress = realtorAddress;
+        this.representativeTelNo = representativeTelNo;
+        this.cellPhoneNo = cellPhoneNo;
+        this.maxBrokerFee = maxBrokerFee;
+        this.brokerFee = brokerFee;
+    }
 
     public static PropertyExcelDto from(Property property, Realty realtor, int order) {
         return PropertyExcelDto.builder()
@@ -76,7 +116,7 @@ public class PropertyExcelDto {
                 .exposureAddress(property.getExposureAddress())
                 .latitude(property.getLatitude())
                 .longitude(property.getLongitude())
-                .summary(property.getTagList() == null ? null : new ArrayList<>(property.getTagList()))
+                .summary(safeList(property.getTagList())) // ✅ 복사 안전하게 처리
                 .realtorName(realtor.getRealtorName())
                 .representativeName(realtor.getRepresentativeName())
                 .realtorAddress(realtor.getAddress())
@@ -86,12 +126,24 @@ public class PropertyExcelDto {
                 .brokerFee(realtor.getBrokerFee())
                 .build();
     }
-    public void setTagList(List<String> tagList) {
-        this.summary = tagList == null ? null : new ArrayList<>(tagList);
+
+    private static List<String> safeList(List<String> list) {
+        return list == null ? Collections.emptyList() : new ArrayList<>(list);
     }
 
-    public List<String> getTagList() {
-        return summary == null ? null : new ArrayList<>(summary);
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "방어적 복사 적용됨")
+    public List<String> getSummary() {
+        return summary == null ? Collections.emptyList() : new ArrayList<>(summary);
     }
 
+    public void setSummary(List<String> summary) {
+        this.summary = summary == null ? null : new ArrayList<>(summary);
+    }
+
+    public static class PropertyExcelDtoBuilder {
+        public PropertyExcelDtoBuilder summary(List<String> summary) {
+            this.summary = summary == null ? null : new ArrayList<>(summary);
+            return this;
+        }
+    }
 }

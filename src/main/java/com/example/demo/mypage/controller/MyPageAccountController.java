@@ -2,6 +2,7 @@ package com.example.demo.mypage.controller;
 
 import com.example.demo.auth.dto.LoginUser;
 import com.example.demo.common.exception.DuplicatedNicknameException;
+import com.example.demo.common.exception.UserNotFoundException;
 import com.example.demo.common.response.FailedMessage;
 import com.example.demo.common.response.ResponseResult;
 import com.example.demo.common.response.SuccessMessage;
@@ -24,6 +25,7 @@ import java.io.IOException;
 
 import static com.example.demo.common.response.FailedMessage.CHECK_AVAILABLE_NICKNAME;
 import static com.example.demo.common.response.FailedMessage.DUPLICATED_NICKNAME;
+import static com.example.demo.common.response.SuccessMessage.GET_SUCCESS;
 
 @RestController
 @RequestMapping("/mypage")
@@ -81,7 +83,7 @@ public class MyPageAccountController {
                         HttpStatus.OK,
                         message,
                         new NicknameCheckResponse(isDuplicated, message)
-        ));
+                ));
     }
 
     // 프로필 이미지 수정
@@ -116,7 +118,6 @@ public class MyPageAccountController {
             @AuthenticationPrincipal LoginUser loginUser) {
 
         Long userId = parseUserId(loginUser);
-
         String defaultUrl = profileImageService.resetToDefaultImage(userId);
         return ResponseEntity.ok(ResponseResult.success(
                 HttpStatus.OK,
@@ -130,6 +131,7 @@ public class MyPageAccountController {
     public ResponseEntity<?> getAccountInfo(@AuthenticationPrincipal LoginUser loginUser) {
 
         Long userId = parseUserId(loginUser);
+
         MyPageAccountResponse response = myPageService.getAccountInfo(userId);
 
         return ResponseEntity.ok(ResponseResult.success(
@@ -138,4 +140,5 @@ public class MyPageAccountController {
                 response
         ));
     }
+
 }

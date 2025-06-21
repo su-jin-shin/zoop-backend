@@ -30,6 +30,7 @@ public class MyReviewService {
         log.info("🔍 getMyReviews() 시작 - userId: {}", userId);
         List<Review> reviews = myReviewRepository.findByUserUserIdAndDeletedAtIsNullOrderByCreatedAtDesc(userId);
         log.info("✅ 조회된 리뷰 수: {}", reviews.size());
+
         return reviews.stream().map(review -> {
             long commentCount = myReviewRepository.countCommentsByReviewId(review.getId());
             long likeCount = myReviewRepository.countByReviewIdAndIsLikedTrue(review.getId());

@@ -12,7 +12,6 @@ import java.util.stream.Collectors;
 
 @Repository
 public interface MyReviewRepository extends JpaRepository<Review, Long> {
-
         List<Review> findByUserUserId(Long userId);
 
         List<Review> findByUserUserIdAndDeletedAtIsNullOrderByCreatedAtDesc(Long userId);
@@ -40,11 +39,10 @@ public interface MyReviewRepository extends JpaRepository<Review, Long> {
         List<Object[]> findIsLikedByReviewIds(@Param("reviewIds") List<Long> reviewIds, @Param("userId") Long userId);
 
         default Map<Long, Boolean> getIsLikedMapByReviewIds(List<Long> reviewIds, Long userId) {
-            return findIsLikedByReviewIds(reviewIds, userId).stream()
-                    .collect(Collectors.toMap(
-                            row -> (Long) row[0],
-                            row -> (Boolean) row[1]
-                    ));
+                return findIsLikedByReviewIds(reviewIds, userId).stream()
+                        .collect(Collectors.toMap(
+                                row -> (Long) row[0],
+                                row -> (Boolean) row[1]
+                        ));
         }
-    }
-
+}

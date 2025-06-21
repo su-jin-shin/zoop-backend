@@ -38,7 +38,6 @@ public class MyHomeService {
                 .orElseThrow(UserNotFoundException::new);
         String nickname = user.getNickname();
         String profileImage = user.getProfileImage();
-
         log.info("✅ 사용자 이름 = {}", nickname);
 
         // 3. 찜한 매물 20개
