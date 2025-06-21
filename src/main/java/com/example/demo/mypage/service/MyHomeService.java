@@ -5,10 +5,7 @@ import com.example.demo.auth.repository.UserInfoRepository;
 import com.example.demo.common.exception.UserNotFoundException;
 import com.example.demo.mypage.domain.BookmarkedProperty;
 import com.example.demo.mypage.domain.RecentViewedProperty;
-import com.example.demo.mypage.dto.MyCommentResponse;
-import com.example.demo.mypage.dto.MyPageHomeResponse;
-import com.example.demo.mypage.dto.MyPageUserDto;
-import com.example.demo.mypage.dto.MyReviewResponse;
+import com.example.demo.mypage.dto.*;
 import com.example.demo.mypage.repository.BookmarkedPropertyRepository;
 import com.example.demo.mypage.repository.MyReviewRepository;
 import com.example.demo.property.domain.Property;
@@ -73,9 +70,11 @@ public class MyHomeService {
         return MyPageHomeResponse.builder()
                 .userInfo(new MyPageUserDto(nickname, profileImageUrl))
                 .reviewOrComments(reviewOrComments)
-                .bookmarkedPropertyCount(bookmarkedCount)
+                .activity(MyPageActivityDto.builder()
+                        .bookmarkedPropertyCount(bookmarkedCount)
+                        .recentViewedPropertyCount(recentViewedCount)
+                        .build())
                 .bookmarkedProperties(bookmarked)
-                .recentViewedPropertyCount(recentViewedCount)
                 .recentViewedProperties(recentViewed)
                 .build();
     }
