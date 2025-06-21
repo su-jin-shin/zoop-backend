@@ -160,12 +160,43 @@ public class RecentViewedPropertyServiceImpl implements RecentViewedPropertyServ
     public List<PropertyExcelDto> getRecentViewedPropertiesForExcel(Long userId) {
         List<RecentViewedProperty> recentViewed = recentViewedPropertyRepository.findTop20ByUser_UserIdAndDeletedAtIsNullOrderByViewedAtDesc(userId);
 
+        List<Long> propertyIds = recentViewed.stream()
+                .map(rvp -> rvp.getProperty().getPropertyId())
+                .toList();
+
+        // 썸네일 매핑
+        Map<Long, Image> thumbnailMap = imageRepository.findThumbnailsByPropertyIds(propertyIds).stream()
+                .collect(Collectors.toMap(
+                        img -> img.getProperty().getPropertyId(),
+                        img -> img,
+                        (v1, v2) -> v1
+                ));
+
+        // 찜 여부
+        Set<Long> bookmarkedPropertyIds = bookmarkedPropertyRepository
+                .findBookmarkedPropertyIds(userId, propertyIds);
+
+
         return IntStream.range(0, recentViewed.size())
                 .mapToObj(i -> {
-                    Property property = recentViewed.get(i).getProperty();
-                    Realty realtor = property.getRealty(); // 연관된 중개사
-                    return PropertyExcelDto.from(property, realtor, i + 1);
+                    Property p = recentViewed.get(i).getProperty();
+                    Realty realtor = p.getRealty();
+                    Long pid = p.getPropertyId();
+                    Image thumbnail = thumbnailMap.get(pid);
+
+                    PropertyExcelDto dto = PropertyExcelDto.from(p, realtor, i + 1);
+
+                    // ✅ 추가 정보 보정
+                    dto.setImageUrl(thumbnail != null ? thumbnail.getImageUrl() : null);
+                    dto.setIsBookmarked(bookmarkedPropertyIds.contains(pid));
+                    dto.setAptName(p.getAptName());
+                    dto.setBuildingName(p.getBuildingName());
+                    dto.setRealEstateTypeName(p.getRealEstateTypeName());
+
+                    return dto;
                 })
                 .toList();
     }
+
+
 }

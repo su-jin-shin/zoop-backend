@@ -2,6 +2,7 @@ package com.example.demo.mypage.controller;
 
 import com.example.demo.auth.dto.LoginUser;
 import com.example.demo.common.excel.ExcelGenerator;
+import com.example.demo.common.excel.ExcelListResponse;
 import com.example.demo.common.excel.PropertyExcelDto;
 import com.example.demo.common.excel.PropertyExcelMetaProvider;
 import com.example.demo.common.exception.UserNotFoundException;
@@ -26,6 +27,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.IntStream;
 
 @Slf4j
 @RestController
@@ -68,38 +70,19 @@ public class RecentViewedPropertyController {
     }
 
     @GetMapping("/map")
-    public ResponseEntity<PropertyMapResponse> getRecentViewedPropertiesForMap(
+    public ResponseEntity<ExcelListResponse<PropertyExcelDto>> getRecentViewedPropertiesForMap(
             @AuthenticationPrincipal LoginUser loginUser
     ) {
         Long userId = parseUserId(loginUser);
-        PropertyMapResponse response = recentViewedPropertyService.getRecentViewedPropertiesWithMap(userId);
-        return ResponseEntity.ok(response);
-    }
-
-    @GetMapping("/excel-export")
-    public ResponseEntity<byte[]> exportRecentViewedPropertiesToExcel(
-            @AuthenticationPrincipal LoginUser loginUser
-    ) {
-        Long userId = Long.valueOf(loginUser.getUsername());
-        log.info("😀😀userId = {}", userId);
-
-        long start = System.currentTimeMillis();
+        log.info("😀userId: {}", userId);
 
         List<PropertyExcelDto> dtoList = recentViewedPropertyService.getRecentViewedPropertiesForExcel(userId);
+        ExcelListResponse<PropertyExcelDto> response = ExcelListResponse.<PropertyExcelDto>builder()
+                .countProperties(dtoList.size())
+                .data(dtoList)
+                .build();
 
-        List<String> headers = propertyExcelMetaProvider.getHeaders();
-        List<Function<PropertyExcelDto, Object>> extractors = propertyExcelMetaProvider.getExtractors();
-
-        ByteArrayInputStream in = excelGenerator.generateExcel(dtoList, headers, extractors);
-
-        long end = System.currentTimeMillis();
-        log.info("📤 [엑셀 생성 완료] 소요 시간 = {} ms", (end - start));
-
-        String filename = URLEncoder.encode("최근_본_매물_정보.xlsx", StandardCharsets.UTF_8);
-
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''" + filename)
-                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
-                .body(in.readAllBytes());
+        return ResponseEntity.ok(response); // ✅ 지도 + 엑셀 둘 다 활용 가능
     }
+
 }
