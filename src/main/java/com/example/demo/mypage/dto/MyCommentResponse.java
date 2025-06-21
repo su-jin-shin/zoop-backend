@@ -8,19 +8,17 @@ import java.time.LocalDate;
 public class MyCommentResponse {
 
     private final Long commentId;     // 댓글 ID (review_comment.comment_id)
-    private final String content;     // 내가 쓴 댓글 내용
+    private final String content;     //  내가 쓴 댓글 내용
     private final LocalDate createdAt;
     private final Integer likeCount;
     private final Review review;
-    private final boolean isLiked;
 
-    public MyCommentResponse(Long commentId, String content, LocalDate createdAt, Integer likeCount, Review review, boolean isLiked) {
+    public MyCommentResponse(Long commentId, String content, LocalDate createdAt, Integer likeCount, Review review) {
         this.commentId = commentId;
         this.content = content;
         this.createdAt = createdAt;
         this.likeCount = likeCount;
         this.review = review;
-        this.isLiked = isLiked;
     }
 
     @Getter

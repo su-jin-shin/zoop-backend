@@ -28,17 +28,12 @@ public class MyReviewService {
 
     public List<MyReviewResponse> getMyReviews(Long userId) {
         log.info("🔍 getMyReviews() 시작 - userId: {}", userId);
-        List<Review> reviews = myReviewRepository.findByUserUserId(userId);
+        List<Review> reviews = myReviewRepository.findByUserUserIdAndDeletedAtIsNullOrderByCreatedAtDesc(userId);
         log.info("✅ 조회된 리뷰 수: {}", reviews.size());
-        List<Long> reviewIds = reviews.stream().map(Review::getId).toList();
-        log.debug("🧪 reviewIds: {}", reviewIds);
-
-        Map<Long, Boolean> isLikedMap = myReviewRepository.getIsLikedMapByReviewIds(reviewIds, userId);
 
         return reviews.stream().map(review -> {
-            long commentCount = myReviewRepository.countByReviewId(review.getId());
+            long commentCount = myReviewRepository.countCommentsByReviewId(review.getId());
             long likeCount = myReviewRepository.countByReviewIdAndIsLikedTrue(review.getId());
-            boolean isLiked = isLikedMap.getOrDefault(review.getId(), false);
 
             String articleName = "매물 정보 없음";
             Long propertyId = null;
@@ -46,11 +41,11 @@ public class MyReviewService {
             if (review.getComplex() != null) {
                 articleName = review.getComplex().getComplexName();
             } else if (review.getPropertyId() != null) {
+                propertyId = review.getPropertyId();
                 try {
-                    articleName = propertyService.getPropertyBasicInfo(review.getPropertyId()).getArticleName();
-                    propertyId = review.getPropertyId();
+                    articleName = propertyService.getPropertyBasicInfo(propertyId).getArticleName();
                 } catch (NotFoundException e) {
-                    log.warn("⚠️ 매물 정보 없음 - propertyId={}", review.getPropertyId());
+                    log.warn("⚠️ 매물 정보 없음 - propertyId={}", propertyId);
                 }
             }
 
@@ -60,7 +55,6 @@ public class MyReviewService {
                     .createdAt(review.getCreatedAt().toLocalDate())
                     .likeCount((int) likeCount)
                     .commentCount((int) commentCount)
-                    .isLiked(isLiked)
                     .item(MyReviewResponse.ItemDto.builder()
                             .propertyId(propertyId)
                             .articleName(articleName)

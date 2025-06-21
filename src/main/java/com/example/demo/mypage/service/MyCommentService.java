@@ -23,44 +23,49 @@ import java.util.Map;
 public class MyCommentService {
 
     private final MyReviewCommentRepository reviewCommentRepository;
+    private final PropertyService propertyService;
 
     public List<MyCommentResponse> getMyComments(Long userId) {
         log.info("💬 MyCommentService 진입 userId={}", userId);
 
-        List<MyCommentQuery> comments = reviewCommentRepository.findMyComments(userId);
+        List<ReviewComment> comments = reviewCommentRepository.findByUser_UserIdAndDeletedAtIsNullOrderByCreatedAtDesc(userId);
         log.info("💬 댓글 수 = {}", comments.size());
 
-        List<Long> commentIds = comments.stream()
-                .map(MyCommentQuery::getCommentId)
-                .toList();
-
-        Map<Long, Boolean> isLikedMap = reviewCommentRepository.getIsLikedMapByCommentIds(commentIds, userId);
-
-        return comments.stream()
-                .map(q -> convertToDto(q, isLikedMap.getOrDefault(q.getCommentId(), false)))
-                .toList();
+        return comments.stream().map(this::convertToDto).toList();
     }
 
-    private MyCommentResponse convertToDto(MyCommentQuery q, boolean isLiked) {
+    private MyCommentResponse convertToDto(ReviewComment comment) {
+        Long complexId = null;
+        Long propertyId = null;
+        String articleName = "매물 정보 없음";
+
+        if (comment.getReview() != null) {
+            if (comment.getReview().getComplex() != null) {
+                complexId = comment.getReview().getComplex().getId();
+                articleName = comment.getReview().getComplex().getComplexName();
+            } else if (comment.getReview().getPropertyId() != null) {
+                propertyId = comment.getReview().getPropertyId();
+                articleName = propertyService.getPropertyBasicInfo(propertyId).getArticleName();
+            }
+        }
+
         MyCommentResponse.Item item = new MyCommentResponse.Item(
-                q.getComplexId(),
-                q.getPropertyId(),
-                q.getArticleName()
+                complexId,
+                propertyId,
+                articleName
         );
 
         MyCommentResponse.Review review = new MyCommentResponse.Review(
-                q.getReviewId(),
-                q.getReviewContent(),
+                comment.getReview().getId(),
+                comment.getReview().getContent(),
                 item
         );
-
         return new MyCommentResponse(
-                q.getCommentId(),
-                q.getContent(),
-                q.getCreatedAt(),
-                q.getLikeCount(),
-                review,
-                isLiked
+                comment.getId(),
+                comment.getContent(),
+                comment.getCreatedAt().toLocalDate(),
+                comment.getLikeCount().intValue(),
+                review
         );
     }
 }
