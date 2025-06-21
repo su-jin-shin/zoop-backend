@@ -6,7 +6,7 @@ import static com.example.demo.common.response.FailedMessage.*;
 
 public class DuplicatedNicknameException extends CustomException {
 
-    @Override
+    @Override //닉네임
     public HttpStatus getStatus() {
         return HttpStatus.BAD_REQUEST;
     }

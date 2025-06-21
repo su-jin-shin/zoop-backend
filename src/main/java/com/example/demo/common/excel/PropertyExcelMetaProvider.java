@@ -18,6 +18,7 @@ public class PropertyExcelMetaProvider {
     }
 
     public List<Function<PropertyExcelDto, Object>> getExtractors() {
+
         return List.of(
                 PropertyExcelDto::getTradeTypeName,
                 PropertyExcelDto::getRentPrice,

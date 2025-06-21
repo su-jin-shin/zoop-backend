@@ -52,7 +52,7 @@ public interface MyReviewCommentRepository extends JpaRepository<ReviewComment, 
                 ));
     }
 
-    // 최신순 + 삭제되지 않은 댓글
+    // 최신순 + 삭제되지 않은  댓글
     List<ReviewComment> findByUser_UserIdAndDeletedAtIsNullOrderByCreatedAtDesc(Long userId);
 
 }

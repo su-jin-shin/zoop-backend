@@ -35,7 +35,7 @@ public enum SuccessMessage {
 
     BOOKMARKED_PROPERTIES_FETCHED("찜한 매물 목록 조회에 성공했습니다."),
     BOOKMARKED_PROPERTIES_EXPORTED("찜한 매물 엑셀 다운로드가 완료되었습니다."),
-    BOOKMARKED_PROPERTIES_FOR_MAP_FETCHED("찜한 매물 지도 정보 조회에 성공했습니다.");
+    BOOKMARKED_PROPERTIES_FOR_MAP_FETCHED("찜한 매물 지도 정보 조회에 성공했습니다."); // 성공
 
 
     private final String message;

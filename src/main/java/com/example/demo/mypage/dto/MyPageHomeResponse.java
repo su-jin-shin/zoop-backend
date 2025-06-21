@@ -15,7 +15,7 @@ public class MyPageHomeResponse {
     private final MyPageUserDto userInfo;
     private final List<?> reviewOrComments;
     private final List<PropertyListItemDto> bookmarkedProperties;
-    private int bookmarkedCount;
+    private int bookmarkedCount; // 추가
 
     private final List<PropertyListItemDto> recentViewedProperties;
     private int recentViewedCount;

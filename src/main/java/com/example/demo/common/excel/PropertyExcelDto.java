@@ -49,7 +49,7 @@ public class PropertyExcelDto {
     private String articleFeatureDesc; //매물특징요약
     private String detailDescription; //상세설명
 
-    private String realtorName; //중개사이름
+    private String realtorName; //중개사 이름
     private String representativeName; //대표 이름
     private String realtorAddress; //중개사주소
     private String representativeTelNo; //대표전화번호

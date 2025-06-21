@@ -42,7 +42,7 @@ public class MyPageAccountController {
         }
     }
 
-    // 닉네임 수정
+    // 닉네임 수정 완료
     @PatchMapping("/user-nickname")
     public ResponseEntity<?> updateNickname(
             @RequestBody @Valid NicknameUpdateRequest request

@@ -8,7 +8,7 @@ import java.time.LocalDate;
 public class MyCommentResponse {
 
     private final Long commentId;     // 댓글 ID (review_comment.comment_id)
-    private final String content;     // 내가 쓴 댓글 내용
+    private final String content;     //  내가 쓴 댓글 내용
     private final LocalDate createdAt;
     private final Integer likeCount;
     private final Review review;

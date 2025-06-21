@@ -93,16 +93,12 @@ public class BookmarkedPropertyController {
     ) {
         Long userId = Long.valueOf(loginUser.getUsername());
 
-        long start = System.currentTimeMillis();
-
         List<PropertyExcelDto> dtoList = bookmarkedPropertyService.getBookmarkedPropertiesForExcel(userId);
 
         List<String> headers = propertyExcelMetaProvider.getHeaders();
         List<Function<PropertyExcelDto, Object>> extractors = propertyExcelMetaProvider.getExtractors();
 
         ByteArrayInputStream in = excelGenerator.generateExcel(dtoList, headers, extractors);
-
-        long end = System.currentTimeMillis();
 
         String filename = URLEncoder.encode("찜한_매물_정보.xlsx", StandardCharsets.UTF_8);
 
@@ -112,20 +108,6 @@ public class BookmarkedPropertyController {
                 .body(in.readAllBytes());
     }
 
-//    @GetMapping("/excel-export")
-//    public ResponseEntity<ExcelResponseDto<PropertyExcelDto>> exportBookmarkedPropertiesToExcel(
-//            @AuthenticationPrincipal LoginUser loginUser
-//    ) {
-//        Long userId = Long.valueOf(loginUser.getUsername());
-//        log.info("😀😀userId = {}", userId);
-//        long start = System.currentTimeMillis(); // 🔸 시간 시작
-//        List<PropertyExcelDto> dtoList = bookmarkedPropertyService
-//                .getBookmarkedPropertiesForExcel(userId);
-//        long end = System.currentTimeMillis(); // 🔸 시간 종료
-//        log.info("📤 [엑셀 생성 완료] 소요 시간 = {} ms", (end - start));
-//
-//        return ResponseEntity.ok(ExcelResponseDto.from(dtoList));
-//    }
 
 
 
