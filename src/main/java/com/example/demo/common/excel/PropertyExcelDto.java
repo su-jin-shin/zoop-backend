@@ -146,4 +146,11 @@ public class PropertyExcelDto {
             return this;
         }
     }
+
+    public String getDealOrWarrantPrc() {
+        if (dealPrice != null) return dealPrice.toPlainString();
+        if (warrantPrice != null) return warrantPrice.toPlainString();
+        return "-";
+    }
+
 }

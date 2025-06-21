@@ -37,7 +37,7 @@ public class MyHomeService {
         UserInfo user = userInfoRepository.findById(userId)
                 .orElseThrow(UserNotFoundException::new);
         String nickname = user.getNickname();
-        String profileImage = user.getProfileImage();
+        String profileImageUrl = user.getProfileImage();
         log.info("✅ 사용자 이름 = {}", nickname);
 
         // 3. 찜한 매물 20개
@@ -71,12 +71,12 @@ public class MyHomeService {
         }
 
         return MyPageHomeResponse.builder()
-                .userInfo(new MyPageUserDto(nickname, profileImage))
+                .userInfo(new MyPageUserDto(nickname, profileImageUrl))
                 .reviewOrComments(reviewOrComments)
+                .bookmarkedPropertyCount(bookmarkedCount)
                 .bookmarkedProperties(bookmarked)
-                .bookmarkedCount(bookmarkedCount)
+                .recentViewedPropertyCount(recentViewedCount)
                 .recentViewedProperties(recentViewed)
-                .recentViewedCount(recentViewedCount)
                 .build();
     }
 

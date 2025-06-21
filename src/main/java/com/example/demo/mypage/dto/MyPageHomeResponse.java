@@ -15,24 +15,24 @@ public class MyPageHomeResponse {
     private final MyPageUserDto userInfo;
     private final List<?> reviewOrComments;
     private final List<PropertyListItemDto> bookmarkedProperties;
-    private int bookmarkedCount; // 추가
+    private int bookmarkedPropertyCount;
 
     private final List<PropertyListItemDto> recentViewedProperties;
-    private int recentViewedCount;
+    private int recentViewedPropertyCount;
 
     @Builder
     public MyPageHomeResponse(MyPageUserDto userInfo,
                               List<?> reviewOrComments,
                               List<PropertyListItemDto> bookmarkedProperties,
-                              int bookmarkedCount,
+                              int bookmarkedPropertyCount,
                               List<PropertyListItemDto> recentViewedProperties,
-                              int recentViewedCount) {
+                              int recentViewedPropertyCount) {
         this.userInfo = userInfo == null ? null : new MyPageUserDto(userInfo); // ✅ 방어적 복사
         this.reviewOrComments = reviewOrComments == null ? null : new ArrayList<>(reviewOrComments); // ✅ 방어적 복사
         this.bookmarkedProperties = bookmarkedProperties == null ? null : new ArrayList<>(bookmarkedProperties);
-        this.bookmarkedCount = bookmarkedCount;
+        this.bookmarkedPropertyCount = bookmarkedPropertyCount;
         this.recentViewedProperties = recentViewedProperties == null ? null : new ArrayList<>(recentViewedProperties);
-        this.recentViewedCount = recentViewedCount;
+        this.recentViewedPropertyCount = recentViewedPropertyCount;
     }
 
     // ✅ getter도 복사본 반환
