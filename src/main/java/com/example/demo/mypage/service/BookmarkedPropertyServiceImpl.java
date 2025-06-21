@@ -165,6 +165,9 @@ public class BookmarkedPropertyServiceImpl implements BookmarkedPropertyService 
                             .realEstateTypeName(p.getRealEstateTypeName())
                             .latitude(p.getLatitude())
                             .longitude(p.getLongitude())
+                            .tradeTypeName(p.getTradeTypeName())
+                            .articleName(p.getArticleName())
+                            .summary(p.getTagList() == null ? List.of() : List.copyOf(p.getTagList()))
                             .imageUrl(thumbnail != null ? thumbnail.getImageUrl() : null)
                             .isBookmarked(true)
                             .build();

@@ -51,4 +51,8 @@ public interface MyReviewCommentRepository extends JpaRepository<ReviewComment, 
                         row -> (Boolean) row[1]
                 ));
     }
+
+    // 최신순 + 삭제되지 않은  댓글
+    List<ReviewComment> findByUser_UserIdAndDeletedAtIsNullOrderByCreatedAtDesc(Long userId);
+
 }
