@@ -45,7 +45,7 @@ public class ReviewComment {
     @Enumerated(EnumType.STRING)
     @Column(name = "has_children")
     @Builder.Default
-    private HasChildren hasChildren = HasChildren.NO_CHILDREN;
+    private HasChildren hasChildren = HasChildren.NON_CHILDREN;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "is_resident")

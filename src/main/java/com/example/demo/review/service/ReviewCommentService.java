@@ -15,6 +15,7 @@ import com.example.demo.review.repository.ReviewCommentRepository;
 import com.example.demo.review.repository.ReviewRepository;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +23,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -120,33 +122,69 @@ public class ReviewCommentService {
     /**
      * 댓글 좋아요 등록/해제
      */
+//    @Transactional
+//    public ReviewCommentLikeResponse updateLikeStatus(Long commentId, boolean isLiked, Long userId) {
+//        UserInfo loginUser = userInfoRepository.findByUserId(userId)
+//                .orElseThrow(UserNotFoundException::new);
+//
+//
+//        ReviewComment comment = commentRepository.findActiveCommentWithAliveReview(commentId)
+//                .orElseThrow(CommentNotFoundException::new);
+//
+//        ReviewCommentLike like = likeRepository.findByReviewCommentIdAndUser(commentId, loginUser)
+//                .orElseGet(() -> {
+//                    ReviewCommentLike newLike = ReviewCommentLike.of(comment, loginUser, isLiked);
+//                    likeRepository.save(newLike); // 새로 생성 시에만 저장
+//                    return newLike;
+//                });
+//
+//        like.updateLikeStatus(isLiked); // 항상 상태 업데이트
+//
+//        long likeCount = likeRepository.countByReviewCommentIdAndIsLikedTrue(commentId);
+//
+//        return ReviewCommentLikeResponse.builder()
+//                .reviewId(comment.getReview().getId())
+//                .commentId(commentId)
+//                .userId(loginUser.getUserId())
+//                .isLiked(isLiked)
+//                .likeCount(likeCount)
+//                .build();
+//    }
     @Transactional
     public ReviewCommentLikeResponse updateLikeStatus(Long commentId, boolean isLiked, Long userId) {
         UserInfo loginUser = userInfoRepository.findByUserId(userId)
                 .orElseThrow(UserNotFoundException::new);
 
+        // 리뷰와 연결된 댓글 + 리뷰가 삭제되지 않은 것만 조회
         ReviewComment comment = commentRepository.findActiveCommentWithAliveReview(commentId)
                 .orElseThrow(CommentNotFoundException::new);
+
+        // 여기까지 왔는데도 review가 null이면 DB 데이터 문제
+        if (comment.getReview() == null) {
+            log.error("[댓글에 연결된 리뷰가 null] commentId={}, userId={}", commentId, userId);
+            throw new ReviewNotFoundException();
+        }
 
         ReviewCommentLike like = likeRepository.findByReviewCommentIdAndUser(commentId, loginUser)
                 .orElseGet(() -> {
                     ReviewCommentLike newLike = ReviewCommentLike.of(comment, loginUser, isLiked);
-                    likeRepository.save(newLike); // 새로 생성 시에만 저장
+                    likeRepository.save(newLike); // 중복 좋아요 허용 방식
                     return newLike;
                 });
 
-        like.updateLikeStatus(isLiked); // 항상 상태 업데이트
+        like.updateLikeStatus(isLiked);
 
         long likeCount = likeRepository.countByReviewCommentIdAndIsLikedTrue(commentId);
 
         return ReviewCommentLikeResponse.builder()
-                .reviewId(comment.getReview().getId())
+                .reviewId(comment.getReview().getId())  // 안전 보장됨
                 .commentId(commentId)
                 .userId(loginUser.getUserId())
                 .isLiked(isLiked)
                 .likeCount(likeCount)
                 .build();
     }
+
 
 
     //좋아요 여부 확인
