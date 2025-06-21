@@ -127,6 +127,30 @@ public class PropertyExcelDto {
                 .build();
     }
 
+    // PropertyListItemDto 기반 생성 메서드
+    public static PropertyExcelDto from(com.example.demo.realty.dto.PropertyListItemDto dto) {
+        return PropertyExcelDto.builder()
+                .order(dto.getOrder())
+                .propertyId(dto.getPropertyId())
+                .tradeTypeName(dto.getTradeTypeName())
+                .rentPrice(dto.getRentPrice())
+                .warrantPrice(dto.getWarrantPrice())
+                .dealPrice(dto.getDealPrice())
+                .dealOrWarrantPrc(dto.getDealOrWarrantPrc())
+                .summary(safeList(dto.getSummary()))
+                .aptName(dto.getAptName())
+                .buildingName(dto.getBuildingName())
+                .realEstateTypeName(dto.getRealEstateTypeName())
+                .area2(dto.getArea2())
+                .latitude(dto.getLatitude())
+                .longitude(dto.getLongitude())
+                .isBookmarked(dto.getIsBookmarked())
+                .articleName(dto.getArticleName())
+                .imageUrl(dto.getImageUrl())
+                .build();
+    }
+
+
     private static List<String> safeList(List<String> list) {
         return list == null ? Collections.emptyList() : new ArrayList<>(list);
     }
