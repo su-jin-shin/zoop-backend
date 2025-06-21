@@ -1,16 +1,20 @@
 package com.example.demo.Filter.service.Impl;
 
+//import com.example.demo.Filter.domain.ChatFilterHistory;
 import com.example.demo.Filter.domain.Filter;
 import com.example.demo.Filter.domain.KeywordFilterHistory;
 import com.example.demo.Filter.domain.Region;
-import com.example.demo.Filter.dto.request.SearchFilterRequestDto;
-import com.example.demo.Filter.dto.response.KeywordFilterHistoryResponseDto;
+import com.example.demo.Filter.dto.request.FilterRequestDto;
+//import com.example.demo.Filter.dto.response.KeywordFilterHistoryResponseDto;
+import com.example.demo.Filter.repository.ChatFilterHistoryRepository;
 import com.example.demo.Filter.repository.FilterRepository;
 import com.example.demo.Filter.repository.KeywordFilterHistoryRepository;
 import com.example.demo.Filter.repository.RegionRepository;
 import com.example.demo.Filter.service.FilterService;
 import com.example.demo.auth.domain.UserInfo;
 import com.example.demo.auth.repository.UserInfoRepository;
+//import com.example.demo.chat.domain.ChatRoom;
+import com.example.demo.chat.repository.ChatRoomRepository;
 import com.example.demo.common.exception.DuplicateFilterHistoryException;
 import com.example.demo.common.exception.NotFoundException;
 import com.example.demo.common.exception.UserNotFoundException;
@@ -20,6 +24,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+//import static com.example.demo.Filter.domain.QChatFilterHistory.chatFilterHistory;
+
 @RequiredArgsConstructor
 @Transactional
 @Service
@@ -28,20 +34,22 @@ public class FilterServiceImpl implements FilterService {
     private final UserInfoRepository userInfoRepository;
     private final RegionRepository regionRepository;
     private final FilterRepository filterRepository;
+    private final ChatRoomRepository chatRoomRepository;
+    private final ChatFilterHistoryRepository chatFilterHistoryRepository;
     private final KeywordFilterHistoryRepository keywordFilterHistoryRepository;
 
-    // 사용자가 선택한 키워드 필터 히스토리 저장
+    // 알림 쪽에서 사용자가 선택한 필터 조건 저장
     @Override
-    public void saveSearchFilter(Long userId, SearchFilterRequestDto searchFilterRequestDto) {
+    public void saveKeywordFilter(Long userId, FilterRequestDto filterRequestDto) {
 
         // 사용자 조회
         UserInfo userInfo = userInfoRepository.findByUserId(userId).orElseThrow(UserNotFoundException::new);
 
         // 지역 조회
-        Region region = regionRepository.findByCortarNo(searchFilterRequestDto.getBCode()).orElseThrow(NotFoundException::new);
+        Region region = regionRepository.findByCortarNo(filterRequestDto.getBCode()).orElseThrow(NotFoundException::new);
 
         // 필터 조건 저장
-        Filter newFilter = searchFilterRequestDto.toEntity(region);
+        Filter newFilter = filterRequestDto.toEntity(region);
 
         // 필터 중복 체크 및 저장
         Filter filter = createOrFind(newFilter);
@@ -59,9 +67,42 @@ public class FilterServiceImpl implements FilterService {
         keywordFilterHistoryRepository.save(history);
 }
 
+
+    // 채팅 쪽에서 사용자가 선택한 필터 조건 저장
+//    @Override
+//    public void saveChatFilter(Long chatRoomId, FilterRequestDto filterRequestDto) {
+//
+//        // 지역 조회
+//        Region region = regionRepository.findByCortarNo(filterRequestDto.getBCode()).orElseThrow(NotFoundException::new);
+//
+//        // 필터 조건 저장
+//        Filter newFilter = filterRequestDto.toEntity(region);
+//
+//        // 필터 중복 체크 및 저장
+//        Filter filter = createOrFind(newFilter);
+//
+//        // 채팅방 조회
+//        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
+//                .orElseThrow(() -> new NotFoundException());
+//
+//        // 채팅 필터 히스토리에 이미 사용 중인지 확인
+//        boolean alreadyExists = chatFilterHistoryRepository
+//                .existsByChatRoomAndFilter(chatRoom, filter);
+//
+//        if (alreadyExists) {
+//            throw new DuplicateFilterHistoryException();
+//        }
+//
+//        // 히스토리 저장
+//        ChatFilterHistory history = new ChatFilterHistory(filter, chatRoom);
+//        chatFilterHistoryRepository.save(history);
+//
+//    }
+
+
     // 이전에 있던 키워드 필터 히스토리 변경시 필터에 데이터 조건 있으면 참조만 없으면 등록 후 참조
     @Override
-    public void modifyKeywordFilter(Long userId, Long historyId, SearchFilterRequestDto updateRequestDto) {
+    public void modifyKeywordFilter(Long userId, Long historyId, FilterRequestDto updateRequestDto) {
         // 사용자 조회
         UserInfo userInfo = userInfoRepository.findByUserId(userId).orElseThrow(UserNotFoundException::new);
 
@@ -120,24 +161,24 @@ public class FilterServiceImpl implements FilterService {
     }
     
     // 사용자가 등록한 필터 조건 상세 조회
-    @Override
-    public KeywordFilterHistoryResponseDto getKeywordFilterDetail(Long userId, Long keywordFilterHistoryId) {
-
-        // 사용자 조회
-        UserInfo userInfo = userInfoRepository.findByUserId(userId).orElseThrow(UserNotFoundException::new);
-
-        // 해당 히스토리 조회 (유저 일치 + 존재 확인)
-        KeywordFilterHistory history = keywordFilterHistoryRepository
-                .findByKeywordFilterHistoryIdAndUserInfo(keywordFilterHistoryId, userInfo)
-                .orElseThrow(NotFoundException::new);
-
-        // 키워드 필터 히스토리에 연결된 필터 상세 조회
-        Filter filter = history.getFilter();
-
-        // Filter entity -> dto 변환 후 반환
-        return KeywordFilterHistoryResponseDto.from(filter);
-
-    }
+//    @Override
+//    public KeywordFilterHistoryResponseDto getKeywordFilterDetail(Long userId, Long keywordFilterHistoryId) {
+//
+//        // 사용자 조회
+//        UserInfo userInfo = userInfoRepository.findByUserId(userId).orElseThrow(UserNotFoundException::new);
+//
+//        // 해당 히스토리 조회 (유저 일치 + 존재 확인)
+//        KeywordFilterHistory history = keywordFilterHistoryRepository
+//                .findByKeywordFilterHistoryIdAndUserInfo(keywordFilterHistoryId, userInfo)
+//                .orElseThrow(NotFoundException::new);
+//
+//        // 키워드 필터 히스토리에 연결된 필터 상세 조회
+//        Filter filter = history.getFilter();
+//
+//        // Filter entity -> dto 변환 후 반환
+//        return KeywordFilterHistoryResponseDto.from(filter);
+//
+//    }
 
 
     // 중복된 필터 조건이 아니면 필터 조건 등록
