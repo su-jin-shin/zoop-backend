@@ -21,6 +21,10 @@ public class ReviewCommentMapper {
                                              long likeCount,
                                              boolean isLikedByMe,
                                              boolean isMine) {
+        if (comment.getReview() == null) {
+            throw new IllegalStateException("댓글에 연결된 리뷰가 null입니다. commentId=" + comment.getId());
+        }
+
         return ReviewCommentCreateResponse.builder()
                 .commentId(comment.getId())
                 .reviewId(comment.getReview().getId())
@@ -35,6 +39,25 @@ public class ReviewCommentMapper {
                 .updatedAt(comment.getUpdatedAt())
                 .build();
     }
+
+//    public ReviewCommentCreateResponse toDto(ReviewComment comment,
+//                                             long likeCount,
+//                                             boolean isLikedByMe,
+//                                             boolean isMine) {
+//        return ReviewCommentCreateResponse.builder()
+//                .commentId(comment.getId())
+//                .reviewId(comment.getReview().getId())
+//                .userId(comment.getUser().getUserId())
+//                .nickname(comment.getUser().getNickname())
+//                .profileImage(comment.getUser().getProfileImage())
+//                .content(comment.getContent())
+//                .likeCount(likeCount)
+//                .isLikedByMe(isLikedByMe)
+//                .isMine(isMine)
+//                .createdAt(comment.getCreatedAt())
+//                .updatedAt(comment.getUpdatedAt())
+//                .build();
+//    }
 
     public ReviewComment toEntity(ReviewCommentCreateRequest request, UserInfo loginUser, Review review) {
         return ReviewComment.builder()
