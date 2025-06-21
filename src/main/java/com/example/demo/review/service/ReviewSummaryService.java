@@ -16,7 +16,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -54,7 +55,8 @@ public class ReviewSummaryService {
 
         String district = property.getDivisionName();
         String articleNo = property.getArticleNo();
-        String url = "http://1.230.77.225:8000/metajson/" + district + "/summaries";
+        String encodedDistrict = URLEncoder.encode(district, StandardCharsets.UTF_8);
+        String url = "http://1.230.77.225:8000/metajson/" + encodedDistrict + "/summaries";
 
         log.info("[AI 요약 요청] URL: {}, articleNo: {}", url, articleNo);
 
