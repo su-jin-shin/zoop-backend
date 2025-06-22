@@ -4,6 +4,9 @@ import com.example.demo.property.dto.*;
 import com.example.demo.property.dto.RealtyWithPropertiesResponseDto;
 import com.example.demo.property.dto.RealtyWithPropertiesResponseDto;
 
+
+
+
 import java.util.List;
 
 public interface PropertyService {
@@ -48,5 +51,7 @@ public interface PropertyService {
 
     //부동산 별 매물 (부동산 정보) 조회
     RealtyWithPropertiesResponseDto getRealtyWithProperties(Long propertyId);
+
+
 
 }

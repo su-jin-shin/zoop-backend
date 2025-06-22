@@ -20,4 +20,7 @@ public interface PropertyRepository extends JpaRepository<Property,Long> {
     //거래 유형
     Page<Property> findByRealty_RealtyIdAndTradeTypeName(Long realtyId, String tradeTypeName,Pageable pageable);
 
+    //ai
+    List<Property> findByDeletedAtIsNull();
+
 }

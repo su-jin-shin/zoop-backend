@@ -76,7 +76,7 @@ public class PropertyPropertyInfoResponseDto {
              .householdCount(property.getHouseholdCount())
              .parkingCount(property.getParkingCount())
              .parkingCountPerHousehold(property.getParkingCountPerHousehold())
-             .parkingPossibleYN(property.getParkingCountPerHousehold())
+             .parkingPossibleYN(property.getParkingPossibleYN())
              .useApproveYmd(property.getUseApproveYmd())
              .images(List.copyOf(convertImages(structureImages)))
              .build();
