@@ -1,6 +1,7 @@
 package com.example.demo.Filter.service;
 
 import com.example.demo.Filter.dto.request.FilterRequestDto;
+import com.example.demo.chat.dto.ChatRoomRequestDto;
 //import com.example.demo.Filter.dto.response.KeywordFilterHistoryResponseDto;
 
 import java.util.List;
@@ -12,6 +13,7 @@ public interface FilterService {
 
     // 채팅을 통해서 저장되는 필터
     //Long saveChatFilter(Long userId, FilterRequestDto filterRequestDto);
+    void saveChatFilter(Long userId, ChatRoomRequestDto chatRoomRequestDto);
 
     // 사용자가 기존의 필터 조건을 다른 필터 조건으로 수정
     void modifyKeywordFilter(Long userId, Long keywordFilterHistoryId, FilterRequestDto updateRequestDto);

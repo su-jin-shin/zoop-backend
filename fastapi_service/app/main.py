@@ -1,14 +1,13 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 
-from .crawler_api import main as crawl_main
+from crawler_api import main as crawl_main, crawl_by_article_no
 
 app = FastAPI()
 
-
 class Filter(BaseModel):
-    placeName: str
-    bCode: str
+    regionName: str
+    regionCode: str
     tradeTypeName: str
     tradeTypeCode: str
     realEstateTypeName: str
@@ -22,8 +21,8 @@ async def crawl_estate_data(data: Filter):
 
     search_condition = {
         "dong": {
-            "code": data.bCode,
-            "name": data.placeName
+            "code": data.regionCode,
+            "name": data.regionName
         },
         "trade_type": {
             "code": data.tradeTypeCode,
@@ -38,13 +37,25 @@ async def crawl_estate_data(data: Filter):
     }
 
     # 크롤링 실행 (비동기)
-    crawl_data = await crawl_main(search_condition)
+    crawl_and_recommendation = await crawl_main(search_condition)
 
     return {
-        "status": "crawled",
-        "data": crawl_data
+        "status": "completed",
+        "data": crawl_and_recommendation
     }
 
+@app.post("/{article_no}/crawl")
+async def crawl_estate_data_by_article_no(article_no: str, data: Filter):
+    print(f"받은 articleNo: {article_no}")
+
+    # 크롤링 실행 (비동기)
+    property_id = await crawl_by_article_no(article_no, data.realEstateTypeCode, data.regionCode)
+    print('property_id: ', property_id)
+
+    return {
+        "status": "completed",
+        "data": property_id
+    }
 
 
 
