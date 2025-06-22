@@ -117,13 +117,15 @@ public class PropertyExcelDto {
                 .latitude(property.getLatitude())
                 .longitude(property.getLongitude())
                 .summary(safeList(property.getTagList())) // ✅ 복사 안전하게 처리
-                .realtorName(realtor.getRealtorName())
-                .representativeName(realtor.getRepresentativeName())
-                .realtorAddress(realtor.getAddress())
-                .representativeTelNo(realtor.getRepresentativeTelNo())
-                .cellPhoneNo(realtor.getCellPhoneNo())
-                .maxBrokerFee(realtor.getMaxBrokerFee())
-                .brokerFee(realtor.getBrokerFee())
+
+                .realtorName(realtor != null ? realtor.getRealtorName() : null)
+                .representativeName(realtor != null ? realtor.getRepresentativeName() : null)
+                .realtorAddress(realtor != null ? realtor.getAddress() : null)
+                .representativeTelNo(realtor != null ? realtor.getRepresentativeTelNo() : null)
+                .cellPhoneNo(realtor != null ? realtor.getCellPhoneNo() : null)
+                .maxBrokerFee(realtor != null ? realtor.getMaxBrokerFee() : null)
+                .brokerFee(realtor != null ? realtor.getBrokerFee() : null)
+
                 .build();
     }
 

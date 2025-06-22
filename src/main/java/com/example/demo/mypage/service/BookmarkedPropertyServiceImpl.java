@@ -1,5 +1,6 @@
 package com.example.demo.mypage.service;
 
+import com.example.demo.common.exception.UserNotFoundException;
 import com.example.demo.mypage.domain.BookmarkedProperty;
 import com.example.demo.common.excel.PropertyExcelDto;
 import com.example.demo.mypage.dto.MyPropertyPageResponse;
@@ -7,18 +8,15 @@ import com.example.demo.mypage.dto.MapPropertyDto;
 import com.example.demo.mypage.repository.BookmarkedPropertyRepository;
 import com.example.demo.property.domain.Image;
 import com.example.demo.property.domain.Property;
-import com.example.demo.property.dto.ImageDto;
 import com.example.demo.realty.dto.PropertyListItemDto;
 import com.example.demo.property.repository.ImageRepository;
 import com.example.demo.realty.domain.Realty;
 import lombok.RequiredArgsConstructor;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -26,7 +24,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-@Slf4j
+
 @Service
 @RequiredArgsConstructor
 public class BookmarkedPropertyServiceImpl implements BookmarkedPropertyService {
@@ -34,10 +32,16 @@ public class BookmarkedPropertyServiceImpl implements BookmarkedPropertyService 
     private final BookmarkedPropertyRepository bookmarkedPropertyRepository;
     private final ImageRepository imageRepository;
 
+    private void validateUserId(Long userId) {
+        if (userId == null) {
+            throw new UserNotFoundException();
+        }
+    }
+
     @Override
     @Transactional(readOnly = true)
     public MyPropertyPageResponse getBookmarkedProperties(Long userId, Pageable pageable) {
-        // 마이페이지에서는 정렬 조건 무시하고 createdAt DESC
+        validateUserId(userId);
         Page<BookmarkedProperty> pageResult = bookmarkedPropertyRepository.findAllWithPropertyByUserId(userId, pageable);
         return convertToResponse(userId, pageResult);
     }
@@ -45,13 +49,13 @@ public class BookmarkedPropertyServiceImpl implements BookmarkedPropertyService 
     @Override
     @Transactional(readOnly = true)
     public List<MapPropertyDto> getMapProperties(Long userId) {
+        validateUserId(userId);
         List<BookmarkedProperty> allBookmarks = bookmarkedPropertyRepository.findAllWithPropertyByUserId(userId);
-        log.info("✅ 유저 {} 의 찜한 매물 수 = {}", userId, allBookmarks.size());
 
         return allBookmarks.stream()
                 .map(bp -> {
                     Property p = bp.getProperty();
-                    log.info("📍 매물 ID = {}, 위도 = {}, 경도 = {}", p.getPropertyId(), p.getLatitude(), p.getLongitude());
+
                     return MapPropertyDto.builder()
                             .propertyId(p.getPropertyId())
                             .latitude(p.getLatitude())
@@ -64,17 +68,16 @@ public class BookmarkedPropertyServiceImpl implements BookmarkedPropertyService 
     @Override
     @Transactional(readOnly = true)
     public MyPropertyPageResponse getPagedProperties(Long userId, int page, int size) {
+        validateUserId(userId);
         List<BookmarkedProperty> bookmarks = bookmarkedPropertyRepository.findAllWithPropertyByUserId(userId);
-        log.info("List<BookmarkedProperty> bookmarks" + bookmarks);
 
         List<BookmarkedProperty> sorted = sortBookmarks(bookmarks, "recent"); // sort 하드코딩
         // 2️⃣ 페이지네이션 수동 처리
         int start = page * size;
         int end = Math.min(start + size, sorted.size());
         List<BookmarkedProperty> pageContent = start >= end ? List.of() : sorted.subList(start, end);
-        log.info("pageContent " + pageContent);
+
         Page<BookmarkedProperty> pageResult = new PageImpl<>(pageContent, PageRequest.of(page, size), sorted.size());
-        log.info("pageResult " + pageResult);
         return convertToResponse(userId, pageResult, page, size);
     }
 
@@ -135,6 +138,7 @@ public class BookmarkedPropertyServiceImpl implements BookmarkedPropertyService 
     @Override
     @Transactional(readOnly = true)
     public List<PropertyListItemDto> getAllBookmarkedPropertyResponses(Long userId) {
+        validateUserId(userId);
         List<BookmarkedProperty> bookmarks = bookmarkedPropertyRepository.findAllWithPropertyByUserId(userId);
 
         List<Long> propertyIds = bookmarks.stream()
@@ -178,6 +182,7 @@ public class BookmarkedPropertyServiceImpl implements BookmarkedPropertyService 
 
     @Override
     public List<PropertyExcelDto> getBookmarkedPropertiesForExcel(Long userId) {
+        validateUserId(userId);
         List<BookmarkedProperty> bookmarked = bookmarkedPropertyRepository.
                 findAllWithPropertyAndRealtyByUserId(userId);
 
