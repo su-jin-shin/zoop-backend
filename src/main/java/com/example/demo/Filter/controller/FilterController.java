@@ -8,6 +8,7 @@ import com.example.demo.Filter.service.FilterService;
 import com.example.demo.auth.dto.LoginUser;
 import com.example.demo.common.response.ResponseResult;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -26,14 +27,15 @@ public class FilterController {
     private final FilterService filterService;
 
     // 필터 조건 등록시 키워드 필터 히스토리 등록
+
     @PostMapping("/keyword-filters")
     public ResponseEntity<?> saveKeywordFilter(@AuthenticationPrincipal LoginUser loginUser,
-                                              @RequestBody FilterRequestDto searchFilterRequestDto) {
+                                              @RequestBody FilterRequestDto filterRequestDto) {
 
         // 로그인한 유저의 userId 추출
         Long userId = Long.valueOf(loginUser.getUsername());
 
-        filterService.saveKeywordFilter(userId, searchFilterRequestDto);
+        filterService.saveKeywordFilter(userId, filterRequestDto);
         return ResponseEntity.ok(
                 ResponseResult.success(
                         HttpStatus.CREATED,

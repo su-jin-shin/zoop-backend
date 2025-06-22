@@ -9,9 +9,8 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @SuppressFBWarnings(value = "EI_EXPOSE_REP2")
 @Repository
@@ -40,10 +39,11 @@ public class FilterRepositoryImpl implements FilterRepositoryCustom {
 
         // 2차 매물 타입 순서 상관없이 비교
         return candidates.stream()
-                .filter(existing ->
-                        new HashSet<>(existing.getRealEstateTypeName())
-                                .equals(new HashSet<>(filter.getRealEstateTypeName()))
-                )
+                .filter(existing -> {
+                    Set<String> existingTypes = Optional.ofNullable(existing.getRealEstateTypeName()).orElse(Collections.emptyList()).stream().collect(Collectors.toSet());
+                    Set<String> inputTypes = Optional.ofNullable(filter.getRealEstateTypeName()).orElse(Collections.emptyList()).stream().collect(Collectors.toSet());
+                    return existingTypes.equals(inputTypes);
+                })
                 .findFirst();
     }
 }
