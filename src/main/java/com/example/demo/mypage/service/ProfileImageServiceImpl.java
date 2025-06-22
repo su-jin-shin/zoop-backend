@@ -1,11 +1,9 @@
 package com.example.demo.mypage.service;
 
-import com.example.demo.auth.domain.UserInfo;
 import com.example.demo.mypage.repository.MypageUserInfoRepository;
-import com.example.demo.mypage.service.ProfileImageService;
 import com.example.demo.mypage.util.FileUploader;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import jakarta.persistence.EntityNotFoundException;
+import com.example.demo.common.exception.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +16,8 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class ProfileImageServiceImpl implements ProfileImageService {
 
+    private static final String DEFAULT_PROFILE_IMAGE = "/images/default-profile.png";
+
     private final MypageUserInfoRepository userInfoRepository;
     private final FileUploader fileUploader;
 
@@ -27,7 +27,7 @@ public class ProfileImageServiceImpl implements ProfileImageService {
         String uploadedUrl = fileUploader.upload(file);
 
         var user = userInfoRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
+                .orElseThrow(UserNotFoundException::new);
 
         user.setProfileImage(uploadedUrl);
         return uploadedUrl;
@@ -40,14 +40,13 @@ public class ProfileImageServiceImpl implements ProfileImageService {
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
 
         String currentImage = user.getProfileImage();
-        // 기본 이미지가 아닐 경우에만 삭제
-        if (currentImage != null && !currentImage.equals("/images/default-profile.png")) {
+
+        if (currentImage != null && !currentImage.equals(DEFAULT_PROFILE_IMAGE)) {
             fileUploader.delete(currentImage); // 실제 파일 삭제
         }
 
-        String defaultUrl = "/images/default-profile.png";
-        user.setProfileImage(defaultUrl);
-        return defaultUrl;
+        user.setProfileImage(DEFAULT_PROFILE_IMAGE);
+        return DEFAULT_PROFILE_IMAGE;
     }
 
 }

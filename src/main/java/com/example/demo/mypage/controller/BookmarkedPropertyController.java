@@ -1,24 +1,18 @@
 package com.example.demo.mypage.controller;
 
 import com.example.demo.auth.dto.LoginUser;
-import com.example.demo.common.excel.ExcelGenerator;
 import com.example.demo.common.excel.ExcelListResponse;
 import com.example.demo.common.excel.PropertyExcelDto;
-import com.example.demo.common.excel.PropertyExcelMetaProvider;
 import com.example.demo.common.response.ResponseResult;
 import com.example.demo.common.response.SuccessMessage;
-import com.example.demo.mypage.dto.PropertyMapResponse;
 import com.example.demo.mypage.dto.MyPropertyPageResponse;
-import com.example.demo.mypage.dto.MapPropertyDto;
 import com.example.demo.mypage.service.BookmarkedPropertyService;
 
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,13 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
-import java.io.ByteArrayInputStream;
-
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-
 import java.util.List;
-import java.util.function.Function;
 
 @RestController
 @RequiredArgsConstructor
@@ -42,8 +30,6 @@ import java.util.function.Function;
 public class BookmarkedPropertyController {
 
     private final BookmarkedPropertyService bookmarkedPropertyService;
-    private final PropertyExcelMetaProvider propertyExcelMetaProvider;
-    private final ExcelGenerator excelGenerator;
 
     private Long parseUserId(LoginUser loginUser) {
         try {
@@ -72,7 +58,7 @@ public class BookmarkedPropertyController {
         );
     }
     @GetMapping("/map")
-    public ResponseEntity<ExcelListResponse<PropertyExcelDto>> getRecentViewedPropertiesForMap(
+    public ResponseEntity<ResponseResult> getRecentViewedPropertiesForMap(
             @AuthenticationPrincipal LoginUser loginUser
     ) {
         Long userId = parseUserId(loginUser);
@@ -83,7 +69,13 @@ public class BookmarkedPropertyController {
                 .data(dtoList)
                 .build();
 
-        return ResponseEntity.ok(response); // ✅ 지도 + 엑셀 둘 다 활용 가능
+        return ResponseEntity.ok(
+                ResponseResult.success(
+                        HttpStatus.OK,
+                        SuccessMessage.BOOKMARKED_PROPERTIES_FOR_MAP_FETCHED.getMessage(),
+                        response
+                )
+        );
     }
 
 }

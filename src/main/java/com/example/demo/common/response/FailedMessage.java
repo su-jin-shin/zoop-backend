@@ -22,7 +22,7 @@ public enum FailedMessage {
     FILE_NOT_FOUND("이미지 파일이 없습니다."),
     FILE_UPLOAD_FAILED("파일 업로드에 실패했습니다."),
 
-
+    PROPERTY_NOT_FOUND("매물을 찾을 수 없습니다."),
     INVALID_REVIEW_CONTENT("리뷰 내용이 유효하지 않습니다."),
     LOGIN_REQUIRED("로그인이 필요합니다."),
     INVALID_IS_LIKED("isLiked 값이 필요합니다."),

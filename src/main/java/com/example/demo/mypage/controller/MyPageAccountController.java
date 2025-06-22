@@ -2,7 +2,6 @@ package com.example.demo.mypage.controller;
 
 import com.example.demo.auth.dto.LoginUser;
 import com.example.demo.common.exception.DuplicatedNicknameException;
-import com.example.demo.common.exception.UserNotFoundException;
 import com.example.demo.common.response.FailedMessage;
 import com.example.demo.common.response.ResponseResult;
 import com.example.demo.common.response.SuccessMessage;
@@ -25,7 +24,6 @@ import java.io.IOException;
 
 import static com.example.demo.common.response.FailedMessage.CHECK_AVAILABLE_NICKNAME;
 import static com.example.demo.common.response.FailedMessage.DUPLICATED_NICKNAME;
-import static com.example.demo.common.response.SuccessMessage.GET_SUCCESS;
 
 @RestController
 @RequestMapping("/mypage")
@@ -82,7 +80,7 @@ public class MyPageAccountController {
                 ResponseResult.success(
                         HttpStatus.OK,
                         message,
-                        new NicknameCheckResponse(isDuplicated, message)
+                        new NicknameCheckResponse(isDuplicated)
                 ));
     }
 
@@ -90,7 +88,7 @@ public class MyPageAccountController {
     @PostMapping("/profile-image")
     public ResponseEntity<?> updateProfileImage(
             @AuthenticationPrincipal LoginUser loginUser,
-            @RequestParam("profileImage") MultipartFile file) {
+            @RequestParam("profileImageUrl") MultipartFile file) {
 
         Long userId = parseUserId(loginUser);
 

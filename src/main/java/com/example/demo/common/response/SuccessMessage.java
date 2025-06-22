@@ -24,6 +24,7 @@ public enum SuccessMessage {
     REVIEW_LIKE_COUNT_FETCHED("리뷰 좋아요 개수 조회에 성공했습니다."),
     COMMENT_COUNT_FETCHED("댓글 개수 조회에 성공했습니다."),
 
+    GET_REVIEW_LIST_SUCCESS("리뷰 목록 조회에 성공했습니다."),
     GET_COMMENT_LIST_SUCCESS("댓글 목록 조회에 성공했습니다."),
     COMMENT_CREATED("댓글이 성공적으로 등록되었습니다."),
     COMMENT_UPDATED("댓글이 성공적으로 수정되었습니다."),
@@ -33,9 +34,12 @@ public enum SuccessMessage {
     GET_COMMENT_LIKE_COUNT("댓글 좋아요 개수 조회에 성공했습니다."),
     GET_COMMENT_LIKE_STATUS("댓글 좋아요 여부 조회에 성공했습니다."),
 
+    GET_RECENT_VIEWED_PROPERTIES("최근 본 매물 목록 조회에 성공했습니다."),
+    GET_MYPAGE_HOME("마이페이지 홈 조회에 성공했습니다."),
     BOOKMARKED_PROPERTIES_FETCHED("찜한 매물 목록 조회에 성공했습니다."),
     BOOKMARKED_PROPERTIES_EXPORTED("찜한 매물 엑셀 다운로드가 완료되었습니다."),
-    BOOKMARKED_PROPERTIES_FOR_MAP_FETCHED("찜한 매물 지도 정보 조회에 성공했습니다."); // 성공
+    BOOKMARKED_PROPERTIES_FOR_MAP_FETCHED("찜한 매물 지도 정보 조회에 성공했습니다."),
+    RECENT_VIEWED_PROPERTIES_FOR_MAP_FETCHED("최근 본 매물 지도 정보 조회에 성공했습니다."); // 성공
 
 
     private final String message;
