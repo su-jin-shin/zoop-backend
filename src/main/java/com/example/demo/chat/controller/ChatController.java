@@ -1,31 +1,31 @@
-//package com.example.demo.chat.controller;
-//
-//import com.example.demo.auth.dto.LoginUser;
-//import com.example.demo.chat.dto.*;
-//import com.example.demo.chat.service.ChatService;
-//import com.example.demo.common.response.ResponseResult;
-//import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-//import lombok.RequiredArgsConstructor;
-//import lombok.extern.slf4j.Slf4j;
-//import org.springframework.http.HttpStatus;
-//import org.springframework.http.ResponseEntity;
-//import org.springframework.security.core.annotation.AuthenticationPrincipal;
-//import org.springframework.web.bind.annotation.*;
-//
-//import java.util.List;
-//
-//import static com.example.demo.common.response.SuccessMessage.GET_SUCCESS;
-//
-//@RestController
-//@RequestMapping("/chats")
-//@Slf4j
-//@RequiredArgsConstructor
-//@SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "Spring DI에서 안전하게 관리됨")
-//public class ChatController {
-//
-//    private final ChatService chatService;
+package com.example.demo.chat.controller;
+
+import com.example.demo.auth.dto.LoginUser;
+import com.example.demo.chat.dto.*;
+import com.example.demo.chat.service.ChatService;
+import com.example.demo.common.response.ResponseResult;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+import static com.example.demo.common.response.SuccessMessage.GET_SUCCESS;
+
+@RestController
+@RequestMapping("/chats")
+@Slf4j
+@RequiredArgsConstructor
+@SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "Spring DI에서 안전하게 관리됨")
+public class ChatController {
+
+    private final ChatService chatService;
 //    private final FilterService filterService;
-//
+
 //    @PostMapping("/chat-filter")
 //    public ResponseEntity<MessageResponseDto> saveChatFilter(@AuthenticationPrincipal LoginUser loginUser, @RequestBody FilterRequestDto filterRequestDto) {
 //
@@ -126,22 +126,27 @@
 //                )
 //        );
 //    }
-//    // 로그인한 사용자의 채팅방 중에서 제목이나 내용으로 조회
-//    @GetMapping("/search")
-//    public ResponseEntity<?> searchChatRoom(@AuthenticationPrincipal LoginUser loginUser,
-//                                            @RequestParam String searchText) {
-//        Long userId = Long.valueOf(loginUser.getUsername());
-//        //Long userId = 4L;
-//        List<ChatRoomSearchDto> chatRooms = chatService.searchChatRooms(userId, searchText);
-//
-//        return ResponseEntity.ok(
-//                ResponseResult.success(
-//                        HttpStatus.OK,
-//                        GET_SUCCESS.getMessage(),
-//                        chatRooms
-//                )
-//        );
-//    }
+    // 로그인한 사용자의 채팅방 중에서 제목이나 내용으로 조회
+    @GetMapping
+    public ResponseEntity<?> searchChatRoom(@AuthenticationPrincipal LoginUser loginUser,
+                                            @RequestParam(required = false) String searchText) {
+        Long userId = Long.valueOf(loginUser.getUsername());
+        List<ChatRoomRequestDto> chatRooms;
+
+        if (searchText == null || searchText.trim().isEmpty()) {
+            chatRooms = chatService.getAllChatRooms(userId); // 전체 채팅방 조회
+
+        } else {
+            chatRooms = chatService.searchChatRooms(userId, searchText); // 검색한 결과 조회
+        }
+        return ResponseEntity.ok(
+                ResponseResult.success(
+                        HttpStatus.OK,
+                        GET_SUCCESS.getMessage(),
+                        chatRooms
+                )
+        );
+    }
 //
 //    // 특정 채팅방의 가장 최근 챗봇 메시지 조회
 //    @GetMapping("/{chatRoomId}/recent")
@@ -150,4 +155,4 @@
 //        return ResponseEntity.ok(message);
 //    }
 //
-//}
+}
