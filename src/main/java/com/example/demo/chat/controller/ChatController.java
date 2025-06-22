@@ -60,11 +60,10 @@ public class ChatController {
 
     private void crawlAndRecommendProperties(FilterRequestDto filterRequestDto) {
         // 크롤링 로직 시작
-        RefinedFilterDto filters = new RefinedFilterDto(filterRequestDto);
+        RefinedFilterDto filters = RefinedFilterDto.of(filterRequestDto);
         log.info("filters: {}", filters);
 
         List<PropertyExcelDto> recommendedProperties;
-        List<PropertyExcelDto> validRecommendedProperties = new ArrayList<>();
 
         try {
             recommendedProperties = UserFilterSender.send(filters); // ai의 추천 매물 리스트 반환

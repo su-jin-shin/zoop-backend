@@ -34,42 +34,32 @@ public class RefinedFilterDto {
             "원룸_투룸", "DDDGG:DSD"
     );
 
-    private String getRealEstateTypeCode(String name) {
+    private static String getRealEstateTypeCode(String name) {
         return Optional.ofNullable(ESTATE_TYPE_CODE_MAP.get(name))
                 .orElseThrow(() -> new IllegalArgumentException("Unknown estate type name: " + name));
     }
 
-    public RefinedFilterDto(FilterRequestDto filterRequestDto) {
-        this.regionCode = filterRequestDto.getBCode();
-        this.regionName = filterRequestDto.getPlaceName();
-        this.tradeTypeName = filterRequestDto.getTradeTypeName().toString();
-        this.tradeTypeCode = TradeTypeCode.fromName(filterRequestDto.getTradeTypeName()).name();
-
-        // 기본값 설정 (예외 안 터지게 먼저 할당)
-        this.realEstateTypeName = null;
-        this.realEstateTypeCode = null;
-        this.dealOrWarrantPrc = 0;
-        this.rentPrice = 0;
-
-        // 예외 가능성 있는 작업을 별도 메서드에서 수행
-        this.initializeValidatedFields(filterRequestDto);
-    }
-
-    private void initializeValidatedFields(FilterRequestDto filterRequestDto) {
+    public static RefinedFilterDto of(FilterRequestDto filterRequestDto) {
         if (filterRequestDto.getRealEstateTypeName().isEmpty()) {
             throw new IllegalArgumentException("매물 타입이 비어있습니다.");
         }
 
-        this.realEstateTypeName = filterRequestDto.getRealEstateTypeName().get(0);
-        this.realEstateTypeCode = getRealEstateTypeCode(realEstateTypeName);
+        RefinedFilterDto dto = new RefinedFilterDto();
+        dto.regionCode = filterRequestDto.getBCode();
+        dto.regionName = filterRequestDto.getPlaceName();
+        dto.tradeTypeName = filterRequestDto.getTradeTypeName().toString();
+        dto.tradeTypeCode = TradeTypeCode.fromName(filterRequestDto.getTradeTypeName()).name();
+        dto.realEstateTypeName = filterRequestDto.getRealEstateTypeName().get(0);
+        dto.realEstateTypeCode = getRealEstateTypeCode(dto.realEstateTypeName);
 
         try {
-            this.dealOrWarrantPrc = Integer.parseInt(filterRequestDto.getDealOrWarrantPrc());
+            dto.dealOrWarrantPrc = Integer.parseInt(filterRequestDto.getDealOrWarrantPrc());
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException("가격 형식이 잘못되었습니다.", e);
         }
 
-        this.rentPrice = filterRequestDto.getRentPrice().intValue();
+        dto.rentPrice = filterRequestDto.getRentPrice().intValue();
+        return dto;
     }
 
 }
