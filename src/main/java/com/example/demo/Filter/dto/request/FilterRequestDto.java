@@ -32,15 +32,11 @@ public class FilterRequestDto {
     private String bCode;           // 법정 코드
 
     @JsonProperty("hCode")
-    String hCode;                   // 행정 코드
+    private String hCode;                   // 행정 코드
 
     private TradeTypeName tradeTypeName;   // 거래 타입    //매매, 전세, 월세
 
-    private  TradeTypeCode tradeTypeCode;   // A1, B1, B2
-
     private List<String> realEstateTypeName;     // 매물타입 // 아파트, 오피스텔, 빌라, 원룸_투룸
-
-    private List<String> realEstateTypeCode;     // APT, OPST, VL:YR, DDDGG:DSD
 
     private String placeName;                             // 사용자가 검색한 데이터와 유사한 값
 
