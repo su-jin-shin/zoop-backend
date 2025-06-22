@@ -2,14 +2,18 @@ package com.example.demo.chat.service;
 
 import com.example.demo.auth.domain.UserInfo;
 import com.example.demo.auth.repository.UserInfoRepository;
+import com.example.demo.chat.constants.ErrorMessages;
 import com.example.demo.chat.domain.ChatRoom;
 import com.example.demo.chat.domain.Message;
 import com.example.demo.chat.dto.*;
+import com.example.demo.chat.exception.ChatRoomNotFoundException;
+import com.example.demo.chat.exception.ChatServiceException;
 import com.example.demo.chat.repository.ChatRoomRepository;
 import com.example.demo.chat.repository.MessageRepository;
 import com.example.demo.common.exception.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.catalina.User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
@@ -25,6 +29,17 @@ public class ChatService {
     private final ChatRoomRepository chatRoomRepository;
     private final MessageRepository messageRepository;
     private final UserInfoRepository userInfoRepository;
+
+    // 채팅방 생성
+    @Transactional
+    public ChatRoomResponseDto createChatRoom(Long userId) {
+        // 사용자 조회
+        UserInfo userInfo = userInfoRepository.findByUserId(userId).orElseThrow(UserNotFoundException::new);
+
+        ChatRoom chatRoom = new ChatRoom(userInfo);
+        ChatRoom saved = chatRoomRepository.save(chatRoom);
+        return new ChatRoomResponseDto(saved.getChatRoomId(), saved.getCreatedAt());
+    }
 
     //private int CHATBOT_MESSAGE_ORDER = 0;
 
@@ -84,7 +99,32 @@ public class ChatService {
 //        message.updateProperties(properties);
 //    }
 //
-//    // 채팅방 제목 변경
+
+    private ChatRoom findByChatRoomId(Long chatRoomId, String context) {
+        return chatRoomRepository.findById(chatRoomId)
+                .orElseThrow(() -> new ChatRoomNotFoundException(chatRoomId, context));
+    }
+
+    // 필터 조건으로 채팅방 제목 변경
+    @Transactional
+    public ChatRoomResponseDto updateChatRoomTitle(ChatRoomRequestDto chatRoomRequestDto) {
+        try {
+            ChatRoom chatRoom = findByChatRoomId(chatRoomRequestDto.getChatRoomId(), ErrorMessages.CHAT_UPDATE_TITLE_FAILED);
+            chatRoom.updateTitle(chatRoomRequestDto.getTitle());
+
+            // 응답 DTO로 가공
+            return new ChatRoomResponseDto(
+                    chatRoom.getChatRoomId(),
+                    chatRoom.getTitleUpdatedAt(),
+                    chatRoom.getTitle()
+            );
+        } catch (Exception e) {
+            throw new ChatServiceException(ErrorMessages.CHAT_UPDATE_TITLE_FAILED, chatRoomRequestDto.getChatRoomId(), e);
+        }
+    }
+
+
+    // 사용자가 원하는 채팅방 제목 변경
 //    @Transactional
 //    public void updateChatRoomTitle(Long chatRoomId, String title) {
 //        try {
@@ -94,6 +134,8 @@ public class ChatService {
 //            throw new ChatServiceException(ErrorMessages.CHAT_UPDATE_TITLE_FAILED, chatRoomId, e);
 //        }
 //    }
+
+
 //
 //    // 채팅방 삭제 (소프트 삭제)
 //    @Transactional

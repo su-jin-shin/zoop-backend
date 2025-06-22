@@ -10,6 +10,7 @@ import com.example.demo.Filter.repository.RegionRepository;
 import com.example.demo.Filter.service.FilterService;
 import com.example.demo.auth.domain.UserInfo;
 import com.example.demo.auth.repository.UserInfoRepository;
+import com.example.demo.chat.dto.ChatRoomRequestDto;
 import com.example.demo.common.exception.DuplicateFilterHistoryException;
 import com.example.demo.common.exception.NotFoundException;
 import com.example.demo.common.exception.UserNotFoundException;
@@ -63,7 +64,13 @@ public class FilterServiceImpl implements FilterService {
         keywordFilterHistoryRepository.save(history);
 }
 
-     //채팅방 생성과 필터 등록
+    @Override
+    public void saveChatFilter(Long userId, ChatRoomRequestDto chatRoomRequestDto) {
+        // 아직 구현 못함
+        // chatRoomRequestDto.getChatRoomId()로 chatRoomId 꺼내와서 그것의 필터를 저장해야한다.
+    }
+
+    //채팅방 생성과 필터 등록
 //    @Override
 //    public Long saveChatFilter(Long userId, FilterRequestDto filterRequestDto) {
 //

@@ -11,10 +11,15 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 @ToString
-public class MessageResponseDto {
+public class ChatRoomResponseDto {
 
     private final Long chatRoomId;
-    private Long messageId;
     private final LocalDateTime createdAt;
+    private String title;
+
+    public ChatRoomResponseDto(Long chatRoomId, LocalDateTime createdAt) {
+        this.chatRoomId = chatRoomId;
+        this.createdAt = createdAt;
+    }
 
 }

@@ -79,18 +79,45 @@ public class FilterRequestDto {
 
 
     // 요청받은 데이터들을 조합하여 filterTitle 생성
-    private String buildFilterTitle() {
+    public String buildFilterTitle() {
         StringBuilder sb = new StringBuilder();
         sb.append(placeName);
         sb.append("/").append(tradeTypeName);
 
-        //  매물타입
         String realEstateTypeNames = String.join(",", realEstateTypeName);
         sb.append("/").append(realEstateTypeNames);
 
-                // 월세가 0일 때 dealOrWarrantPrc(매매나 전세값이 들어옴)으로 추가하기
-        sb.append("/").append((rentPrice.compareTo(BigDecimal.ZERO) == 0) ? dealOrWarrantPrc : rentPrice);
+        System.out.println("[DEBUG] 거래 타입: " + tradeTypeName); // 확인용 로그
+
+        if (tradeTypeName == TradeTypeName.월세) {
+            System.out.println("[DEBUG] 월세 조건 진입"); // 확인용 로그
+            BigDecimal rent = rentPrice != null ? rentPrice : BigDecimal.ZERO;
+            BigDecimal deposit = new BigDecimal(dealOrWarrantPrc);
+
+            sb.append("/").append(formatPrice(rent))
+                    .append("(보증금: ").append(formatPrice(deposit)).append(")");
+        } else {
+            BigDecimal price = new BigDecimal(dealOrWarrantPrc);
+            sb.append("/").append(formatPrice(price));
+        }
 
         return sb.toString();
+    }
+
+    private String formatPrice(BigDecimal amount) {
+        long price = amount.longValue();
+
+        if (price >= 10000) {
+            long 억 = price / 10000;
+            long 만원 = price % 10000;
+
+            if (만원 == 0) {
+                return 억 + "억";
+            } else {
+                return 억 + "억 " + String.format("%,d", 만원) + "만원";
+            }
+        } else {
+            return String.format("%,d만원", price);
+        }
     }
 }
