@@ -41,11 +41,21 @@ public class RefinedFilterDto {
 
     public RefinedFilterDto(FilterRequestDto filterRequestDto) {
         this.regionCode = filterRequestDto.getBCode();
-        System.out.println("regionCode: " +  regionCode);
         this.regionName = filterRequestDto.getPlaceName();
         this.tradeTypeName = filterRequestDto.getTradeTypeName().toString();
         this.tradeTypeCode = TradeTypeCode.fromName(filterRequestDto.getTradeTypeName()).name();
 
+        // 기본값 설정 (예외 안 터지게 먼저 할당)
+        this.realEstateTypeName = null;
+        this.realEstateTypeCode = null;
+        this.dealOrWarrantPrc = 0;
+        this.rentPrice = 0;
+
+        // 예외 가능성 있는 작업을 별도 메서드에서 수행
+        this.initializeValidatedFields(filterRequestDto);
+    }
+
+    private void initializeValidatedFields(FilterRequestDto filterRequestDto) {
         if (filterRequestDto.getRealEstateTypeName().isEmpty()) {
             throw new IllegalArgumentException("매물 타입이 비어있습니다.");
         }
