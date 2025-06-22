@@ -1,5 +1,12 @@
 //package com.example.demo.chat.service;
 //
+//import com.example.demo.Filter.domain.ChatFilterHistory;
+//import com.example.demo.Filter.domain.Filter;
+//import com.example.demo.Filter.domain.Region;
+//import com.example.demo.Filter.dto.request.FilterRequestDto;
+//import com.example.demo.Filter.repository.ChatFilterHistoryRepository;
+//import com.example.demo.Filter.repository.FilterRepository;
+//import com.example.demo.Filter.repository.RegionRepository;
 //import com.example.demo.auth.domain.UserInfo;
 //import com.example.demo.auth.repository.UserInfoRepository;
 //import com.example.demo.chat.constants.ErrorMessages;
@@ -11,6 +18,7 @@
 //import com.example.demo.chat.repository.ChatRoomRepository;
 //import com.example.demo.chat.repository.MessageRepository;
 //import com.example.demo.chat.type.SenderType;
+//import com.example.demo.common.exception.DuplicateFilterHistoryException;
 //import com.example.demo.common.exception.NotFoundException;
 //import com.example.demo.common.exception.UserNotFoundException;
 //import jakarta.persistence.EntityNotFoundException;
@@ -25,10 +33,11 @@
 //import java.util.List;
 //import java.util.Objects;
 //import java.util.Optional;
-//
+//import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 //@Service
 //@RequiredArgsConstructor
 //@Slf4j
+//@SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 //public class ChatService {
 //
 //    private final ChatRoomRepository chatRoomRepository;
@@ -37,13 +46,11 @@
 //
 //    private int CHATBOT_MESSAGE_ORDER = 0;
 //
+//
+//
 //    // 채팅방 생성
 //    @Transactional
-//    public Long createChatRoom(Long userId, String title) {
-//        try {
-//            // 사용자 조회
-//            UserInfo userInfo = userInfoRepository.findByUserId(userId)
-//                    .orElseThrow(UserNotFoundException::new);
+//    public Long createChatRoom(UserInfo userInfo, String title) {
 //
 //            // 채팅방 생성
 //            ChatRoom chatRoom = new ChatRoom(userInfo);
@@ -51,15 +58,9 @@
 //            ChatRoom saved = chatRoomRepository.save(chatRoom);
 //
 //            return saved.getChatRoomId();
-//
-//        } catch (Exception e) {
-//            throw new ChatServiceException(
-//                    String.format("%s. userId=%d", ErrorMessages.CHAT_CREATE_FAILED, userId),
-//                    e
-//            );
-//        }
 //    }
 //
+//    // 채팅방 찾기
 //    private ChatRoom findByChatRoomId(Long chatRoomId, String context) {
 //        return chatRoomRepository.findById(chatRoomId)
 //                .orElseThrow(() -> new ChatRoomNotFoundException(chatRoomId, context));
@@ -251,4 +252,6 @@
 //        MessageResponseDto aiMessage = saveMessage(request, properties);
 //        log.info("ai의 답변 DB 저장 완료: {}", aiMessage);
 //    }
+//
+//
 //}

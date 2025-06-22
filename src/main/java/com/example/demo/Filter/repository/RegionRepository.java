@@ -1,8 +1,6 @@
 package com.example.demo.Filter.repository;
 
-import com.example.demo.Filter.domain.Filter;
 import com.example.demo.Filter.domain.Region;
-import com.example.demo.auth.domain.UserInfo;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

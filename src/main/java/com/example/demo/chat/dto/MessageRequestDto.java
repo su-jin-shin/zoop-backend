@@ -1,5 +1,6 @@
 //package com.example.demo.chat.dto;
 //
+//import com.example.demo.Filter.dto.request.FilterRequestDto;
 //import com.example.demo.chat.type.SenderType;
 //import lombok.*;
 //
@@ -17,7 +18,7 @@
 //    private String title;
 //    private String content;
 //    private SenderType senderType;
-//    private FilterDto filters;
+//    private FilterRequestDto filterRequestDto;
 //
 //    public void applyAiReply(String aiReply, SenderType senderType) {
 //        this.content = aiReply;

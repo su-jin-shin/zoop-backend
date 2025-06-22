@@ -1,12 +1,8 @@
-package com.example.demo.chat.controller;
-
-//import com.example.demo.Filter.dto.request.FilterRequestDto;
-//import com.example.demo.Filter.service.FilterService;
+//package com.example.demo.chat.controller;
+//
 //import com.example.demo.auth.dto.LoginUser;
 //import com.example.demo.chat.dto.*;
 //import com.example.demo.chat.service.ChatService;
-//import com.example.demo.chat.type.SenderType;
-//import com.example.demo.chat.util.UserFilterSender;
 //import com.example.demo.common.response.ResponseResult;
 //import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 //import lombok.RequiredArgsConstructor;
@@ -19,7 +15,7 @@ package com.example.demo.chat.controller;
 //import java.util.List;
 //
 //import static com.example.demo.common.response.SuccessMessage.GET_SUCCESS;
-
+//
 //@RestController
 //@RequestMapping("/chats")
 //@Slf4j
@@ -29,7 +25,21 @@ package com.example.demo.chat.controller;
 //
 //    private final ChatService chatService;
 //    private final FilterService filterService;
-
+//
+//    @PostMapping("/chat-filter")
+//    public ResponseEntity<MessageResponseDto> saveChatFilter(@AuthenticationPrincipal LoginUser loginUser, @RequestBody FilterRequestDto filterRequestDto) {
+//
+//        Long userId = Long.valueOf(loginUser.getUsername());
+//
+//        // 1. 채팅방 생성
+//
+//        Long chatRoomId  = filterService.saveChatFilter(userId, filterRequestDto);
+//
+//
+//
+//        return ResponseEntity.ok(chatRoomId);
+//    }
+//
 //    @PostMapping
 //    public ResponseEntity<MessageResponseDto> sendMessage(@AuthenticationPrincipal LoginUser loginUser, @RequestBody FilterRequestDto filterRequestDto , @RequestBody MessageRequestDto request) {
 //        log.info("request: {}", request);
@@ -38,8 +48,8 @@ package com.example.demo.chat.controller;
 //        Long chatRoomId = request.getChatRoomId();
 //        SenderType senderType = request.getSenderType();
 //        String content = request.getContent();
-        //FilterDto filters = request.getFilters();
-
+//
+//
 //        log.info("chatRoomId: {}, senderType: {}, content: {}", chatRoomId, senderType, content);
 //
 //        // 1. 채팅방 생성
@@ -48,14 +58,14 @@ package com.example.demo.chat.controller;
 //            log.info("{}번 채팅방이 생성됨", chatRoomId);
 //            request.setChatRoomId(chatRoomId);
 //        }
-
-        // 필터 저장
+//
+//        // 필터 저장
 //        filterService.saveChatFilter(chatRoomId, filterRequestDto);
 //
 //        // 2. 메시지 저장
 //        MessageResponseDto response = chatService.saveMessage(request);
 //
-//        // 3. AI 답변 호출
+//         3. AI 답변 호출
 //        if (filters == null) {
 //            chatService.generateAndSaveAiResponse(request);
 //        } else {
@@ -75,8 +85,8 @@ package com.example.demo.chat.controller;
 //        log.info("response: {}", response);
 //        return ResponseEntity.ok(response);
 //    }
-
-    // 채팅방 제목 수정
+//
+//    // 채팅방 제목 수정
 //    @PatchMapping("/{chatRoomId}")
 //    public ResponseEntity<Void> updateChatRoomTitle(@PathVariable Long chatRoomId, @RequestBody ChatRoomDto chatRoomDto) {
 //        String title = chatRoomDto.getTitle();

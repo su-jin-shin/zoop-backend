@@ -2,13 +2,10 @@ package com.example.demo.Filter.controller;
 
 
 import com.example.demo.Filter.dto.request.FilterRequestDto;
-
-//import com.example.demo.Filter.dto.response.KeywordFilterHistoryResponseDto;
 import com.example.demo.Filter.service.FilterService;
 import com.example.demo.auth.dto.LoginUser;
 import com.example.demo.common.response.ResponseResult;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -27,7 +24,6 @@ public class FilterController {
     private final FilterService filterService;
 
     // 필터 조건 등록시 키워드 필터 히스토리 등록
-
     @PostMapping("/keyword-filters")
     public ResponseEntity<?> saveKeywordFilter(@AuthenticationPrincipal LoginUser loginUser,
                                               @RequestBody FilterRequestDto filterRequestDto) {
