@@ -2,6 +2,7 @@ package com.example.demo.mypage.controller;
 
 import com.example.demo.auth.dto.LoginUser;
 import com.example.demo.common.excel.ExcelGenerator;
+import com.example.demo.common.excel.ExcelListResponse;
 import com.example.demo.common.excel.PropertyExcelDto;
 import com.example.demo.common.excel.PropertyExcelMetaProvider;
 import com.example.demo.common.response.ResponseResult;
@@ -44,13 +45,21 @@ public class BookmarkedPropertyController {
     private final PropertyExcelMetaProvider propertyExcelMetaProvider;
     private final ExcelGenerator excelGenerator;
 
+    private Long parseUserId(LoginUser loginUser) {
+        try {
+            return Long.valueOf(loginUser.getUsername());
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     @GetMapping
     public ResponseEntity<ResponseResult> getBookmarkedPropertiesByPageable(
             @AuthenticationPrincipal LoginUser loginUser,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size
     ) {
-        Long userId = Long.valueOf(loginUser.getUsername());
+        Long userId = parseUserId(loginUser);
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         MyPropertyPageResponse result = bookmarkedPropertyService.getBookmarkedProperties(userId, pageable);
 
@@ -62,53 +71,19 @@ public class BookmarkedPropertyController {
                 )
         );
     }
-
     @GetMapping("/map")
-    public ResponseEntity<ResponseResult> getBookmarkedPropertiesForMap(
-            @AuthenticationPrincipal LoginUser loginUser,
-            @RequestParam(value = "page", defaultValue = "0") int page,
-            @RequestParam(value = "size", defaultValue = "20") int size
-    ) {
-        Long userId = Long.valueOf(loginUser.getUsername());
-        // 1. 지도용 전체 좌표 리스트
-        List<MapPropertyDto> mapDtos = bookmarkedPropertyService.getMapProperties(userId);
-
-        // 2. 바텀시트용 페이지 목록
-        MyPropertyPageResponse bottomSheet = bookmarkedPropertyService.getPagedProperties(userId, page, size);
-
-        return ResponseEntity.ok(
-                ResponseResult.success(
-                        HttpStatus.OK,
-                        SuccessMessage.BOOKMARKED_PROPERTIES_FOR_MAP_FETCHED.getMessage(),
-                        PropertyMapResponse.builder()
-                                .mapProperties(mapDtos)
-                                .myPropertyPageResponse(bottomSheet)
-                                .build())
-                );
-    }
-
-    @GetMapping("/excel-export")
-    public ResponseEntity<byte[]> exportBookmarkedPropertiesToExcel(
+    public ResponseEntity<ExcelListResponse<PropertyExcelDto>> getRecentViewedPropertiesForMap(
             @AuthenticationPrincipal LoginUser loginUser
     ) {
-        Long userId = Long.valueOf(loginUser.getUsername());
+        Long userId = parseUserId(loginUser);
 
         List<PropertyExcelDto> dtoList = bookmarkedPropertyService.getBookmarkedPropertiesForExcel(userId);
+        ExcelListResponse<PropertyExcelDto> response = ExcelListResponse.<PropertyExcelDto>builder()
+                .countProperties(dtoList.size())
+                .data(dtoList)
+                .build();
 
-        List<String> headers = propertyExcelMetaProvider.getHeaders();
-        List<Function<PropertyExcelDto, Object>> extractors = propertyExcelMetaProvider.getExtractors();
-
-        ByteArrayInputStream in = excelGenerator.generateExcel(dtoList, headers, extractors);
-
-        String filename = URLEncoder.encode("찜한_매물_정보.xlsx", StandardCharsets.UTF_8);
-
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''" + filename)
-                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
-                .body(in.readAllBytes());
+        return ResponseEntity.ok(response); // ✅ 지도 + 엑셀 둘 다 활용 가능
     }
-
-
-
 
 }

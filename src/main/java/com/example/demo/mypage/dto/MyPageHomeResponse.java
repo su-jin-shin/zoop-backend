@@ -13,26 +13,22 @@ import java.util.List;
 @Getter
 public class MyPageHomeResponse {
     private final MyPageUserDto userInfo;
+    private final MyPageActivityDto activity;
     private final List<?> reviewOrComments;
     private final List<PropertyListItemDto> bookmarkedProperties;
-    private int bookmarkedCount; // 추가
-
     private final List<PropertyListItemDto> recentViewedProperties;
-    private int recentViewedCount;
 
     @Builder
     public MyPageHomeResponse(MyPageUserDto userInfo,
+                              MyPageActivityDto activity,
                               List<?> reviewOrComments,
                               List<PropertyListItemDto> bookmarkedProperties,
-                              int bookmarkedCount,
-                              List<PropertyListItemDto> recentViewedProperties,
-                              int recentViewedCount) {
+                              List<PropertyListItemDto> recentViewedProperties) {
         this.userInfo = userInfo == null ? null : new MyPageUserDto(userInfo); // ✅ 방어적 복사
+        this.activity = activity;
         this.reviewOrComments = reviewOrComments == null ? null : new ArrayList<>(reviewOrComments); // ✅ 방어적 복사
         this.bookmarkedProperties = bookmarkedProperties == null ? null : new ArrayList<>(bookmarkedProperties);
-        this.bookmarkedCount = bookmarkedCount;
         this.recentViewedProperties = recentViewedProperties == null ? null : new ArrayList<>(recentViewedProperties);
-        this.recentViewedCount = recentViewedCount;
     }
 
     // ✅ getter도 복사본 반환

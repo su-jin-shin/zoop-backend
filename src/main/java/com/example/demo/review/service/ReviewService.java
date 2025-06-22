@@ -185,11 +185,35 @@ public class ReviewService {
     /**
      * 좋아요 등록/해제
      */
+//    @Transactional
+//    public ReviewLikeResponse updateLikeStatus(Long reviewId, boolean isLiked, Long userId) {
+//        UserInfo loginUser = userInfoRepository.findByUserId(userId)
+//                .orElseThrow(UserNotFoundException::new);  // 유저가 없으면 예외 처리
+//
+//
+//        Review review = reviewRepository.findActiveById(reviewId)
+//                .orElseThrow(ReviewNotFoundException::new);
+//
+//        ReviewLike like = reviewLikeRepository.findByReviewIdAndUser(reviewId, loginUser)
+//                .orElseGet(() -> {
+//                    ReviewLike newLike = ReviewLike.of(review, loginUser, isLiked);
+//                    reviewLikeRepository.save(newLike); // 새로 만들었을 때만 저장
+//                    return newLike;
+//                });
+//
+//        like.updateLikeStatus(isLiked); // 값이 바뀌었을 때만 내부적으로 시간 변경됨
+//
+//        return ReviewLikeResponse.builder()
+//                .reviewId(reviewId)
+//                .userId(loginUser.getUserId())
+//                .isLiked(isLiked)
+//                .build();
+//    }
+
     @Transactional
     public ReviewLikeResponse updateLikeStatus(Long reviewId, boolean isLiked, Long userId) {
         UserInfo loginUser = userInfoRepository.findByUserId(userId)
-                .orElseThrow(UserNotFoundException::new);  // 유저가 없으면 예외 처리
-
+                .orElseThrow(UserNotFoundException::new);
 
         Review review = reviewRepository.findActiveById(reviewId)
                 .orElseThrow(ReviewNotFoundException::new);
@@ -197,17 +221,16 @@ public class ReviewService {
         ReviewLike like = reviewLikeRepository.findByReviewIdAndUser(reviewId, loginUser)
                 .orElseGet(() -> {
                     ReviewLike newLike = ReviewLike.of(review, loginUser, isLiked);
-                    reviewLikeRepository.save(newLike); // 새로 만들었을 때만 저장
+                    reviewLikeRepository.save(newLike);
                     return newLike;
                 });
 
-        like.updateLikeStatus(isLiked); // 값이 바뀌었을 때만 내부적으로 시간 변경됨
+        like.updateLikeStatus(isLiked);
 
-        return ReviewLikeResponse.builder()
-                .reviewId(reviewId)
-                .userId(loginUser.getUserId())
-                .isLiked(isLiked)
-                .build();
+        long likeCount = reviewLikeRepository.countByReviewIdAndIsLikedTrue(reviewId);
+
+        //  Mapper 위임
+        return reviewMapper.likeResponse(reviewId, loginUser.getUserId(), isLiked, likeCount);
     }
 
     /**
@@ -256,58 +279,7 @@ public class ReviewService {
         return reviewCommentRepository.commentCount(reviewId);
     }
 
-    // 리뷰 요약(AI)
-    public AiSummaryResponse getSummary(Long propertyId) {
-        Property property = propertyRepository.findById(propertyId)
-                .orElseThrow(() -> new NotFoundException());
 
-        String district = property.getDivisionName(); // 예: "강동구"
-        String targetArticleNo = property.getArticleNo(); // AI 서버와 매칭용
-        String url = "http://1.230.77.225:8000/metajson/" + district + "/summaries";
-
-        log.info("[AI 요약 요청] URL: {}, district: {}, propertyId: {}, articleNo: {}", url, district, propertyId, targetArticleNo);
-
-        ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
-
-        if (response.getStatusCode() != HttpStatus.OK || response.getBody() == null) {
-            log.error("[AI 응답 실패] Status: {}, Body: {}", response.getStatusCode(), response.getBody());
-            throw new NotFoundException();
-        }
-
-        try {
-            String responseBody = response.getBody();
-            log.debug("[AI 응답 Raw Body] {}", responseBody);
-
-            JsonNode root = objectMapper.readTree(responseBody);
-            JsonNode summaries = root.path("summaries");
-
-            for (Iterator<String> it = summaries.fieldNames(); it.hasNext(); ) {
-                String key = it.next();
-                JsonNode summaryItem = summaries.get(key);
-
-                String responseArticleNo = summaryItem.path("articleNo").asText();
-
-                if (targetArticleNo.equals(responseArticleNo)) {
-                    JsonNode summaryNode = summaryItem.path("summary");
-
-                    if (summaryNode.isMissingNode() || summaryNode.isNull()) {
-                        log.warn("[AI 요약 없음] articleNo: {}", responseArticleNo);
-                        throw new RuntimeException("AI 요약 결과 없음");
-                    }
-
-                    log.info("[AI 요약 성공] articleNo: {}", responseArticleNo);
-                    return objectMapper.treeToValue(summaryNode, AiSummaryResponse.class);
-                }
-            }
-
-            log.warn("[AI 요약 대상 없음] articleNo: {} 와 일치하는 데이터 없음", targetArticleNo);
-            throw new RuntimeException("해당 매물에 대한 AI 요약 데이터 없음");
-
-        } catch (JsonProcessingException e) {
-            log.error("[JSON 파싱 오류]", e);
-            throw new RuntimeException("AI 요약 JSON 파싱 오류", e);
-        }
-    }
 
 
 

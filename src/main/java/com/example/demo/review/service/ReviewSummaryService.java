@@ -16,11 +16,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import java.net.URI;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 
 @Slf4j
 @Service
@@ -54,11 +57,17 @@ public class ReviewSummaryService {
 
         String district = property.getDivisionName();
         String articleNo = property.getArticleNo();
-        String url = "http://1.230.77.225:8000/metajson/" + district + "/summaries";
 
-        log.info("[AI 요약 요청] URL: {}, articleNo: {}", url, articleNo);
+        URI uri = UriComponentsBuilder
+                .fromHttpUrl("http://1.230.77.225:8000")
+                .pathSegment("metajson", district, "summaries")
+                .build()
+                .encode()
+                .toUri();
 
-        ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
+        log.info("[AI 요약 요청] URI: {}, articleNo: {}", uri, articleNo);
+
+        ResponseEntity<String> response = restTemplate.getForEntity(uri, String.class);
         if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
             throw new RuntimeException("AI 서버 응답 실패");
         }
@@ -84,6 +93,7 @@ public class ReviewSummaryService {
             throw new RuntimeException("AI 응답 파싱 실패", e);
         }
     }
+
 
     public void saveSummary(Long propertyId, AiSummaryResponse dto) {
         Property property = propertyRepository.findById(propertyId)

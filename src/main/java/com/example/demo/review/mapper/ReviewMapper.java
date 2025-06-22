@@ -1,6 +1,5 @@
 package com.example.demo.review.mapper;
 
-import com.example.demo.auth.dto.LoginUser;
 import com.example.demo.auth.domain.UserInfo;
 import com.example.demo.review.domain.HasChildren;
 import com.example.demo.review.domain.IsResident;
@@ -71,7 +70,7 @@ public class ReviewMapper {
                 .user(loginUser)  // 로그인된 유저의 UserInfo 객체
                 .rating(request.getRating() != null ? request.getRating() : BigDecimal.valueOf(0.5))  // 평점 (기본값: 0.5)
                 .content(request.getContent() != null ? request.getContent() : "")  // 리뷰 내용 (기본값: "")
-                .hasChildren(request.getHasChildren() != null ? request.getHasChildren() : HasChildren.NO_CHILDREN)
+                .hasChildren(request.getHasChildren() != null ? request.getHasChildren() : HasChildren.NON_CHILDREN)
                 .isResident(request.getIsResident() != null ? request.getIsResident() : IsResident.NON_RESIDENT)
                 .likeCount(0L)  // 기본적으로 좋아요 수는 0
                 .createdAt(LocalDateTime.now())  // 생성일
@@ -89,14 +88,23 @@ public class ReviewMapper {
     }
 
 
+//    public ReviewLikeResponse likeResponse(Long reviewId, Long userId, Boolean isLiked, Long likeCount) {
+//        return ReviewLikeResponse.builder()
+//                .reviewId(reviewId)
+//                .userId(userId)
+//                .isLiked(isLiked)
+//                .likeCount(likeCount)
+//                .build();
+//    }
     public ReviewLikeResponse likeResponse(Long reviewId, Long userId, Boolean isLiked, Long likeCount) {
         return ReviewLikeResponse.builder()
-                .reviewId(reviewId)
-                .userId(userId)
-                .isLiked(isLiked)
-                .likeCount(likeCount)
+                .reviewId(reviewId != null ? reviewId : -1L)
+                .userId(userId != null ? userId : -1L)
+                .isLiked(isLiked != null && isLiked)
+                .likeCount(likeCount != null ? likeCount : 0L)
                 .build();
     }
+
 
 }
 
