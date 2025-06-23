@@ -27,6 +27,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -220,9 +221,21 @@ public class PropertyServiceImpl  implements PropertyService{
     //부동산별 매물보기(부동산정보)
     @Override
     public RealtyWithPropertiesResponseDto getRealtyWithProperties(Long propertyId) {
-       Property property = propertyRepository.findById(propertyId).orElseThrow(NotFoundException::new);
+        Property property = propertyRepository.findById(propertyId)
+                .orElseThrow(NotFoundException::new);
 
-       return RealtyWithPropertiesResponseDto.of(property);
+        Long realtyId = property.getRealty().getRealtyId();
+
+        List<Property> properties = propertyRepository.findByRealty_RealtyId(realtyId);
+
+        Map<String, Long> tradeTypeCountMap = properties.stream()
+                .collect(Collectors.groupingBy(Property::getTradeTypeName, Collectors.counting()));
+
+        int dealCount = tradeTypeCountMap.getOrDefault("매매", 0L).intValue();
+        int leaseCount = tradeTypeCountMap.getOrDefault("전세", 0L).intValue();
+        int rentCount = tradeTypeCountMap.getOrDefault("월세", 0L).intValue();
+
+        return RealtyWithPropertiesResponseDto.of(property, dealCount, leaseCount, rentCount);
     }
 
     //ai
