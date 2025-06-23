@@ -77,19 +77,20 @@ public class ChatService {
 //                .orElseThrow(() -> new ChatRoomNotFoundException(chatRoomId, context));
 //    }
 //
-//    // 메시지 저장
-//    @Transactional
-//    public MessageResponseDto saveMessage(MessageRequestDto messageRequestDto) {
-//        try {
-//            ChatRoom chatRoom = findByChatRoomId(messageRequestDto.getChatRoomId(), ErrorMessages.CHAT_SAVE_MESSAGE_FAILED); // 채팅방의 존재 여부를 확인하여, 없으면 예외 발생 (EntityNotFoundException)
-//            Message message = new Message(chatRoom, messageRequestDto.getSenderType(), messageRequestDto.getContent());
-//            Message saved =  messageRepository.save(message);
-//            chatRoom.updateLastMessageAt(saved.getCreatedAt()); // 채팅방의 마지막 메시지 발송 시각을 갱신
-//            return new MessageResponseDto(messageRequestDto.getChatRoomId(), saved.getMessageId(), saved.getCreatedAt());
-//        } catch (Exception e) {
-//            throw new ChatServiceException(ErrorMessages.CHAT_SAVE_MESSAGE_FAILED, messageRequestDto.getChatRoomId(), e);
-//        }
-//    }
+
+    // 메시지 저장
+    @Transactional
+    public MessageResponseDto saveMessage(MessageRequestDto messageRequestDto) {
+        try {
+            ChatRoom chatRoom = findByChatRoomId(messageRequestDto.getChatRoomId(), ErrorMessages.CHAT_SAVE_MESSAGE_FAILED); // 채팅방의 존재 여부를 확인하여, 없으면 예외 발생 (EntityNotFoundException)
+            Message message = new Message(chatRoom, messageRequestDto.getSenderType(), messageRequestDto.getContent());
+            Message saved =  messageRepository.save(message);
+            chatRoom.updateLastMessageAt(saved.getCreatedAt()); // 채팅방의 마지막 메시지 발송 시각을 갱신
+            return new MessageResponseDto(messageRequestDto.getChatRoomId(), saved.getMessageId(), saved.getCreatedAt());
+        } catch (Exception e) {
+            throw new ChatServiceException(ErrorMessages.CHAT_SAVE_MESSAGE_FAILED, messageRequestDto.getChatRoomId(), e);
+        }
+    }
 
     // 메시지 저장
     @Transactional
@@ -224,16 +225,19 @@ public class ChatService {
     }
 
     @Async
-    public void generateAndSaveAiResponse(MessageRequestDto request,
+    public void generateAndSaveAiResponse(Long userId, MessageRequestDto request,
                                           Constants.MessageResultType messageResultType,
                                           List<PropertyExcelDto> recommendedProperties) {
+
+        UserInfo userInfo = userInfoRepository.findByUserId(userId).orElseThrow(UserNotFoundException::new);
+        String nickname = userInfo.getNickname();
 
         List<MessageReplyDto> aiReplies = new ArrayList<>();
         if (messageResultType == Constants.MessageResultType.FAILURE) {
             aiReplies.add(new MessageReplyDto().generateAiResponse(Constants.NO_MATCHING_PROPERTY_MESSAGE, null, false));
         } else {
             aiReplies.add(new MessageReplyDto().generateAiResponse(
-                    String.format(Constants.MATCHING_PROPERTY_MESSAGE, "userName", recommendedProperties.size()), null, false));
+                    String.format(Constants.MATCHING_PROPERTY_MESSAGE, nickname, recommendedProperties.size()), null, false));
 
             aiReplies.add(new MessageReplyDto().generateAiResponse(null, recommendedProperties, true));
             aiReplies.add(new MessageReplyDto().generateAiResponse(Constants.ADDITIONAL_FILTER_PROMPT, null, false));

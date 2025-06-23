@@ -20,6 +20,10 @@ public class MessageRequestDto {
     private SenderType senderType;
     private FilterRequestDto filterRequestDto;
 
+    public void applyUserMessage() {
+        this.senderType = SenderType.USER;
+    }
+
     public void applyAiReply(String aiReply, SenderType senderType) {
         this.content = aiReply;
         this.senderType = senderType;

@@ -56,13 +56,13 @@ public class ChatController {
         // 제목 저장
         chatRoomRequestDto.updateTitle();
         ChatRoomResponseDto response = chatService.updateChatRoomTitle(chatRoomRequestDto);
-        System.out.println("****이야호" + chatRoomRequestDto.getFilterRequestDto());
         // 크롤링 로직 시작
-        crawlAndRecommendProperties(chatRoomRequestDto, chatRoomRequestDto.getFilterRequestDto());
+        crawlAndRecommendProperties(userId, chatRoomRequestDto, chatRoomRequestDto.getFilterRequestDto());
         return ResponseEntity.ok(response);
     }
 
-    private void crawlAndRecommendProperties(ChatRoomRequestDto chatRoomRequestDto, FilterRequestDto filterRequestDto) {
+    private void crawlAndRecommendProperties(Long userId, ChatRoomRequestDto chatRoomRequestDto, FilterRequestDto filterRequestDto) {
+
         // 크롤링 로직 시작
         RefinedFilterDto filters = RefinedFilterDto.of(filterRequestDto);
         log.info("filters: {}", filters);
@@ -77,13 +77,13 @@ public class ChatController {
             log.info("추천 매물 {}개, recommendedProperties: {}", recommendedProperties.size(), recommendedProperties);
         } catch(Exception e) {
             log.error("크롤링 또는 ai의 호출에 실패하였습니다.", e);
-            chatService.generateAndSaveAiResponse(request, Constants.MessageResultType.FAILURE, null);
+            chatService.generateAndSaveAiResponse(userId, request, Constants.MessageResultType.FAILURE, null);
             return;
         }
 
         if (CollectionUtils.isEmpty(recommendedProperties)) {
             log.info("ai가 추천해준 매물이 없습니다.");
-            chatService.generateAndSaveAiResponse(request, Constants.MessageResultType.FAILURE, null);
+            chatService.generateAndSaveAiResponse(userId, request, Constants.MessageResultType.FAILURE, null);
             return;
         }
 
@@ -93,8 +93,27 @@ public class ChatController {
         List<PropertyExcelDto> validRecommendedProperties = new ArrayList<>(recommendedProperties.subList(0, limit));
         log.info("정제된 추천 매물 {}개", validRecommendedProperties.size());
         //chatService.updateMessage(messageId, validRecommendedProperties);
-        chatService.generateAndSaveAiResponse(request, Constants.MessageResultType.SUCCESS, validRecommendedProperties);
+        chatService.generateAndSaveAiResponse(userId, request, Constants.MessageResultType.SUCCESS, validRecommendedProperties);
 
+    }
+
+    @PostMapping
+    public ResponseEntity<MessageResponseDto> sendMessage(@AuthenticationPrincipal LoginUser loginUser, @RequestBody MessageRequestDto request) {
+        log.info("request: {}", request);
+        Long chatRoomId = request.getChatRoomId();
+        String content = request.getContent();
+
+        if (chatRoomId == null) {
+            throw new IllegalStateException("메시지를 저장할 수 없습니다.");
+        }
+
+        log.info("chatRoomId: {}, content: {}", chatRoomId, content);
+        request.applyUserMessage();
+
+        // 메시지 저장
+        MessageResponseDto response = chatService.saveMessage(request);
+        log.info("response: {}", response);
+        return ResponseEntity.ok(response);
     }
 
     // 채팅방 제목 수정
