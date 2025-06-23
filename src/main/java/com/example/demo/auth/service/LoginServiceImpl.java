@@ -58,13 +58,17 @@ public class LoginServiceImpl implements LoginService {
 
             if (user != null) {
                 user.reactivate();          // ← 탈퇴 상태면 deletedAt·withdrawReason NULL 처리
+                String currentImage = user.getProfileImage();
+                if (currentImage == null) {
+                    user.setProfileImage(profile);
+                }
             } else {
                 user = UserInfoFactory.createFromKakao(kakaoId, email, profile);
             }
 
 
         user.setLastLoginAt(LocalDateTime.now());
-        user.setProfileImage(profile);      // 프로필 이미지 최신화
+//        user.setProfileImage(profile);      // 프로필 이미지 최신화
         userRepo.save(user);
 
 
