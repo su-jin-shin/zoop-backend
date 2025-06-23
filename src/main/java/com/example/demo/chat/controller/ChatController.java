@@ -102,24 +102,24 @@ public class ChatController {
 
     }
 
-//    @PostMapping
-//    public ResponseEntity<MessageResponseDto> sendMessage(@AuthenticationPrincipal LoginUser loginUser, @RequestBody MessageRequestDto request) {
-//        log.info("request: {}", request);
-//        Long chatRoomId = request.getChatRoomId();
-//        String content = request.getContent();
-//
-//        if (chatRoomId == null) {
-//            throw new IllegalStateException("메시지를 저장할 수 없습니다.");
-//        }
-//
-//        log.info("chatRoomId: {}, content: {}", chatRoomId, content);
-//        request.applyUserMessage();
-//
-//        // 메시지 저장
-//        MessageResponseDto response = chatService.saveMessage(request);
-//        log.info("response: {}", response);
-//        return ResponseEntity.ok(response);
-//    }
+    @PostMapping
+    public ResponseEntity<MessageResponseDto> sendMessage(@AuthenticationPrincipal LoginUser loginUser, @RequestBody MessageRequestDto request) {
+        log.info("request: {}", request);
+        Long chatRoomId = request.getChatRoomId();
+        String content = request.getContent();
+
+        if (chatRoomId == null) {
+            throw new IllegalStateException("메시지를 저장할 수 없습니다.");
+        }
+
+        log.info("chatRoomId: {}, content: {}", chatRoomId, content);
+        request.applyUserMessage();
+
+        // 메시지 저장
+        MessageResponseDto response = chatService.saveMessage(request);
+        log.info("response: {}", response);
+        return ResponseEntity.ok(response);
+    }
 
     // 채팅방 제목 수정
     @PatchMapping("/{chatRoomId}")

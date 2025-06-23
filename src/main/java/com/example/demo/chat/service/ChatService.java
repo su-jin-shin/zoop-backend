@@ -19,7 +19,6 @@ import com.example.demo.common.exception.UserNotFoundException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.catalina.User;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -61,12 +60,12 @@ public class ChatService {
         message.updateProperties(properties);
     }
 
-    // 메시지 저장
+    // 메시지 저장Add commentMore actions
     @Transactional
-    public MessageResponseDto saveMessage(MessageRequestDto messageRequestDto, List<PropertyExcelDto> properties) {
+    public MessageResponseDto saveMessage(MessageRequestDto messageRequestDto) {
         try {
             ChatRoom chatRoom = findByChatRoomId(messageRequestDto.getChatRoomId(), ErrorMessages.CHAT_SAVE_MESSAGE_FAILED); // 채팅방의 존재 여부를 확인하여, 없으면 예외 발생 (EntityNotFoundException)
-            Message message = new Message(chatRoom, messageRequestDto.getSenderType(), messageRequestDto.getContent(), properties);
+            Message message = new Message(chatRoom, messageRequestDto.getSenderType(), messageRequestDto.getContent());
             Message saved =  messageRepository.save(message);
             chatRoom.updateLastMessageAt(saved.getCreatedAt()); // 채팅방의 마지막 메시지 발송 시각을 갱신
             return new MessageResponseDto(messageRequestDto.getChatRoomId(), saved.getMessageId(), saved.getCreatedAt());
@@ -232,7 +231,7 @@ public class ChatService {
 
         for (MessageReplyDto aiReply : aiReplies) {
             request.applyAiReply(aiReply.getContent(), SenderType.CHATBOT);
-            MessageResponseDto aiMessage = saveMessage(request, aiReply.getProperties());
+            MessageResponseDto aiMessage = saveMessage(request);
             log.info("ai의 답변 DB 저장 완료: {}", aiMessage);
 
             chatUpdateService.notifyNewMessage(MessageDto.builder()
