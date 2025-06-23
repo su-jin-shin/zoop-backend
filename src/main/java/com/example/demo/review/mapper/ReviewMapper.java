@@ -20,7 +20,10 @@ import java.util.List;
 @SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class ReviewMapper {
 
-    // Review 객체를 ReviewCreateResponse DTO로 변환
+    /**
+     * @ 리뷰 엔티티를 응답 DTO로 변환
+     * @ 유저, 평점, 좋아요 등 포함
+     */
     public ReviewCreateResponse toDto(Review review,
                                       long likeCount,
                                       long commentCount,
@@ -45,7 +48,10 @@ public class ReviewMapper {
                 .build();
     }
 
-    // Review 객체 목록을 ReviewListResponse DTO로 변환
+    /**
+     * @ 리뷰 리스트 응답 DTO로 변환
+     * @ 페이지 정보와 평균 별점 포함
+     */
     public ReviewListResponse toListResponse(Page<Review> page,
                                              List<ReviewCreateResponse> reviewCreateRespons,
                                              Long complexId,
@@ -63,7 +69,10 @@ public class ReviewMapper {
     }
 
 
-    // ReviewCreateRequest를 받아 Review 엔티티로 변환
+    /**
+     * @ 리뷰 작성 요청을 리뷰 엔티티로 변환
+     * @ 기본값 설정 포함
+     */
     public Review toEntity(Long propertyId, ReviewCreateRequest request, UserInfo loginUser) {
         return Review.builder()
                 .propertyId(propertyId)  // 매물 ID
@@ -78,24 +87,23 @@ public class ReviewMapper {
                 .build();
     }
 
-    // Review 객체와 로그인된 유저 정보를 받아 ReviewLike 엔티티로 변환
-    public ReviewLike toEntity(Review review, UserInfo loginUser, boolean isLiked) {
-        return ReviewLike.builder()
-                .review(review)  // 해당 리뷰
-                .user(loginUser)  // 로그인된 유저의 UserInfo 객체
-                .isLiked(isLiked)  // 좋아요 여부
-                .build();
-    }
-
-
-//    public ReviewLikeResponse likeResponse(Long reviewId, Long userId, Boolean isLiked, Long likeCount) {
-//        return ReviewLikeResponse.builder()
-//                .reviewId(reviewId)
-//                .userId(userId)
-//                .isLiked(isLiked)
-//                .likeCount(likeCount)
+//    /**
+//     * @ 리뷰 + 유저 + 좋아요 여부로 ReviewLike 생성
+//     * @ 좋아요 등록 시 사용
+//     */
+//    public ReviewLike toEntity(Review review, UserInfo loginUser, boolean isLiked) {
+//        return ReviewLike.builder()
+//                .review(review)  // 해당 리뷰
+//                .user(loginUser)  // 로그인된 유저의 UserInfo 객체
+//                .isLiked(isLiked)  // 좋아요 여부
 //                .build();
 //    }
+
+
+    /**
+     * @ 리뷰 좋아요 상태를 응답 DTO로 변환
+     * @ null 방지용 기본값 포함
+     */
     public ReviewLikeResponse likeResponse(Long reviewId, Long userId, Boolean isLiked, Long likeCount) {
         return ReviewLikeResponse.builder()
                 .reviewId(reviewId != null ? reviewId : -1L)
