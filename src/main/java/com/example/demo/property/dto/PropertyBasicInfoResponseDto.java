@@ -54,6 +54,21 @@ public class PropertyBasicInfoResponseDto {
 
      //빌더
     public static PropertyBasicInfoResponseDto of(Property property, List<Image> images, Boolean isBookmarked){
+
+        String parkingCountStr = property.getParkingCount();
+        String parkingPossibleYN = "N";
+
+        if (parkingCountStr != null) {
+            try {
+                int count = Integer.parseInt(parkingCountStr);
+                if (count > 0) {
+                    parkingPossibleYN = "Y";
+                }
+            } catch (NumberFormatException ignored) {
+                parkingPossibleYN = "N"; // 예외 시 기본값
+            }
+        }
+
         return PropertyBasicInfoResponseDto.builder()
                 .propertyId(property.getPropertyId())
                 .complexId(property.getComplex() != null ? property.getComplex().getId() : null)
@@ -67,7 +82,7 @@ public class PropertyBasicInfoResponseDto {
                 .realEstateTypeName(property.getRealEstateTypeName())
                 .area2(property.getArea2())
                 .correspondingFloorCount(property.getCorrespondingFloorCount())
-                .parkingPossibleYN(property.getParkingPossibleYN())
+                .parkingPossibleYN(parkingPossibleYN)
                 .isBookmarked(isBookmarked)
                 .exposeStartYMD(property.getExposeStartYMD())
                 .summary(safeList(property.getTagList()))
