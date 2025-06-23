@@ -4,8 +4,94 @@ on:
   push:
     branches: [main]
 
+#################################################################
+# Slack·표시용 ENV
+#################################################################
+env:
+  SLACK_CHANNEL_ID: C08RKBG9GL9            # Slack 채널
+  SLACK_ENV_NAME: PROD                     # 카드 안 ‘환경’ 필드
+  SLACK_REPO_NAME: zoop-backend            # 헤더·카드 ‘Repo’ 표기
+  PIPELINE_URL: 'https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+  PR_URL: 'https://github.com/${{ github.repository }}/pull/'
+
+permissions:
+  checks: write
+  pull-requests: write
+  contents: write
+  actions: read
+
+#################################################################
+# 1) 배포 시작 알림 --------------------------------------------
+#################################################################
 jobs:
+  notify-start:
+    runs-on: ubuntu-latest
+    outputs:
+      ts:      ${{ steps.slack.outputs.ts }}
+      commit:  ${{ steps.msg.outputs.commit }}
+      pr:      ${{ steps.msg.outputs.pr }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - id: msg
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            echo "commit=${{ github.event.pull_request.title }}" >>$GITHUB_OUTPUT
+            echo "pr=${{ github.event.pull_request.number }}"  >>$GITHUB_OUTPUT
+          else
+            cmsg=$(git log -1 --pretty=%s)
+            echo "commit=$cmsg" >>$GITHUB_OUTPUT
+            pr=$(echo "$cmsg" | sed -n 's/.*#\([0-9]\+\).*/\1/p')
+            echo "pr=$pr"      >>$GITHUB_OUTPUT
+          fi
+
+      - id: slack
+        uses: slackapi/slack-github-action@v2.0.0
+        with:
+          token: ${{ secrets.SLACK_BOT_TOKEN }}
+          method: chat.postMessage
+          payload: |
+            channel: ${{ env.SLACK_CHANNEL_ID }}
+            username: "GitHub Actions"
+            icon_emoji: ":rocket:"
+            blocks:
+              - type: header
+                text:
+                  type: plain_text
+                  emoji: true
+                  text: "${{ env.SLACK_REPO_NAME }} 배포 시작 🚀"
+            attachments:
+              - color: "#cccccc"
+                fields:
+                  - title: "Repo"
+                    value: "${{ env.SLACK_REPO_NAME }}"
+                    short: true
+                  - title: "Status"
+                    value: "In Progress"
+                    short: true
+                  - title: "Author"
+                    value: "${{ github.actor }}"
+                    short: true
+                  - title: "Environment"
+                    value: "${{ env.SLACK_ENV_NAME }}"
+                    short: true
+                  - title: "Message"
+                    value: "${{ steps.msg.outputs.commit }}"
+                    short: true
+                  - title: "Pull Request"
+                    value: "<${{ env.PR_URL }}${{ steps.msg.outputs.pr }}|Link>"
+                    short: true
+                  - title: "Workflow"
+                    value: "<${{ env.PIPELINE_URL }}|Link>"
+                    short: true
+
+  #################################################################
+  # 2) 실제 배포 (self-hosted Runner) ------------------------------
+  #################################################################
   deploy:
+    needs: notify-start
     runs-on: [self-hosted, Linux, X64]
 
     steps:
@@ -29,7 +115,7 @@ jobs:
 
           rm -rf "$APP_DIR"
           git clone --depth 1 -b "$BRANCH" \
-            https://${TOKEN}@github.com/${REPO}.git "$APP_DIR"
+            https://$TOKEN@github.com/$REPO.git "$APP_DIR"
 
           docker pull ${{ secrets.DOCKERHUB_USERNAME }}/zoop_server:latest  || echo "No server image yet"
           docker pull ${{ secrets.DOCKERHUB_USERNAME }}/zoop_fastapi:latest || echo "No fastapi image yet"
@@ -44,12 +130,58 @@ jobs:
       - name: Wait for app warm-up
         run: sleep 30
 
-      # 3) 헬스체크 80  ← 이름만 바꿔도 OK
+      # 3) 헬스체크
       - name: Health-check 80
         uses: jtalk/url-health-check-action@v4
         with:
-          url: http://localhost/hc          # 여기만 수정
+          url: http://localhost/hc
           max-attempts: 60
           retry-delay: 5s
           follow-redirect: false
           retry-all: false
+
+  #################################################################
+  # 3) 결과 알림 ---------------------------------------------------
+  #################################################################
+  notify-end:
+    if: always()
+    needs: [notify-start, deploy]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: slackapi/slack-github-action@v2.0.0
+        with:
+          token: ${{ secrets.SLACK_BOT_TOKEN }}
+          method: chat.update
+          payload: |
+            channel: ${{ env.SLACK_CHANNEL_ID }}
+            ts: "${{ needs.notify-start.outputs.ts }}"
+            blocks:
+              - type: header
+                text:
+                  type: plain_text
+                  emoji: true
+                  text: "${{ env.SLACK_REPO_NAME }} 배포 ${{ needs.deploy.result == 'success' && '완료 ✅' || '실패 ❌' }}"
+            attachments:
+              - color: "${{ needs.deploy.result == 'success' && '28a745' || 'fb2c36' }}"
+                fields:
+                  - title: "Repo"
+                    value: "${{ env.SLACK_REPO_NAME }}"
+                    short: true
+                  - title: "Status"
+                    value: "${{ needs.deploy.result == 'success' && 'Completed' || 'Failed' }}"
+                    short: true
+                  - title: "Author"
+                    value: "${{ github.actor }}"
+                    short: true
+                  - title: "Environment"
+                    value: "${{ env.SLACK_ENV_NAME }}"
+                    short: true
+                  - title: "Message"
+                    value: "${{ needs.notify-start.outputs.commit }}"
+                    short: true
+                  - title: "Pull Request"
+                    value: "<${{ env.PR_URL }}${{ needs.notify-start.outputs.pr }}|Link>"
+                    short: true
+                  - title: "Workflow"
+                    value: "<${{ env.PIPELINE_URL }}|Link>"
+                    short: true
