@@ -2,6 +2,8 @@ package com.example.demo.chat.dto;
 
 import com.example.demo.chat.type.SenderType;
 import com.example.demo.common.excel.PropertyExcelDto;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -17,7 +19,10 @@ public class MessageDto {
     private Long messageId;
     private String content;
     private SenderType senderType;
+
+    @Getter(AccessLevel.NONE)
     private List<PropertyExcelDto> properties;
+
     private LocalDateTime createdAt;
 
     public List<PropertyExcelDto> getProperties() {
