@@ -10,7 +10,9 @@ from dotenv import load_dotenv
 CURRENT_DIR = Path(__file__).resolve().parent
 MODULE_BASE_DIR = CURRENT_DIR.parent
 sys.path.insert(0, str(MODULE_BASE_DIR))
-from .config.loader import DB_CONFIG
+from config.loader import DB_CONFIG
+
+IMAGE_BASE_URL = "https://landthumb-phinf.pstatic.net"
 
 if not DB_CONFIG:
     raise ValueError('DB 설정이 누락되었습니다. .env 파일 또는 DB_CONFIG를 확인해주세요.')
@@ -29,19 +31,19 @@ def safe_float(value):
 
 def get_image_base_url():
     try:
-        env_path = Path(__file__).resolve().parents[1] # .env 파일 경로
+        env_path = Path(__file__).resolve().parent # .env 파일 경로
         load_dotenv(dotenv_path=env_path / ".env") # .env 불러오기
-        print("***********" + os.getenv('IMAGE_BASE_URL'))
         return os.getenv('IMAGE_BASE_URL')
     except Exception as e:
         print(f'.env 파일 로드 중 에러 발생: {e}')
         return None
 
 
-async def insert_many_properties(article_list, real_estate_type_code):
-    pool = await asyncpg.create_pool(**DB_CONFIG)
+async def insert_many_properties(pool, article_list, real_estate_type_code):
+    #pool = await asyncpg.create_pool(**DB_CONFIG)
     values_to_insert = []
-    IMAGE_BASE_URL = get_image_base_url()
+    # IMAGE_BASE_URL = get_image_base_url()
+    global IMAGE_BASE_URL
 
     async with pool.acquire() as conn:
 
@@ -250,10 +252,178 @@ async def insert_many_properties(article_list, real_estate_type_code):
         """, image_values_to_insert)
 
     print(f'properties: {properties}, {len(properties)}개')
-    await pool.close()
     return properties
 
-#
+
+async def insert_property(pool, article_property, real_estate_type_code):
+    print('article_property: ', article_property)
+    #pool = await asyncpg.create_pool(**DB_CONFIG)
+    values_to_insert = []
+    IMAGE_BASE_URL = get_image_base_url()
+
+    async with pool.acquire() as conn:
+        detail = article_property.get('articleDetail', {})
+        addition = article_property.get('articleAddition', {})
+        realtor = article_property.get('articleRealtor', {})
+        print('*********', realtor)
+        tax = article_property.get('articleTax', {})
+
+        # 1. realty 테이블에 insert + realty_id 받기
+        registration_no = realtor.get('establishRegistrationNo')
+        if not registration_no:
+            return None
+
+        realty_id = await conn.fetchval("""
+            INSERT INTO realty (realtor_account_id, establish_registration_no, realtor_name, representative_name,
+            address, representative_tel_no, cell_phone_no, deal_count, lease_count, rent_count,
+            max_broker_fee, broker_fee)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+            ON CONFLICT (establish_registration_no) DO NOTHING
+            RETURNING realty_id
+        """, realtor.get('realtorId'), registration_no, realtor.get('realtorName'),
+            realtor.get('representativeName'), realtor.get('address'), realtor.get('representativeTelNo'),
+            realtor.get('cellPhoneNo'), realtor.get('dealCount'), realtor.get('leaseCount'),
+            realtor.get('rentCount'), tax.get('maxBrokerFee'), tax.get('brokerFee'))
+
+        if realty_id is None:
+            realty_id = await conn.fetchval("SELECT realty_id FROM realty WHERE establish_registration_no = $1", registration_no)
+
+        # 2. complex 테이블에 insert + complex_id 받기
+        complex_info = article_property.get('complexInfo', {})
+        complex_id = None
+        complex_no = None
+
+        if real_estate_type_code in ['VL:YR', 'DDDGG:DSD']:
+            complex_no = 'v' + str(complex_info['complexNumber']) if complex_info.get('complexNumber') else None
+        elif real_estate_type_code in ['APT', 'OPST']:
+            complex_no = 'a' + complex_info['complexNo'] if complex_info.get('complexNo') else None
+
+        if complex_no:
+            complex_id = await conn.fetchval("""
+                INSERT INTO complex (complex_no, complex_name)
+                VALUES ($1, $2)
+                ON CONFLICT (complex_no) DO NOTHING
+                RETURNING complex_id
+            """, complex_no, complex_info.get('complexName'))
+
+            if complex_id is None:
+                complex_id = await conn.fetchval("SELECT complex_id FROM complex WHERE complex_no = $1", complex_no)
+
+            for idx, photo in enumerate(complex_info.get('photos') or []):
+                is_main = (idx == 0)
+                image_url = IMAGE_BASE_URL + photo['imageSrc'] if photo.get('imageSrc') else None
+                await conn.execute("""
+                    INSERT INTO image (complex_id, image_url, image_type, image_order, is_main)
+                    VALUES ($1, $2, $3, $4, $5)
+                    ON CONFLICT (complex_id, image_type, image_order) DO NOTHING
+                """, complex_id, image_url, 'COMPLEX', idx + 1, is_main)
+
+        # 3. property insert
+        detail = article_property.get('articleDetail', {})
+        building_register = article_property.get('articleBuildingRegister', {})
+        facility = article_property.get('articleFacility', {})
+        floor = article_property.get('articleFloor', {})
+        price = article_property.get('articlePrice', {})
+        etc_fee_amount = article_property.get('administrationCostInfo', {}).get('etcFeeDetails', {}).get('etcFeeAmount')
+
+        article_name, apt_name, heat_method_type_name, heat_fuel_type_name, household_count, use_approve_ymd, parking_count, parking_count_per_house_hold = extract_article_info_by_article_no(article_property, real_estate_type_code)
+
+        values_to_insert.append((
+            realty_id, complex_id, addition.get('articleNo'), article_name, detail.get('tradeCompleteYN'),
+            apt_name, heat_method_type_name, heat_fuel_type_name, household_count, use_approve_ymd,
+            addition.get('realEstateTypeName'), addition.get('tradeTypeName'),
+            detail.get('cityName'), detail.get('divisionName'), detail.get('sectionName'),
+            str(detail.get('walkingTimeToNearSubway')), detail.get('roomCount'), detail.get('bathroomCount'),
+            detail.get('moveInTypeName'), detail.get('moveInPossibleYmd'), detail.get('articleFeatureDescription'),
+            detail.get('detailDescription'), detail.get('parkingPossibleYN'), detail.get('principalUse'),
+            building_register.get('mainPurpsCdNm'), addition.get('floorInfo'),
+            addition.get('dealOrWarrantPrc'), str(addition.get('area1')), str(addition.get('area2')),
+            addition.get('direction'), addition.get('articleFeatureDesc'),
+            addition.get('sameAddrMaxPrc'), addition.get('sameAddrMinPrc'),
+            facility.get('directionBaseTypeName'), facility.get('entranceTypeName'),
+            dump_if_not_empty(facility.get('lifeFacilities')), dump_if_not_empty(facility.get('securityFacilities')),
+            dump_if_not_empty(facility.get('etcFacilities')), floor.get('totalFloorCount'),
+            floor.get('correspondingFloorCount'), parking_count, parking_count_per_house_hold,
+            safe_float(addition.get('latitude')), safe_float(addition.get('longitude')),
+            detail.get('buildingName'), detail.get('exposureAddress'), detail.get('exposeStartYMD'),
+            price.get('rentPrice'), price.get('dealPrice'), price.get('warrantPrice'),
+            price.get('allWarrantPrice'), price.get('allRentPrice'), price.get('priceBySpace'),
+            tax.get('acquisitionTax'), tax.get('registTax'), tax.get('specialTax'), tax.get('eduTax'),
+            price.get('financePrice'), etc_fee_amount, dump_if_not_empty(detail.get('tagList'))
+        ))
+
+        await conn.executemany("""
+            INSERT INTO property (realty_id, complex_id, article_no, article_name, trade_complete_yn, 
+            apt_name, heat_method_type_name, heat_fuel_type_name, household_count, use_approve_ymd, 
+            real_estate_type_name, trade_type_name, city_name, division_name, section_name, 
+            walking_time_to_near_subway, room_count, bathroom_count, move_in_type_name, move_in_possible_ymd, 
+            article_feature_description, detail_description, parking_possible_yn, principal_use, 
+            main_purps_cd_nm, floor_info, deal_or_warrant_prc, area1, area2, direction, article_feature_desc, 
+            same_addr_max_prc, same_addr_min_prc, direction_base_type_name, entrance_type_name, 
+            life_facilities, security_facilities, etc_facilities, total_floor_count, corresponding_floor_count, 
+            parking_count, parking_count_per_household, latitude, longitude, building_name, exposure_address, 
+            expose_start_ymd, rent_price, deal_price, warrant_price, all_warrant_price, all_rent_price, 
+            price_by_space, acquisition_tax, regist_tax, special_tax, edu_tax, finance_price, etc_fee_amount, tag_list)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21,
+                    $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34, $35, $36, $37, $38, $39, $40,
+                    $41, $42, $43, $44, $45, $46, $47, $48, $49, $50, $51, $52, $53, $54, $55, $56, $57, $58, $59, $60)
+            ON CONFLICT (article_no) DO NOTHING
+        """, values_to_insert)
+
+        # 4. property_id 조회
+        row = await conn.fetchrow("""
+            SELECT article_no, property_id, article_name
+            FROM property
+            WHERE article_no = $1
+        """, addition.get('articleNo'))
+
+        if not row:
+            return None
+
+        property_id = row['property_id']
+        article_name = row['article_name']
+
+        # 5. 이미지 insert
+        properties = [{
+            "order": 1,
+            "propertyId": property_id,
+            "tradeTypeName": addition.get('tradeTypeName'),
+            "rentPrice": price.get('rentPrice'),
+            "warrantPrice": price.get('warrantPrice'),
+            "dealPrice": price.get('dealPrice'),
+            "dealOrWarrantPrc": addition.get('dealOrWarrantPrc'),
+            "tagList": addition.get('tagList'),
+            "articleName": article_name,
+            "realEstateTypeName": addition.get('realEstateTypeName'),
+            "area2": addition.get('area2'),
+            "imageUrl": IMAGE_BASE_URL + addition.get('representativeImgUrl') if addition.get('representativeImgUrl') else None,
+            "latitude": safe_float(addition.get('latitude')),
+            "longitude": safe_float(addition.get('longitude'))
+        }]
+
+        image_values_to_insert = []
+
+        for idx, photo in enumerate(detail.get('grandPlanList') or []):
+            is_main = (idx == 0)
+            image_url = IMAGE_BASE_URL + photo['imageSrc'] if photo.get('imageSrc') else None
+            image_values_to_insert.append((property_id, image_url, 'STRUCTURE', idx + 1, is_main))
+
+        for idx, photo in enumerate(article_property.get('articlePhotos') or []):
+            is_main = (idx == 0)
+            image_url = IMAGE_BASE_URL + photo['imageSrc'] if photo.get('imageSrc') else None
+            image_values_to_insert.append((property_id, image_url, 'PROPERTY', idx + 1, is_main))
+
+        await conn.executemany("""
+            INSERT INTO image (property_id, image_url, image_type, image_order, is_main)
+            VALUES ($1, $2, $3, $4, $5)
+            ON CONFLICT (property_id, image_type, image_order) DO NOTHING
+        """, image_values_to_insert)
+
+    print(f'properties: {properties}, {len(properties)}개')
+    #return properties
+    return property_id
+
+
 def extract_article_info(item, real_estate_type_code):
     details = item.get('articleDetails', {})
     detail = details.get('articleDetail', {})
@@ -264,8 +434,39 @@ def extract_article_info(item, real_estate_type_code):
         parking_count = detail.get('parkingCount')
 
         return (
-            complex_info.get('complexName') + ' ' + complex_info.get('dongName') if complex_info else item.get('articleName'),
+            (complex_info.get('complexName') or '') + ' ' + (complex_info.get('dongName') or '') if complex_info else item.get('articleName'),
             details.get('articleBuildingRegister', {}).get('bldNm'),
+            facility.get('heatMethodTypeName'),
+            facility.get('heatFuelTypeName'),
+            detail.get('householdCount'),
+            facility.get('buildingUseAprvYmd'),
+            str(parking_count) if parking_count is not None else None,
+            detail.get('parkingPerHouseholdCount')
+        )
+    elif real_estate_type_code in ['APT', 'OPST']:
+        return (
+            detail.get('articleName'),
+            detail.get('aptName'),
+            detail.get('aptHeatMethodTypeName'),
+            detail.get('aptHeatFuelTypeName'),
+            detail.get('aptHouseholdCount'),
+            detail.get('aptUseApproveYmd'),
+            detail.get('aptParkingCount'),
+            detail.get('aptParkingCountPerHousehold')
+        )
+
+
+def extract_article_info_by_article_no(item, real_estate_type_code):
+    detail = item.get('articleDetail', {})
+
+    if real_estate_type_code in ['VL:YR', 'DDDGG:DSD']:
+        complex_info = item.get('complexInfo', {})
+        facility = item.get('articleFacility', {})
+        parking_count = detail.get('parkingCount')
+
+        return (
+            complex_info.get('complexName') + ' ' + complex_info.get('dongName') if complex_info else item.get('articleName'),
+            item.get('articleBuildingRegister', {}).get('bldNm'),
             facility.get('heatMethodTypeName'),
             facility.get('heatFuelTypeName'),
             detail.get('householdCount'),

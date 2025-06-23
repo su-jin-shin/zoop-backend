@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 import static com.example.demo.property.util.PropertyDtoConverter.convertImages;
 
 @SuppressFBWarnings(
-        value = { "EI_EXPOSE_REP", "EI_EXPOSE_REP2" }
+        value = { "EI_EXPOSE_REP", "EI_EXPOSE_REP2"}
 
 )
 @Data
@@ -51,35 +51,48 @@ public class PropertyPropertyInfoResponseDto {
 
 
     //빌더
- public static PropertyPropertyInfoResponseDto of(Property property , List<Image> images ){
-  List<Image> structureImages = images == null ? Collections.emptyList() :
+    public static PropertyPropertyInfoResponseDto of(Property property , List<Image> images) {
+        List<Image> structureImages = images == null ? Collections.emptyList() :
+                images.stream()
+                        .filter(image -> ImageType.STRUCTURE.equals(image.getImageType()))
+                        .collect(Collectors.toList());
 
-          //열거형 조건
-          images.stream()
-                  .filter(image -> ImageType.STRUCTURE.equals(image.getImageType()))
-                  .collect(Collectors.toList());
+        String parkingCountStr = property.getParkingCount();
+        String parkingPossibleYN = "N";
 
-     return PropertyPropertyInfoResponseDto.builder()
-             .propertyId(property.getPropertyId())
-             .area2(property.getArea2())
-             .area1(property.getArea1())
-             .principalUse(property.getPrincipalUse())
-             .realEstateTypeName(property.getRealEstateTypeName())
-             .aptName(property.getAptName())
-             .buildingName(property.getBuildingName())
-             .floorInfo(property.getFloorInfo())
-             .roomCount(property.getRoomCount())
-             .bathroomCount(property.getBathroomCount())
-             .directionBaseTypeName(property.getDirectionBaseTypeName())
-             .direction(property.getDirection())
-             .entranceTypeName(property.getEntranceTypeName())
-             .householdCount(property.getHouseholdCount())
-             .parkingCount(property.getParkingCount())
-             .parkingCountPerHousehold(property.getParkingCountPerHousehold())
-             .parkingPossibleYN(property.getParkingCountPerHousehold())
-             .useApproveYmd(property.getUseApproveYmd())
-             .images(List.copyOf(convertImages(structureImages)))
-             .build();
- }
+        if (parkingCountStr != null) {
+            try {
+                int count = Integer.parseInt(parkingCountStr);
+                if (count > 0) {
+                    parkingPossibleYN = "Y";
+                }
+            } catch (NumberFormatException ignored) {
+                parkingPossibleYN = "N"; // 예외 시 기본값
+            }
+        }
+
+        return PropertyPropertyInfoResponseDto.builder()
+                .propertyId(property.getPropertyId())
+                .area2(property.getArea2())
+                .area1(property.getArea1())
+                .principalUse(property.getPrincipalUse())
+                .realEstateTypeName(property.getRealEstateTypeName())
+                .aptName(property.getAptName())
+                .buildingName(property.getBuildingName())
+                .floorInfo(property.getFloorInfo())
+                .roomCount(property.getRoomCount())
+                .bathroomCount(property.getBathroomCount())
+                .directionBaseTypeName(property.getDirectionBaseTypeName())
+                .direction(property.getDirection())
+                .entranceTypeName(property.getEntranceTypeName())
+                .householdCount(property.getHouseholdCount())
+                .parkingCount(property.getParkingCount())
+                .parkingCountPerHousehold(property.getParkingCountPerHousehold())
+                .parkingPossibleYN(parkingPossibleYN)
+                .useApproveYmd(property.getUseApproveYmd())
+                .images(List.copyOf(convertImages(structureImages)))
+                .build();
+    }
+
 
 }

@@ -19,7 +19,6 @@ public class ChatRoom {
     @Column
     private Long chatRoomId;
 
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private UserInfo userInfo;
@@ -38,17 +37,21 @@ public class ChatRoom {
     private LocalDateTime lastMessageAt;
 
     @Column(nullable = false)
-    private boolean isDeleted;
+    private boolean isDeleted = true;
 
     @Column
     private LocalDateTime deletedAt;
 
     // 생성자
+//    public ChatRoom(UserInfo userInfo) {
+//        this.userInfo = userInfo;
+//        this.title = "new chat";
+//        this.createdAt = LocalDateTime.now();
+//        this.lastMessageAt = LocalDateTime.now();
+//    }
+
     public ChatRoom(UserInfo userInfo) {
         this.userInfo = userInfo;
-        this.title = "new chat";
-        this.createdAt = LocalDateTime.now();
-        this.lastMessageAt = LocalDateTime.now();
     }
 
     // 기본 생성자
@@ -65,6 +68,7 @@ public class ChatRoom {
     public void updateTitle(String newTitle) {
         this.title = newTitle;
         this.titleUpdatedAt = LocalDateTime.now();
+        this.isDeleted = false;
     }
 
     public void updateLastMessageAt(LocalDateTime time) {

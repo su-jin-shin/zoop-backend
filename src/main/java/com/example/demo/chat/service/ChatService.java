@@ -1,49 +1,53 @@
-//package com.example.demo.chat.service;
-//
-//import com.example.demo.auth.domain.UserInfo;
-//import com.example.demo.auth.repository.UserInfoRepository;
-//import com.example.demo.chat.constants.ErrorMessages;
-//import com.example.demo.chat.domain.ChatRoom;
-//import com.example.demo.chat.domain.Message;
-//import com.example.demo.chat.dto.*;
-//import com.example.demo.chat.exception.ChatRoomNotFoundException;
-//import com.example.demo.chat.exception.ChatServiceException;
-//import com.example.demo.chat.repository.ChatRoomRepository;
-//import com.example.demo.chat.repository.MessageRepository;
-//import com.example.demo.chat.type.SenderType;
-//import com.example.demo.common.exception.NotFoundException;
-//import com.example.demo.common.exception.UserNotFoundException;
-//import jakarta.persistence.EntityNotFoundException;
-//import lombok.RequiredArgsConstructor;
-//import lombok.extern.slf4j.Slf4j;
-//import org.springframework.scheduling.annotation.Async;
-//import org.springframework.stereotype.Service;
-//import org.springframework.transaction.annotation.Transactional;
-//
-//import java.time.LocalDateTime;
-//import java.util.ArrayList;
-//import java.util.List;
-//import java.util.Objects;
-//import java.util.Optional;
-//
-//@Service
-//@RequiredArgsConstructor
-//@Slf4j
-//public class ChatService {
-//
-//    private final ChatRoomRepository chatRoomRepository;
-//    private final MessageRepository messageRepository;
-//    private final UserInfoRepository userInfoRepository;
-//
-//    private int CHATBOT_MESSAGE_ORDER = 0;
-//
+package com.example.demo.chat.service;
+
+import com.example.demo.auth.domain.UserInfo;
+import com.example.demo.auth.repository.UserInfoRepository;
+import com.example.demo.chat.constants.ErrorMessages;
+import com.example.demo.chat.domain.ChatRoom;
+import com.example.demo.chat.domain.Message;
+import com.example.demo.chat.dto.*;
+import com.example.demo.chat.exception.ChatRoomNotFoundException;
+import com.example.demo.chat.exception.ChatServiceException;
+import com.example.demo.chat.repository.ChatRoomRepository;
+import com.example.demo.chat.repository.MessageRepository;
+import com.example.demo.common.exception.UserNotFoundException;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.catalina.User;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+@Service
+@RequiredArgsConstructor
+@Slf4j
+@SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
+public class ChatService {
+
+    private final ChatRoomRepository chatRoomRepository;
+    private final MessageRepository messageRepository;
+    private final UserInfoRepository userInfoRepository;
+
+    // 채팅방 생성
+    @Transactional
+    public ChatRoomResponseDto createChatRoom(Long userId) {
+        // 사용자 조회
+        UserInfo userInfo = userInfoRepository.findByUserId(userId).orElseThrow(UserNotFoundException::new);
+
+        ChatRoom chatRoom = new ChatRoom(userInfo);
+        ChatRoom saved = chatRoomRepository.save(chatRoom);
+        return new ChatRoomResponseDto(saved.getChatRoomId(), saved.getCreatedAt());
+    }
+
+    //private int CHATBOT_MESSAGE_ORDER = 0;
+
+
+
 //    // 채팅방 생성
 //    @Transactional
-//    public Long createChatRoom(Long userId, String title) {
-//        try {
-//            // 사용자 조회
-//            UserInfo userInfo = userInfoRepository.findByUserId(userId)
-//                    .orElseThrow(UserNotFoundException::new);
+//    public Long createChatRoom(UserInfo userInfo, String title) {
 //
 //            // 채팅방 생성
 //            ChatRoom chatRoom = new ChatRoom(userInfo);
@@ -51,15 +55,9 @@
 //            ChatRoom saved = chatRoomRepository.save(chatRoom);
 //
 //            return saved.getChatRoomId();
-//
-//        } catch (Exception e) {
-//            throw new ChatServiceException(
-//                    String.format("%s. userId=%d", ErrorMessages.CHAT_CREATE_FAILED, userId),
-//                    e
-//            );
-//        }
 //    }
 //
+//    // 채팅방 찾기
 //    private ChatRoom findByChatRoomId(Long chatRoomId, String context) {
 //        return chatRoomRepository.findById(chatRoomId)
 //                .orElseThrow(() -> new ChatRoomNotFoundException(chatRoomId, context));
@@ -101,7 +99,32 @@
 //        message.updateProperties(properties);
 //    }
 //
-//    // 채팅방 제목 변경
+
+    private ChatRoom findByChatRoomId(Long chatRoomId, String context) {
+        return chatRoomRepository.findById(chatRoomId)
+                .orElseThrow(() -> new ChatRoomNotFoundException(chatRoomId, context));
+    }
+
+    // 필터 조건으로 채팅방 제목 변경
+    @Transactional
+    public ChatRoomResponseDto updateChatRoomTitle(ChatRoomRequestDto chatRoomRequestDto) {
+        try {
+            ChatRoom chatRoom = findByChatRoomId(chatRoomRequestDto.getChatRoomId(), ErrorMessages.CHAT_UPDATE_TITLE_FAILED);
+            chatRoom.updateTitle(chatRoomRequestDto.getTitle());
+
+            // 응답 DTO로 가공
+            return new ChatRoomResponseDto(
+                    chatRoom.getChatRoomId(),
+                    chatRoom.getTitleUpdatedAt(),
+                    chatRoom.getTitle()
+            );
+        } catch (Exception e) {
+            throw new ChatServiceException(ErrorMessages.CHAT_UPDATE_TITLE_FAILED, chatRoomRequestDto.getChatRoomId(), e);
+        }
+    }
+
+
+    // 사용자가 원하는 채팅방 제목 변경
 //    @Transactional
 //    public void updateChatRoomTitle(Long chatRoomId, String title) {
 //        try {
@@ -111,6 +134,8 @@
 //            throw new ChatServiceException(ErrorMessages.CHAT_UPDATE_TITLE_FAILED, chatRoomId, e);
 //        }
 //    }
+
+
 //
 //    // 채팅방 삭제 (소프트 삭제)
 //    @Transactional
@@ -124,30 +149,20 @@
 //        }
 //    }
 //
-//    // 채팅방 목록 조회
-//    public List<ChatRoomDto> getUserChatRooms(Long userId) {
-//        // 사용자 조회
-//        UserInfo userInfo = userInfoRepository.findByUserId(userId)
-//                .orElseThrow(UserNotFoundException::new);
-//
-//        List<ChatRoom> chatRooms = chatRoomRepository.findByUserInfoAndIsDeletedFalseOrderByLastMessageAtDesc(userInfo);
-//
-//        List<ChatRoomDto> result = new ArrayList<>();
-//        int order = 0;
-//
-//        for (ChatRoom c : chatRooms) {
-//            result.add(
-//                    ChatRoomDto.builder()
-//                            .order(++order)
-//                            .chatRoomId(c.getChatRoomId())
-//                            .title(c.getTitle())
-//                            .lastMessageAt(c.getLastMessageAt())
-//                            .build()
-//            );
-//        }
-//        return result;
-//    }
-//
+    // 채팅방 목록 조회
+    public List<ChatRoomRequestDto> getAllChatRooms(Long userId) {
+        // 사용자 조회
+        UserInfo userInfo = userInfoRepository.findByUserId(userId)
+                .orElseThrow(UserNotFoundException::new);
+
+        // 로그인한 유저의 모든 채팅방 조회
+        List<ChatRoom> chatRooms = chatRoomRepository.findByUserInfoAndIsDeletedFalseOrderByLastMessageAtDesc(userInfo);
+
+        return chatRooms.stream()
+                .map(ChatRoomRequestDto::fromEntity) // 검색어 없으니 null 전달되는 버전 사용
+                .toList();
+    }
+
 //    // 로그인한 사용자가 특정 채팅방 선택시 채팅내용 조회
 //    @Transactional(readOnly = true)
 //    public ChatRoomDetailResponseDto getUserChatRoomMessages(Long userId, Long chatRoomId) {
@@ -173,39 +188,39 @@
 //        // 응답 DTO 생성
 //        return ChatRoomDetailResponseDto.from(chatRoom, messageDtos);
 //    }
-//
-//    // 채팅방 검색( 제목 및 채팅내용으로 검색)
-//    @Transactional(readOnly = true)
-//    public List<ChatRoomSearchDto> searchChatRooms(Long userId, String searchText) {
-//
-//        // 사용자 조회
-//        UserInfo userInfo = userInfoRepository.findByUserId(userId)
-//                .orElseThrow(UserNotFoundException::new);
-//
-//        // 삭제되지 않은 채팅방 전체 조회 (생성일 내림차순 정렬)
-//        return chatRoomRepository.findByUserInfoAndIsDeletedFalseOrderByCreatedAtDesc(userInfo).stream()
-//                .map(chatRoom -> {
-//                    String title = chatRoom.getTitle();
-//                    boolean matchesTitle = title.contains(searchText);
-//
-//                    // 사용자가 검색한 검색어와 매칭되는 채팅방 내용중에서 가장 최신의 데이터 담기
-//                    Optional<Message> lastMatchingMessage = messageRepository
-//                            .findTopByChatRoomAndContentContainingIgnoreCaseOrderByMessageIdDesc(chatRoom, searchText);
-//
-//                    if (matchesTitle || lastMatchingMessage.isPresent()) {
-//                        String messageContent = lastMatchingMessage
-//                                .map(Message::getContent)
-//                                .orElse(null);
-//                        return ChatRoomSearchDto.fromEntity(chatRoom, messageContent);
-//
-//                    }
-//
-//                    return null;
-//                })
-//                .filter(Objects::nonNull)
-//                .toList();
-//    }
-//
+
+    // 채팅방 검색( 제목 및 채팅내용으로 검색)
+    @Transactional(readOnly = true)
+    public List<ChatRoomRequestDto> searchChatRooms(Long userId, String searchText) {
+
+        // 사용자 조회
+        UserInfo userInfo = userInfoRepository.findByUserId(userId)
+                .orElseThrow(UserNotFoundException::new);
+
+        // 삭제되지 않은 채팅방 전체 조회 (생성일 내림차순 정렬)
+        return chatRoomRepository.findByUserInfoAndIsDeletedFalseOrderByCreatedAtDesc(userInfo).stream()
+                .map(chatRoom -> {
+                    String title = chatRoom.getTitle();
+                    boolean matchesTitle = title.contains(searchText);
+
+                    // 사용자가 검색한 검색어와 매칭되는 채팅방 내용중에서 가장 최신의 데이터 담기
+                    Optional<Message> lastMatchingMessage = messageRepository
+                            .findTopByChatRoomAndContentContainingIgnoreCaseOrderByMessageIdDesc(chatRoom, searchText);
+
+                    if (matchesTitle || lastMatchingMessage.isPresent()) {
+                        String messageContent = lastMatchingMessage
+                                .map(Message::getContent)
+                                .orElse(null);
+                        return ChatRoomRequestDto.fromEntity(chatRoom, messageContent);
+
+                    }
+
+                    return null;
+                })
+                .filter(Objects::nonNull)
+                .toList();
+    }
+
 //    // 특정 채팅방의 가장 최근 메시지(가장 최근 챗봇 응답) 조회
 //    public MessageDto getRecentMessage(Long chatRoomId) {
 //        Message m = messageRepository.findTop1ByChatRoom_ChatRoomIdAndSenderTypeOrderByCreatedAtDesc(chatRoomId, SenderType.CHATBOT);
@@ -251,4 +266,6 @@
 //        MessageResponseDto aiMessage = saveMessage(request, properties);
 //        log.info("ai의 답변 DB 저장 완료: {}", aiMessage);
 //    }
-//}
+//
+//
+}

@@ -9,7 +9,6 @@ import lombok.Getter;
 public class NicknameCheckResponse {
 
     private boolean isDuplicated;
-    private String message;
 
     @JsonProperty("isDuplicated")
     public boolean getIsDuplicated() {

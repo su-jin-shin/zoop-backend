@@ -1,5 +1,7 @@
 package com.example.demo.property.service;
 
+import com.example.demo.Filter.domain.Filter;
+import com.example.demo.Filter.repository.FilterRepository;
 import com.example.demo.auth.domain.UserInfo;
 import com.example.demo.auth.repository.UserInfoRepository;
 import com.example.demo.common.exception.InvalidRequestException;
@@ -9,14 +11,19 @@ import com.example.demo.mypage.repository.BookmarkedPropertyRepository;
 import com.example.demo.property.domain.Image;
 import com.example.demo.property.domain.Property;
 import com.example.demo.property.domain.PropertySummary;
+import com.example.demo.property.domain.RecommendedProperty;
 import com.example.demo.property.dto.*;
+
+
+
 import com.example.demo.property.repository.ImageRepository;
 import com.example.demo.property.repository.PropertyRepository;
 import com.example.demo.property.repository.PropertySummaryRepository;
+
 import com.example.demo.property.util.PropertyDtoConverter;
-import com.fasterxml.jackson.databind.annotation.JsonAppend;
+
 import lombok.RequiredArgsConstructor;
-import org.springdoc.core.parsers.ReturnTypeParser;
+
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -30,6 +37,7 @@ public class PropertyServiceImpl  implements PropertyService{
     private final ImageRepository imageRepository;
     private final BookmarkedPropertyRepository bookmarkedPropertyRepository;
     private final UserInfoRepository userInfoRepository;
+    private final FilterRepository filterRepository;
 
 
 
@@ -216,6 +224,9 @@ public class PropertyServiceImpl  implements PropertyService{
 
        return RealtyWithPropertiesResponseDto.of(property);
     }
+
+    //ai
+
 
 
 }

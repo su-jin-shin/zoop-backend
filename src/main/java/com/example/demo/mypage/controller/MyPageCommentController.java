@@ -19,7 +19,6 @@ import java.util.List;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "Spring DI로 주입된 Service는 외부 노출 위험 없음")
-@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/mypage")
@@ -37,16 +36,18 @@ public class MyPageCommentController {
     }
 
     @GetMapping("/comments")
-    public ResponseEntity<?> getMyComments(@AuthenticationPrincipal LoginUser loginUser) {
+    public ResponseEntity<ResponseResult> getMyComments(@AuthenticationPrincipal LoginUser loginUser) {
 
         Long userId = parseUserId(loginUser);
-        if (userId == null) {
-            throw new UserNotFoundException();
-        }
-        log.info("코멘트 컨트롤러 시작. 유저id: " + userId);
         List<MyCommentResponse> comments = myCommentService.getMyComments(userId);
 
-        return ResponseEntity.ok(comments);
+        return ResponseEntity.ok(
+                ResponseResult.success(
+                        HttpStatus.OK,
+                        SuccessMessage.GET_COMMENT_LIST_SUCCESS.getMessage(),
+                        comments
+                )
+        );
     }
 
     @DeleteMapping("/comments/{commentId}")

@@ -1,4 +1,7 @@
+import os
+import aiofiles
 import asyncio
+import asyncpg
 import json
 import math
 from datetime import datetime
@@ -8,15 +11,17 @@ import aiohttp
 from aiohttp import ClientSession, ClientTimeout
 from more_itertools import chunked
 
-from .insert_crawl_estate_data import insert_many_properties
+from config.loader import DB_CONFIG
+from insert_crawl_estate_data import insert_property, insert_many_properties
+import estate_api_client as eapi
 
 CURRENT_DIR = Path(__file__).resolve().parent
 
 # 헤더/쿠키
-with open(CURRENT_DIR / 'secrets/headers.json', 'r', encoding='utf-8') as f:
+with open(CURRENT_DIR / 'my_secrets/headers.json', 'r', encoding='utf-8') as f:
     HEADERS = json.load(f)
 
-with open(CURRENT_DIR / 'secrets/cookies.json', 'r', encoding='utf-8') as f:
+with open(CURRENT_DIR / 'my_secrets/cookies.json', 'r', encoding='utf-8') as f:
     COOKIES = json.load(f)
 
 semaphore = asyncio.Semaphore(500)
@@ -65,8 +70,105 @@ async def fetch_page(session, page, dong_code, real_estate_type_code, trade_type
     )
     return await fetch_json(session, url)
 
+async def handle_article_by_article_no(article_no: str, session, real_estate_type_code: str, dong_code: str, pool):
+
+    detail_url = f'https://new.land.naver.com/api/articles/{article_no}?complexNo='
+    article = await fetch_json(session, detail_url)
+
+    v_complex_cache = {}
+    a_complex_cache = {}
+
+    # 단지 정보 불러오기(빌라, 원룸-투룸)
+    if real_estate_type_code in ['VL:YR', 'DDDGG:DSD']:
+
+        if article.get('isComplex'):  # 해당 매물의 단지가 존재하면 단지 정보를 가져온다.
+
+            # 해당 매물 정보
+            property_info_url = f'https://new.land.naver.com/api/property/article/rent/{article["articleRealEstateTypeCode"]}/{article_no}/{article["tradeTypeCode"]}'
+            property_info_data = await fetch_json(session, property_info_url)
+            # 해당 매물 정보에서 단지 정보 추출
+            complex_info = property_info_data.get('data', {}).get('communalComplexInfo', {})  # 해당 key가 없으면 {}를 반환
+            complex_no = complex_info.get('complexNumber')  # 해당 key가 없으면 None을 반환
+
+            if complex_no:  # complex_no가 None이나 빈 문자열이 아니면
+                article['complexInfo'] = complex_info
+
+                if complex_no not in v_complex_cache:  # 캐시에 저장되어 있지 않다면
+                    complex_info_url = f'https://new.land.naver.com/api/property/complex/villa/{complex_no}'
+                    complex_info_data = await fetch_json(session, complex_info_url)
+
+                    complex_photo_url = f'https://new.land.naver.com/api/property/complex/villa/{complex_no}/photo'
+                    complex_photo_data = await fetch_json(session, complex_photo_url)
+
+                    # 캐시에 저장
+                    v_complex_cache[complex_no] = {
+                        'complexDetails': complex_info_data['data'],
+                        'photoInfo': complex_photo_data['data'],
+                    }
+
+                # 캐시에서 가져와서 단지 정보 삽입
+                article['complexInfo'].update(v_complex_cache[complex_no])  # 내용 추가
+
+    # 단지 정보 불러오기(아파트, 오피스텔)
+    elif real_estate_type_code in ['APT', 'OPST']:
+        complex_no = article.get('articleDetail', {}).get('hscpNo')
+
+        if complex_no:
+            if complex_no not in a_complex_cache:
+
+                complex_info_url = f'https://new.land.naver.com/api/regions/complexes?cortarNo={dong_code}&realEstateType={real_estate_type_code}&order=rank'
+                complex_info_data = await fetch_json(session, complex_info_url)
+
+                for complex in complex_info_data.get('complexList', []):
+                    if complex['complexNo'] == complex_no:
+                        matched_complex = complex
+
+                        # 좀 더 상세한 단지 정보 (일단 여기서는 사진만 가져옴)
+                        complex_detail_info_url = f'https://new.land.naver.com/api/complexes/{complex_no}'
+                        complex_detail_info_data = await fetch_json(session, complex_detail_info_url)
+
+                        a_complex_cache[complex_no] = {
+                            'basicInfo': matched_complex,
+                            'photos': complex_detail_info_data.get('photos', [])
+                        }
+                        break
+
+            # 캐시에서 가져와서 단지 정보 삽입
+            complex_info = a_complex_cache.get(complex_no, {})
+            article['complexInfo'] = complex_info.get('basicInfo', {})
+
+            photos = complex_info.get('photos', [])
+            article['complexInfo']['photos'] = photos
+
+    property_id = await insert_property(pool, article, real_estate_type_code)
+
+    '''
+    # 마지막에 한 번에 저장
+    OUTPUT_DIR = CURRENT_DIR / 'output'
+    json_file_subject = f'{OUTPUT_DIR}/detail_data4.json'
+
+    # 성공한 매물 저장
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    async with aiofiles.open(json_file_subject, 'w', encoding='utf-8') as f:
+        await f.write(json.dumps(article, ensure_ascii=False, indent=2))
+    print(f'[DONE] 저장 완료: {json_file_subject}')
+
+    #article['articleDetails'] = detail_data
+    '''
+    # return article
+    return property_id
+
 
 async def handle_article(article, session, dong_code, real_estate_type_code, v_complex_cache, a_complex_cache):
+    # 모델에 넘길 때 이 값이 반드시 필요 (빈 값이라도 넣어줘야 함)
+    article.setdefault('articleFeatureDesc', '')
+    complex_info = article.get("complexInfo", {})
+    complex_info.setdefault("useApproveYmd", "")
+    complex_info.setdefault("complexName", "")
+    complex_info.setdefault("cortarAddress", "")
+    article["complexInfo"] = complex_info
+
+
     article_no = article.get('articleNo')
     detail_url = f'https://new.land.naver.com/api/articles/{article_no}?complexNo='
     detail_data = await fetch_json(session, detail_url)
@@ -127,8 +229,11 @@ async def handle_article(article, session, dong_code, real_estate_type_code, v_c
                         break
 
             # 캐시에서 가져와서 단지 정보 삽입
-            article['complexInfo'] = a_complex_cache[complex_no]['basicInfo']
-            article['complexInfo']['photos'] = a_complex_cache[complex_no]['photos']
+            complex_info = a_complex_cache.get(complex_no, {})
+            article['complexInfo'] = complex_info.get('basicInfo', {})
+
+            photos = complex_info.get('photos', [])
+            article['complexInfo']['photos'] = photos
 
     article['articleDetails'] = detail_data
     return article
@@ -151,7 +256,7 @@ async def handle_article_with_retry(article, session, dong_code, real_estate_typ
     return None
 
 
-async def fetch_articles_by_dong(session: ClientSession, cond: dict):
+async def fetch_articles_by_dong(session: ClientSession, cond: dict, pool):
     dong_code = cond['dong']['code']
     dong_name = cond['dong']['name']
     trade_type_code = cond['trade_type']['code']
@@ -193,10 +298,34 @@ async def fetch_articles_by_dong(session: ClientSession, cond: dict):
         if len(all_details_with_page) > MAX_ARTICLE_COUNT:
             all_details_with_page = all_details_with_page[:MAX_ARTICLE_COUNT]
             sorted_details = [detail for _, detail in sorted(all_details_with_page, key=lambda x: x[0])]
-            properties = await insert_many_properties(sorted_details, real_estate_type_code)
+            properties = await insert_many_properties(pool, sorted_details, real_estate_type_code)
             print("[INFO] 10개 수집 완료, 조기 종료")
+
+            with open(CURRENT_DIR / 'my_secrets/all_dong_list.json', "r", encoding="utf-8") as f:
+                dong_list = json.load(f)
+
+            # 해당 cortarNo의 fullCortarName 찾기
+            address = next((item["fullCortarName"] for item in dong_list if item["cortarNo"] == dong_code), None)
+            #print('address: ', address)
+
+            dong_properties = {'address': address, 'data': sorted_details}
+            response_data = eapi.upload_dong_properties(address, sorted_details, cond)
+            #print('response_data: ', response_data)
+
+            # 마지막에 한 번에 저장
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            OUTPUT_DIR = CURRENT_DIR / 'output'
+            json_file_subject = f'{OUTPUT_DIR}/detail_data_{timestamp}_{dong_name}_{trade_type_name}_{real_estate_type_name}.json'
+
+            # 성공한 매물 저장
+            os.makedirs(OUTPUT_DIR, exist_ok=True)
+            async with aiofiles.open(json_file_subject, 'w', encoding='utf-8') as f:
+                await f.write(json.dumps(dong_properties, ensure_ascii=False, indent=2))
+            print(f'[DONE] 저장 완료: {json_file_subject}')
+
             #return sorted_details
-            return properties
+            #return properties
+            return response_data
 
 
     # 추가 페이지 병렬 처리
@@ -279,22 +408,54 @@ async def fetch_articles_by_dong(session: ClientSession, cond: dict):
     duration = (end - start).total_seconds()
     print(f'[TIME] 크롤링 시간: {duration:.2f}초')
 
-
     # 페이지 번호 기준 정렬 후 상세 데이터만 추출
     sorted_details = [detail for _, detail in sorted(all_details_with_page, key=lambda x: x[0])]
     # DB insert
-    properties = await insert_many_properties(sorted_details, real_estate_type_code)
+    properties = await insert_many_properties(pool, sorted_details, real_estate_type_code)
     # return sorted_details
-    return properties
+
+    with open(CURRENT_DIR / 'my_secrets/all_dong_list.json', "r", encoding="utf-8") as f:
+        dong_list = json.load(f)
+
+    # 해당 cortarNo의 fullCortarName 찾기
+    full_dong_name = next((item["fullCortarName"] for item in dong_list if item["cortarNo"] == dong_code), None)
+    print('full_dong_name: ', full_dong_name)
+
+    dong_properties = {'address': full_dong_name, 'data': sorted_details}
+
+    # 마지막에 한 번에 저장
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    OUTPUT_DIR = CURRENT_DIR / 'output'
+    json_file_subject = f'{OUTPUT_DIR}/detail_data_{timestamp}_{dong_name}_{trade_type_name}_{real_estate_type_name}.json'
+
+    # 성공한 매물 저장
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    async with aiofiles.open(json_file_subject, 'w', encoding='utf-8') as f:
+        await f.write(json.dumps(dong_properties, ensure_ascii=False, indent=2))
+    print(f'[DONE] 저장 완료: {json_file_subject}')
+
+    return sorted_details
+    #return properties
 
 
 async def main(search_condition):
+    pool = await asyncpg.create_pool(**DB_CONFIG)
     async with aiohttp.ClientSession() as session:
-        tasks = []
-        task = fetch_articles_by_dong(session, search_condition)
-        tasks.append(task)
-        results = await asyncio.gather(*tasks)
-    return results[0]  # 파일 경로 리턴
+        try:
+            result = await fetch_articles_by_dong(session, search_condition, pool)
+            return result
+        finally:
+            await pool.close()
+
+
+async def crawl_by_article_no(article_no, real_estate_type_code, dong_code):
+    pool = await asyncpg.create_pool(**DB_CONFIG)
+    async with aiohttp.ClientSession() as session:
+        try:
+            result = await handle_article_by_article_no(article_no, session, real_estate_type_code, dong_code, pool)
+            return result
+        finally:
+            await pool.close()
 
 
 if __name__ == '__main__':
