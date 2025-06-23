@@ -87,10 +87,7 @@ public class FilterRequestDto {
         String realEstateTypeNames = String.join(",", realEstateTypeName);
         sb.append("/").append(realEstateTypeNames);
 
-        System.out.println("[DEBUG] 거래 타입: " + tradeTypeName); // 확인용 로그
-
         if (tradeTypeName == TradeTypeName.월세) {
-            System.out.println("[DEBUG] 월세 조건 진입"); // 확인용 로그
             BigDecimal rent = rentPrice != null ? rentPrice : BigDecimal.ZERO;
             BigDecimal deposit = new BigDecimal(dealOrWarrantPrc);
 

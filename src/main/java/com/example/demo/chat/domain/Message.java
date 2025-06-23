@@ -1,7 +1,7 @@
 package com.example.demo.chat.domain;
 
-import com.example.demo.chat.dto.PropertyDto;
 import com.example.demo.chat.type.SenderType;
+import com.example.demo.common.excel.PropertyExcelDto;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -27,7 +27,7 @@ public class Message {
         this.content = content;
     }
 
-    public Message(ChatRoom chatRoom, SenderType senderType, String content, List<PropertyDto> properties) {
+    public Message(ChatRoom chatRoom, SenderType senderType, String content, List<PropertyExcelDto> properties) {
         this.chatRoom = chatRoom;
         this.senderType = senderType;
         this.content = content;
@@ -57,7 +57,7 @@ public class Message {
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
     @Getter
-    private List<PropertyDto> properties;
+    private List<PropertyExcelDto> properties;
 
     @Column
     @Getter
@@ -71,7 +71,7 @@ public class Message {
         if (createdAt == null) createdAt = LocalDateTime.now();
     }
 
-    public void updateProperties(List<PropertyDto> properties) {
+    public void updateProperties(List<PropertyExcelDto> properties) {
         this.properties = properties;
     }
 

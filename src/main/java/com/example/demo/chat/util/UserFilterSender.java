@@ -23,7 +23,7 @@ public class UserFilterSender {
 
         HttpEntity<RefinedFilterDto> request = new HttpEntity<>(filters, headers);
         RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<String> response = restTemplate.postForEntity(Constants.CRAWLING_API_URL, request, String.class);
+        ResponseEntity<String> response = restTemplate.postForEntity(Constants.CRAWL_AND_RECOMMEND_URL, request, String.class);
 
         String body = response.getBody();
         if (body == null || body.isBlank()) {

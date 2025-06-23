@@ -24,6 +24,6 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
     List<ChatRoom> findByUserInfoAndIsDeletedFalseOrderByCreatedAtDesc(UserInfo userInfo);
 
     // 특정 유저의 특정 채팅방 조회
-    //ChatRoom findByChatRoomIdAndUserInfo(Long chatRoomId, UserInfo userInfo);
+    ChatRoom findByChatRoomIdAndUserInfo(Long chatRoomId, UserInfo userInfo);
 
 }
