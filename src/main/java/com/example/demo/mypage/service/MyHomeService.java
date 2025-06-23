@@ -6,6 +6,7 @@ import com.example.demo.common.exception.UserNotFoundException;
 import com.example.demo.mypage.dto.*;
 import com.example.demo.realty.dto.PropertyListItemDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -26,6 +27,9 @@ public class MyHomeService {
         }
     }
 
+    @Value("${app.base-url}")
+    private String baseUrl;
+
     public MyPageHomeResponse getHomeInfo(Long userId) {
         validateUserId(userId);
 
@@ -34,6 +38,13 @@ public class MyHomeService {
                 .orElseThrow(UserNotFoundException::new);
         String nickname = user.getNickname();
         String profileImageUrl = user.getProfileImage();
+
+        if (profileImageUrl == null || profileImageUrl.isBlank()) {
+            profileImageUrl = "/images/default-profile.png";
+        }
+        if (!profileImageUrl.startsWith("http")) {
+            profileImageUrl = baseUrl + profileImageUrl;
+        }
 
         // 3. 찜한 매물 20개
         List<PropertyListItemDto> allBookmarked = bookmarkedPropertyService.getAllBookmarkedPropertyResponses(userId);
