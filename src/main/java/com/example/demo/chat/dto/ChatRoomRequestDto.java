@@ -37,4 +37,5 @@ public class ChatRoomRequestDto {
     public void updateTitle() {
         this.title = this.filterRequestDto.buildFilterTitle();
     }
+
 }
