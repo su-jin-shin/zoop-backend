@@ -2,6 +2,7 @@ package com.example.demo.common.excel;
 
 import com.example.demo.property.domain.Property;
 import com.example.demo.realty.domain.Realty;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.*;
 
@@ -14,6 +15,7 @@ import java.util.List;
 @Setter
 @Builder(toBuilder = true)
 @NoArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class PropertyExcelDto {
 
     private Integer order; // 정렬 순서
