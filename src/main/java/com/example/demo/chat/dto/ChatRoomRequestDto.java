@@ -17,7 +17,6 @@ public class ChatRoomRequestDto {
     private String title;         // 채팅방 제목
     private String lastMatchingMessage;     // 검색어와 동일한 채팅내용 중에 가장 최신
     private LocalDateTime lastMessageAt;    // 마지막 메세지 시간
-    private FilterRequestDto filterRequestDto;
 
     // Entity -> Dto 변환 // 검색이 없을 때 로그인한 유저의 전체 채팅방 조회
     public static ChatRoomRequestDto fromEntity(ChatRoom chatRoom) {
@@ -32,10 +31,6 @@ public class ChatRoomRequestDto {
                 .lastMatchingMessage(lastMatchingMessage)
                 .lastMessageAt(chatRoom.getLastMessageAt())
                 .build();
-    }
-
-    public void updateTitle() {
-        this.title = this.filterRequestDto.buildFilterTitle();
     }
 
 }
