@@ -7,6 +7,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 
@@ -24,11 +25,31 @@ public class UserFilterSender {
         RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<String> response = restTemplate.postForEntity(Constants.CRAWLING_API_URL, request, String.class);
 
-        JsonNode root = mapper.readTree(response.getBody()); // JSON 문자열을 JsonNode로 파싱
-        JsonNode dataNode = root.path("data");  // "data" 노드만 추출
-        return mapper.readValue(
-                dataNode.toString(),
-                new TypeReference<List<PropertyExcelDto>>() {}
-        );
+        String body = response.getBody();
+        if (body == null || body.isBlank()) {
+            throw new IllegalStateException("서버 응답이 비어 있습니다.");
+        }
+
+        JsonNode root = mapper.readTree(body);
+        JsonNode resultsNode = root.path("data").path("results");
+
+        if (resultsNode == null || resultsNode.isMissingNode()) {
+            throw new IllegalStateException("'data.results' 필드가 응답에 존재하지 않습니다.");
+        }
+
+        if (!resultsNode.isArray()) {
+            throw new IllegalStateException("'data.results'는 배열이 아닙니다.");
+        }
+
+        // summary → aiSummary 이름 변경
+        for (JsonNode node : resultsNode) {
+            if (node.has("summary") && node instanceof ObjectNode objectNode) {
+                JsonNode summaryNode = objectNode.remove("summary");
+                objectNode.set("aiSummary", summaryNode);
+            }
+        }
+
+        return mapper.readValue(resultsNode.toString(), new TypeReference<List<PropertyExcelDto>>() {});
     }
+
 }

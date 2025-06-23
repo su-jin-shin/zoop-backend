@@ -44,7 +44,7 @@ public class ChatController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/chat-filter")
+    @PostMapping("/filters")
     public ResponseEntity<ChatRoomResponseDto> saveChatFilter(@AuthenticationPrincipal LoginUser loginUser, @RequestBody ChatRoomRequestDto chatRoomRequestDto) {
         Long userId = Long.valueOf(loginUser.getUsername());
         // 필터 저장 (아직 미구현!!)
@@ -64,15 +64,24 @@ public class ChatController {
         log.info("filters: {}", filters);
 
         List<PropertyExcelDto> recommendedProperties;
+        List<PropertyExcelDto> validRecommendedProperties;
 
         try {
             recommendedProperties = UserFilterSender.send(filters); // ai의 추천 매물 리스트 반환
             log.info("추천 매물 {}개, recommendedProperties: {}", recommendedProperties.size(), recommendedProperties);
         } catch(Exception e) {
             log.error("크롤링 또는 ai의 호출에 실패하였습니다.", e);
-            //chatService.generateAndSaveAiResponse(request, Constants.MessageResultType.FAILURE, null);
-            return;
         }
+
+
+//        if (CollectionUtils.isEmpty(recommendedProperties)) {
+//            log.info("ai가 추천해준 매물이 없습니다.");
+//            chatService.generateAndSaveAiResponse(request, Constants.MessageResultType.FAILURE, null);
+//            return;
+//        }
+//
+//        chatService.generateAndSaveAiResponse(request, Constants.MessageResultType.SUCCESS, validRecommendedProperties);
+
 
 //        if (CollectionUtils.isEmpty(recommendedProperties)) {
 //            log.info("ai가 추천해준 매물이 없습니다.");
