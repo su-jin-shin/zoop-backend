@@ -3,16 +3,13 @@ package com.example.demo.chat.controller;
 import com.example.demo.Filter.dto.request.FilterRequestDto;
 import com.example.demo.Filter.dto.request.RefinedFilterDto;
 import com.example.demo.Filter.service.FilterService;
-import com.example.demo.auth.domain.UserInfo;
 import com.example.demo.auth.dto.LoginUser;
 import com.example.demo.chat.constants.Constants;
 import com.example.demo.chat.dto.*;
 import com.example.demo.chat.service.ChatService;
 import com.example.demo.chat.service.ChatUpdateService;
-import com.example.demo.chat.type.SenderType;
 import com.example.demo.chat.util.UserFilterSender;
 import com.example.demo.common.excel.PropertyExcelDto;
-import com.example.demo.common.exception.NotFoundException;
 import com.example.demo.common.exception.UserNotFoundException;
 import com.example.demo.common.response.ResponseResult;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -58,13 +55,14 @@ public class ChatController {
         if(loginUser == null){
             throw new UserNotFoundException();
         }
+
+        Long userId = Long.valueOf(loginUser.getUsername());
         // 필터 저장
         filterService.saveChatFilter(filterRequestDto, chatRoomId);
         // 제목 저장
-        chatRoomRequestDto.updateTitle();
-        ChatRoomResponseDto response = chatService.updateChatRoomTitle(chatRoomRequestDto);
+        ChatRoomResponseDto response = chatService.updateTitle(chatRoomId, filterRequestDto);
         // 크롤링 로직 시작
-        crawlAndRecommendProperties(userId, chatRoomId, chatRoomRequestDto.getFilterRequestDto());
+        crawlAndRecommendProperties(userId, chatRoomId, filterRequestDto);
         return ResponseEntity.ok(response);
     }
 
@@ -104,24 +102,24 @@ public class ChatController {
 
     }
 
-    @PostMapping
-    public ResponseEntity<MessageResponseDto> sendMessage(@AuthenticationPrincipal LoginUser loginUser, @RequestBody MessageRequestDto request) {
-        log.info("request: {}", request);
-        Long chatRoomId = request.getChatRoomId();
-        String content = request.getContent();
-
-        if (chatRoomId == null) {
-            throw new IllegalStateException("메시지를 저장할 수 없습니다.");
-        }
-
-        log.info("chatRoomId: {}, content: {}", chatRoomId, content);
-        request.applyUserMessage();
-
-        // 메시지 저장
-        MessageResponseDto response = chatService.saveMessage(request);
-        log.info("response: {}", response);
-        return ResponseEntity.ok(response);
-    }
+//    @PostMapping
+//    public ResponseEntity<MessageResponseDto> sendMessage(@AuthenticationPrincipal LoginUser loginUser, @RequestBody MessageRequestDto request) {
+//        log.info("request: {}", request);
+//        Long chatRoomId = request.getChatRoomId();
+//        String content = request.getContent();
+//
+//        if (chatRoomId == null) {
+//            throw new IllegalStateException("메시지를 저장할 수 없습니다.");
+//        }
+//
+//        log.info("chatRoomId: {}, content: {}", chatRoomId, content);
+//        request.applyUserMessage();
+//
+//        // 메시지 저장
+//        MessageResponseDto response = chatService.saveMessage(request);
+//        log.info("response: {}", response);
+//        return ResponseEntity.ok(response);
+//    }
 
     // 채팅방 제목 수정
     @PatchMapping("/{chatRoomId}")
