@@ -1,5 +1,6 @@
 package com.example.demo.chat.dto;
 
+import com.example.demo.chat.domain.ChatRoom;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -22,4 +23,12 @@ public class ChatRoomResponseDto {
         this.createdAt = createdAt;
     }
 
+    // entity -> dto
+    public static ChatRoomResponseDto fromEntity(ChatRoom saved) {
+        return ChatRoomResponseDto.builder()
+                .chatRoomId(saved.getChatRoomId())
+                .createdAt(saved.getCreatedAt())
+                .title(saved.getTitle())
+                .build();
+    }
 }

@@ -12,8 +12,7 @@ public interface FilterService {
     void saveKeywordFilter(Long userId, FilterRequestDto filterRequestDto);
 
     // 채팅을 통해서 저장되는 필터
-    //Long saveChatFilter(Long userId, FilterRequestDto filterRequestDto);
-    void saveChatFilter(Long userId, ChatRoomRequestDto chatRoomRequestDto);
+    void saveChatFilter(FilterRequestDto filterRequestDto, Long chatRoomId);
 
     // 사용자가 기존의 필터 조건을 다른 필터 조건으로 수정
     void modifyKeywordFilter(Long userId, Long keywordFilterHistoryId, FilterRequestDto updateRequestDto);

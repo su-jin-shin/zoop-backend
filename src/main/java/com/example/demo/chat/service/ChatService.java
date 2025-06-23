@@ -1,5 +1,6 @@
 package com.example.demo.chat.service;
 
+import com.example.demo.Filter.dto.request.FilterRequestDto;
 import com.example.demo.auth.domain.UserInfo;
 import com.example.demo.auth.repository.UserInfoRepository;
 import com.example.demo.chat.constants.Constants;
@@ -18,7 +19,6 @@ import com.example.demo.common.exception.UserNotFoundException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.catalina.User;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -50,6 +50,8 @@ public class ChatService {
         return new ChatRoomResponseDto(saved.getChatRoomId(), saved.getCreatedAt());
     }
 
+
+
     // 메시지 테이블에 추천 리스트 update
     @Transactional
     public void updateMessage(Long messageId, List<PropertyExcelDto> properties) {
@@ -58,38 +60,19 @@ public class ChatService {
         message.updateProperties(properties);
     }
 
-//    private int CHATBOT_MESSAGE_ORDER = 0;
-//    // 채팅방 생성
-//    @Transactional
-//    public Long createChatRoom(UserInfo userInfo, String title) {
-//
-//            // 채팅방 생성
-//            ChatRoom chatRoom = new ChatRoom(userInfo);
-//            chatRoom.setTitle(title);
-//            ChatRoom saved = chatRoomRepository.save(chatRoom);
-//
-//            return saved.getChatRoomId();
-//    }
-//
-//    // 채팅방 찾기
-//    private ChatRoom findByChatRoomId(Long chatRoomId, String context) {
-//        return chatRoomRepository.findById(chatRoomId)
-//                .orElseThrow(() -> new ChatRoomNotFoundException(chatRoomId, context));
-//    }
-//
-//    // 메시지 저장
-//    @Transactional
-//    public MessageResponseDto saveMessage(MessageRequestDto messageRequestDto) {
-//        try {
-//            ChatRoom chatRoom = findByChatRoomId(messageRequestDto.getChatRoomId(), ErrorMessages.CHAT_SAVE_MESSAGE_FAILED); // 채팅방의 존재 여부를 확인하여, 없으면 예외 발생 (EntityNotFoundException)
-//            Message message = new Message(chatRoom, messageRequestDto.getSenderType(), messageRequestDto.getContent());
-//            Message saved =  messageRepository.save(message);
-//            chatRoom.updateLastMessageAt(saved.getCreatedAt()); // 채팅방의 마지막 메시지 발송 시각을 갱신
-//            return new MessageResponseDto(messageRequestDto.getChatRoomId(), saved.getMessageId(), saved.getCreatedAt());
-//        } catch (Exception e) {
-//            throw new ChatServiceException(ErrorMessages.CHAT_SAVE_MESSAGE_FAILED, messageRequestDto.getChatRoomId(), e);
-//        }
-//    }
+    // 메시지 저장Add commentMore actions
+    @Transactional
+    public MessageResponseDto saveMessage(MessageRequestDto messageRequestDto) {
+        try {
+            ChatRoom chatRoom = findByChatRoomId(messageRequestDto.getChatRoomId(), ErrorMessages.CHAT_SAVE_MESSAGE_FAILED); // 채팅방의 존재 여부를 확인하여, 없으면 예외 발생 (EntityNotFoundException)
+            Message message = new Message(chatRoom, messageRequestDto.getSenderType(), messageRequestDto.getContent());
+            Message saved =  messageRepository.save(message);
+            chatRoom.updateLastMessageAt(saved.getCreatedAt()); // 채팅방의 마지막 메시지 발송 시각을 갱신
+            return new MessageResponseDto(messageRequestDto.getChatRoomId(), saved.getMessageId(), saved.getCreatedAt());
+        } catch (Exception e) {
+            throw new ChatServiceException(ErrorMessages.CHAT_SAVE_MESSAGE_FAILED, messageRequestDto.getChatRoomId(), e);
+        }
+    }
 
     // 메시지 저장
     @Transactional
@@ -138,6 +121,23 @@ public class ChatService {
             throw new ChatServiceException(ErrorMessages.CHAT_UPDATE_TITLE_FAILED, chatRoomId, e);
         }
     }
+
+    // 처음 필터 생성시 채팅방 제목 저장
+    @Transactional
+    public ChatRoomResponseDto updateTitle(Long chatRoomId, FilterRequestDto filterRequestDto) {
+
+
+        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
+                .orElseThrow(() -> new NotFoundException());
+
+        // 여기서 필터 제목으로 직접 갱신
+        chatRoom.setTitle(filterRequestDto.buildFilterTitle());
+
+        ChatRoom saved = chatRoomRepository.save(chatRoom);
+
+        return ChatRoomResponseDto.fromEntity(saved);
+    }
+
 
     // 채팅방 삭제 (소프트 삭제)
     @Transactional
@@ -224,16 +224,19 @@ public class ChatService {
     }
 
     @Async
-    public void generateAndSaveAiResponse(MessageRequestDto request,
+    public void generateAndSaveAiResponse(Long userId, MessageRequestDto request,
                                           Constants.MessageResultType messageResultType,
                                           List<PropertyExcelDto> recommendedProperties) {
+
+        UserInfo userInfo = userInfoRepository.findByUserId(userId).orElseThrow(UserNotFoundException::new);
+        String nickname = userInfo.getNickname();
 
         List<MessageReplyDto> aiReplies = new ArrayList<>();
         if (messageResultType == Constants.MessageResultType.FAILURE) {
             aiReplies.add(new MessageReplyDto().generateAiResponse(Constants.NO_MATCHING_PROPERTY_MESSAGE, null, false));
         } else {
             aiReplies.add(new MessageReplyDto().generateAiResponse(
-                    String.format(Constants.MATCHING_PROPERTY_MESSAGE, "userName", recommendedProperties.size()), null, false));
+                    String.format(Constants.MATCHING_PROPERTY_MESSAGE, nickname, recommendedProperties.size()), null, false));
 
             aiReplies.add(new MessageReplyDto().generateAiResponse(null, recommendedProperties, true));
             aiReplies.add(new MessageReplyDto().generateAiResponse(Constants.ADDITIONAL_FILTER_PROMPT, null, false));
@@ -241,18 +244,22 @@ public class ChatService {
 
 
         for (MessageReplyDto aiReply : aiReplies) {
-            request.applyAiReply(aiReply.getContent(), SenderType.CHATBOT);
-            MessageResponseDto aiMessage = saveMessage(request, aiReply.getProperties());
-            log.info("ai의 답변 DB 저장 완료: {}", aiMessage);
+            MessageRequestDto aiRequest = new MessageRequestDto(
+                    request.getChatRoomId(),
+                    aiReply.getContent(),
+                    SenderType.CHATBOT
+            );
+
+            MessageResponseDto aiMessage = saveMessage(aiRequest, aiReply.getProperties());
 
             chatUpdateService.notifyNewMessage(MessageDto.builder()
-                    .chatRoomId(request.getChatRoomId())
+                    .chatRoomId(aiRequest.getChatRoomId())
                     .messageId(aiMessage.getMessageId())
                     .senderType(SenderType.CHATBOT)
                     .content(aiReply.getContent())
                     .properties(aiReply.getProperties())
                     .createdAt(aiMessage.getCreatedAt())
-                    .build()); // 롱폴링 응답 보내기
+                    .build());
         }
     }
 

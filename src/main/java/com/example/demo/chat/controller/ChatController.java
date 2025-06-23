@@ -3,13 +3,11 @@ package com.example.demo.chat.controller;
 import com.example.demo.Filter.dto.request.FilterRequestDto;
 import com.example.demo.Filter.dto.request.RefinedFilterDto;
 import com.example.demo.Filter.service.FilterService;
-import com.example.demo.auth.domain.UserInfo;
 import com.example.demo.auth.dto.LoginUser;
 import com.example.demo.chat.constants.Constants;
 import com.example.demo.chat.dto.*;
 import com.example.demo.chat.service.ChatService;
 import com.example.demo.chat.service.ChatUpdateService;
-import com.example.demo.chat.type.SenderType;
 import com.example.demo.chat.util.UserFilterSender;
 import com.example.demo.common.excel.PropertyExcelDto;
 import com.example.demo.common.exception.UserNotFoundException;
@@ -40,7 +38,8 @@ public class ChatController {
     private final ChatService chatService;
     private final ChatUpdateService chatUpdateService;
     private final FilterService filterService;
-    
+
+    // 채팅방 생성
     @PostMapping("/new")
     public ResponseEntity<ChatRoomResponseDto> startChat(@AuthenticationPrincipal LoginUser loginUser) {
         Long userId = Long.valueOf(loginUser.getUsername());
@@ -48,21 +47,27 @@ public class ChatController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/filters")
-    public ResponseEntity<ChatRoomResponseDto> saveChatFilter(@AuthenticationPrincipal LoginUser loginUser, @RequestBody ChatRoomRequestDto chatRoomRequestDto) {
+    // 채팅 관련 필터 및 채팅 필터 히스토리 저장 후 필터에 맞춰 크롤링
+    @PostMapping("/filters/{chatRoomId}")
+    public ResponseEntity<ChatRoomResponseDto> saveChatFilter(@AuthenticationPrincipal LoginUser loginUser,
+                                                              @RequestBody FilterRequestDto filterRequestDto,
+                                                              @PathVariable Long chatRoomId) {
+        if(loginUser == null){
+            throw new UserNotFoundException();
+        }
+
         Long userId = Long.valueOf(loginUser.getUsername());
-        // 필터 저장 (아직 미구현!!)
-        filterService.saveChatFilter(userId, chatRoomRequestDto);
+        // 필터 저장
+        // filterService.saveChatFilter(filterRequestDto, chatRoomId);
         // 제목 저장
-        chatRoomRequestDto.updateTitle();
-        ChatRoomResponseDto response = chatService.updateChatRoomTitle(chatRoomRequestDto);
-        System.out.println("****이야호" + chatRoomRequestDto.getFilterRequestDto());
+        ChatRoomResponseDto response = chatService.updateTitle(chatRoomId, filterRequestDto);
         // 크롤링 로직 시작
-        crawlAndRecommendProperties(chatRoomRequestDto, chatRoomRequestDto.getFilterRequestDto());
+        crawlAndRecommendProperties(userId, chatRoomId, filterRequestDto);
         return ResponseEntity.ok(response);
     }
 
-    private void crawlAndRecommendProperties(ChatRoomRequestDto chatRoomRequestDto, FilterRequestDto filterRequestDto) {
+    private void crawlAndRecommendProperties(Long userId, Long chatRoomId, FilterRequestDto filterRequestDto) {
+
         // 크롤링 로직 시작
         RefinedFilterDto filters = RefinedFilterDto.of(filterRequestDto);
         log.info("filters: {}", filters);
@@ -70,20 +75,20 @@ public class ChatController {
         List<PropertyExcelDto> recommendedProperties;
 
         MessageRequestDto request = new MessageRequestDto();
-        request.setChatRoomId(chatRoomRequestDto.getChatRoomId());
+        request.setChatRoomId(chatRoomId);
 
         try {
             recommendedProperties = UserFilterSender.send(filters); // ai의 추천 매물 리스트 반환
             log.info("추천 매물 {}개, recommendedProperties: {}", recommendedProperties.size(), recommendedProperties);
         } catch(Exception e) {
             log.error("크롤링 또는 ai의 호출에 실패하였습니다.", e);
-            chatService.generateAndSaveAiResponse(request, Constants.MessageResultType.FAILURE, null);
+            chatService.generateAndSaveAiResponse(userId, request, Constants.MessageResultType.FAILURE, null);
             return;
         }
 
         if (CollectionUtils.isEmpty(recommendedProperties)) {
             log.info("ai가 추천해준 매물이 없습니다.");
-            chatService.generateAndSaveAiResponse(request, Constants.MessageResultType.FAILURE, null);
+            chatService.generateAndSaveAiResponse(userId, request, Constants.MessageResultType.FAILURE, null);
             return;
         }
 
@@ -93,8 +98,27 @@ public class ChatController {
         List<PropertyExcelDto> validRecommendedProperties = new ArrayList<>(recommendedProperties.subList(0, limit));
         log.info("정제된 추천 매물 {}개", validRecommendedProperties.size());
         //chatService.updateMessage(messageId, validRecommendedProperties);
-        chatService.generateAndSaveAiResponse(request, Constants.MessageResultType.SUCCESS, validRecommendedProperties);
+        chatService.generateAndSaveAiResponse(userId, request, Constants.MessageResultType.SUCCESS, validRecommendedProperties);
 
+    }
+
+    @PostMapping
+    public ResponseEntity<MessageResponseDto> sendMessage(@AuthenticationPrincipal LoginUser loginUser, @RequestBody MessageRequestDto request) {
+        log.info("request: {}", request);
+        Long chatRoomId = request.getChatRoomId();
+        String content = request.getContent();
+
+        if (chatRoomId == null) {
+            throw new IllegalStateException("메시지를 저장할 수 없습니다.");
+        }
+
+        log.info("chatRoomId: {}, content: {}", chatRoomId, content);
+        request.applyUserMessage();
+
+        // 메시지 저장
+        MessageResponseDto response = chatService.saveMessage(request);
+        log.info("response: {}", response);
+        return ResponseEntity.ok(response);
     }
 
     // 채팅방 제목 수정

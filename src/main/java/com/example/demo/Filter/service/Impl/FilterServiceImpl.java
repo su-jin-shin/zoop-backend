@@ -1,16 +1,21 @@
 package com.example.demo.Filter.service.Impl;
 
+import com.example.demo.Filter.domain.ChatFilterHistory;
 import com.example.demo.Filter.domain.Filter;
 import com.example.demo.Filter.domain.KeywordFilterHistory;
 import com.example.demo.Filter.domain.Region;
 import com.example.demo.Filter.dto.request.FilterRequestDto;
+import com.example.demo.Filter.repository.ChatFilterHistoryRepository;
 import com.example.demo.Filter.repository.FilterRepository;
 import com.example.demo.Filter.repository.KeywordFilterHistoryRepository;
 import com.example.demo.Filter.repository.RegionRepository;
 import com.example.demo.Filter.service.FilterService;
 import com.example.demo.auth.domain.UserInfo;
 import com.example.demo.auth.repository.UserInfoRepository;
+import com.example.demo.chat.domain.ChatRoom;
 import com.example.demo.chat.dto.ChatRoomRequestDto;
+import com.example.demo.chat.repository.ChatRoomRepository;
+import com.example.demo.chat.service.ChatService;
 import com.example.demo.common.exception.DuplicateFilterHistoryException;
 import com.example.demo.common.exception.NotFoundException;
 import com.example.demo.common.exception.UserNotFoundException;
@@ -31,9 +36,11 @@ public class FilterServiceImpl implements FilterService {
     private final UserInfoRepository userInfoRepository;
     private final RegionRepository regionRepository;
     private final FilterRepository filterRepository;
+    private final ChatRoomRepository chatRoomRepository;
+    private final ChatFilterHistoryRepository chatFilterHistoryRepository;
     private final KeywordFilterHistoryRepository keywordFilterHistoryRepository;
 
-    //private ChatService chatService;
+    private final ChatService chatService;
 
     // 알림 쪽에서 사용자가 선택한 필터 조건 저장
     @Override
@@ -64,48 +71,33 @@ public class FilterServiceImpl implements FilterService {
         keywordFilterHistoryRepository.save(history);
 }
 
+    //채팅방 필터 등록
     @Override
-    public void saveChatFilter(Long userId, ChatRoomRequestDto chatRoomRequestDto) {
-        // 아직 구현 못함
-        // chatRoomRequestDto.getChatRoomId()로 chatRoomId 꺼내와서 그것의 필터를 저장해야한다.
-    }
+    public void saveChatFilter(FilterRequestDto filterRequestDto, Long chatRoomId) {
 
-    //채팅방 생성과 필터 등록
-//    @Override
-//    public Long saveChatFilter(Long userId, FilterRequestDto filterRequestDto) {
-//
-//        // 사용자 조회
-//        UserInfo userInfo = userInfoRepository.findByUserId(userId)
-//                .orElseThrow(UserNotFoundException::new);
-//
-//        // 지역 조회
-//        Region region = regionRepository.findByCortarNo(filterRequestDto.getBCode())
-//                .orElseThrow(NotFoundException::new);
-//
-//        // 필터 생성 (or 재사용)
-//        Filter filter = createOrFind(filterRequestDto.toEntity(region));
-//
-//        // 필터 제목으로 채팅방 생성
-//        String title = filter.getFilterTitle();
-//        Long chatRoomId = chatService.createChatRoom(userInfo, title);
-//
-//        // 채팅방 조회
-//        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
-//                .orElseThrow(() -> new RuntimeException("채팅방 생성 실패"));
-//
-//        // 중복 확인
-//        boolean alreadyExists = chatFilterHistoryRepository
-//                .existsByChatRoomAndFilter(chatRoom, filter);
-//
-//        if (alreadyExists) {
-//            throw new DuplicateFilterHistoryException();
-//        }
-//        // 히스토리 저장
-//        ChatFilterHistory history = new ChatFilterHistory(filter, chatRoom);
-//        chatFilterHistoryRepository.save(history);
-//
-//        return chatRoomId;
-//    }
+        // 지역 조회
+        Region region = regionRepository.findByCortarNo(filterRequestDto.getBCode())
+                .orElseThrow(NotFoundException::new);
+
+        // 필터 생성 (or 재사용)
+        Filter filter = createOrFind(filterRequestDto.toEntity(region));
+
+
+        // 채팅방 조회
+        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
+                .orElseThrow(NotFoundException::new);
+
+        // 중복 확인
+        boolean alreadyExists = chatFilterHistoryRepository
+                .existsByChatRoomAndFilter(chatRoom, filter);
+
+        if (alreadyExists) {
+            throw new DuplicateFilterHistoryException();
+        }
+        // 히스토리 저장
+        ChatFilterHistory history = new ChatFilterHistory(filter, chatRoom);
+        chatFilterHistoryRepository.save(history);
+    }
 
     // 이전에 있던 키워드 필터 히스토리 변경시 필터에 데이터 조건 있으면 참조만 없으면 등록 후 참조
     @Override

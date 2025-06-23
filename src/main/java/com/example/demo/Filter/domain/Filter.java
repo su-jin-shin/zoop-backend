@@ -11,10 +11,9 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
-
+@Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -68,61 +67,5 @@ public class Filter {
 
     private LocalDateTime createdAt;                   // 필터 생성 시각
 
-
-    public Long getFilterId() {
-        return filterId;
-    }
-
-    public Region getRegion() {
-        return region;
-    }
-
-    public String getFilterTitle() {
-        return filterTitle;
-    }
-
-    public String getLongitude() {
-        return longitude;
-    }
-
-    public String getLatitude() {
-        return latitude;
-    }
-
-    public String getBCode() {
-        return bCode;
-    }
-
-    public String getHCode() {
-        return hCode;
-    }
-
-    public TradeTypeName getTradeTypeName() {
-        return tradeTypeName;
-    }
-
-    public TradeTypeCode getTradeTypeCode() {
-        return tradeTypeCode;
-    }
-
-    public List<String> getRealEstateTypeName() {
-        return realEstateTypeName == null ? null : new ArrayList<>(realEstateTypeName);
-    }
-
-    public List<String> getRealEstateTypeCode() {
-        return realEstateTypeCode == null ? null : new ArrayList<>(realEstateTypeCode);
-    }
-
-    public String getDealOrWarrantPrc() {
-        return dealOrWarrantPrc;
-    }
-
-    public BigDecimal getRentPrice() {
-        return rentPrice;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
 
 }
