@@ -1,5 +1,6 @@
 package com.example.demo.chat.service;
 
+import com.example.demo.Filter.dto.request.FilterRequestDto;
 import com.example.demo.auth.domain.UserInfo;
 import com.example.demo.auth.repository.UserInfoRepository;
 import com.example.demo.chat.constants.Constants;
@@ -50,46 +51,14 @@ public class ChatService {
         return new ChatRoomResponseDto(saved.getChatRoomId(), saved.getCreatedAt());
     }
 
+
+
     // 메시지 테이블에 추천 리스트 update
     @Transactional
     public void updateMessage(Long messageId, List<PropertyExcelDto> properties) {
         Message message = messageRepository.findById(messageId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 메시지를 찾을 수 없습니다. ID: " + messageId));
         message.updateProperties(properties);
-    }
-
-//    private int CHATBOT_MESSAGE_ORDER = 0;
-//    // 채팅방 생성
-//    @Transactional
-//    public Long createChatRoom(UserInfo userInfo, String title) {
-//
-//            // 채팅방 생성
-//            ChatRoom chatRoom = new ChatRoom(userInfo);
-//            chatRoom.setTitle(title);
-//            ChatRoom saved = chatRoomRepository.save(chatRoom);
-//
-//            return saved.getChatRoomId();
-//    }
-//
-//    // 채팅방 찾기
-//    private ChatRoom findByChatRoomId(Long chatRoomId, String context) {
-//        return chatRoomRepository.findById(chatRoomId)
-//                .orElseThrow(() -> new ChatRoomNotFoundException(chatRoomId, context));
-//    }
-//
-
-    // 메시지 저장
-    @Transactional
-    public MessageResponseDto saveMessage(MessageRequestDto messageRequestDto) {
-        try {
-            ChatRoom chatRoom = findByChatRoomId(messageRequestDto.getChatRoomId(), ErrorMessages.CHAT_SAVE_MESSAGE_FAILED); // 채팅방의 존재 여부를 확인하여, 없으면 예외 발생 (EntityNotFoundException)
-            Message message = new Message(chatRoom, messageRequestDto.getSenderType(), messageRequestDto.getContent());
-            Message saved =  messageRepository.save(message);
-            chatRoom.updateLastMessageAt(saved.getCreatedAt()); // 채팅방의 마지막 메시지 발송 시각을 갱신
-            return new MessageResponseDto(messageRequestDto.getChatRoomId(), saved.getMessageId(), saved.getCreatedAt());
-        } catch (Exception e) {
-            throw new ChatServiceException(ErrorMessages.CHAT_SAVE_MESSAGE_FAILED, messageRequestDto.getChatRoomId(), e);
-        }
     }
 
     // 메시지 저장
@@ -139,6 +108,23 @@ public class ChatService {
             throw new ChatServiceException(ErrorMessages.CHAT_UPDATE_TITLE_FAILED, chatRoomId, e);
         }
     }
+
+    // 처음 필터 생성시 채팅방 제목 저장
+    @Transactional
+    public ChatRoomResponseDto updateTitle(Long chatRoomId, FilterRequestDto filterRequestDto) {
+
+
+        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
+                .orElseThrow(() -> new NotFoundException());
+
+        // 여기서 필터 제목으로 직접 갱신
+        chatRoom.setTitle(filterRequestDto.buildFilterTitle());
+
+        ChatRoom saved = chatRoomRepository.save(chatRoom);
+
+        return ChatRoomResponseDto.fromEntity(saved);
+    }
+
 
     // 채팅방 삭제 (소프트 삭제)
     @Transactional
