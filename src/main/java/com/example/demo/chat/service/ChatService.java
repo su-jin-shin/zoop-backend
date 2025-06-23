@@ -74,6 +74,20 @@ public class ChatService {
         }
     }
 
+    // 메시지 저장
+    @Transactional
+    public MessageResponseDto saveMessage(MessageRequestDto messageRequestDto, List<PropertyExcelDto> properties) {
+        try {
+            ChatRoom chatRoom = findByChatRoomId(messageRequestDto.getChatRoomId(), ErrorMessages.CHAT_SAVE_MESSAGE_FAILED); // 채팅방의 존재 여부를 확인하여, 없으면 예외 발생 (EntityNotFoundException)
+            Message message = new Message(chatRoom, messageRequestDto.getSenderType(), messageRequestDto.getContent(), properties);
+            Message saved =  messageRepository.save(message);
+            chatRoom.updateLastMessageAt(saved.getCreatedAt()); // 채팅방의 마지막 메시지 발송 시각을 갱신
+            return new MessageResponseDto(messageRequestDto.getChatRoomId(), saved.getMessageId(), saved.getCreatedAt());
+        } catch (Exception e) {
+            throw new ChatServiceException(ErrorMessages.CHAT_SAVE_MESSAGE_FAILED, messageRequestDto.getChatRoomId(), e);
+        }
+    }
+
     private ChatRoom findByChatRoomId(Long chatRoomId, String context) {
         return chatRoomRepository.findById(chatRoomId)
                 .orElseThrow(() -> new ChatRoomNotFoundException(chatRoomId, context));
@@ -230,18 +244,22 @@ public class ChatService {
 
 
         for (MessageReplyDto aiReply : aiReplies) {
-            request.applyAiReply(aiReply.getContent(), SenderType.CHATBOT);
-            MessageResponseDto aiMessage = saveMessage(request);
-            log.info("ai의 답변 DB 저장 완료: {}", aiMessage);
+            MessageRequestDto aiRequest = new MessageRequestDto(
+                    request.getChatRoomId(),
+                    aiReply.getContent(),
+                    SenderType.CHATBOT
+            );
+
+            MessageResponseDto aiMessage = saveMessage(aiRequest, aiReply.getProperties());
 
             chatUpdateService.notifyNewMessage(MessageDto.builder()
-                    .chatRoomId(request.getChatRoomId())
+                    .chatRoomId(aiRequest.getChatRoomId())
                     .messageId(aiMessage.getMessageId())
                     .senderType(SenderType.CHATBOT)
                     .content(aiReply.getContent())
                     .properties(aiReply.getProperties())
                     .createdAt(aiMessage.getCreatedAt())
-                    .build()); // 롱폴링 응답 보내기
+                    .build());
         }
     }
 

@@ -58,7 +58,7 @@ public class ChatController {
 
         Long userId = Long.valueOf(loginUser.getUsername());
         // 필터 저장
-        filterService.saveChatFilter(filterRequestDto, chatRoomId);
+        // filterService.saveChatFilter(filterRequestDto, chatRoomId);
         // 제목 저장
         ChatRoomResponseDto response = chatService.updateTitle(chatRoomId, filterRequestDto);
         // 크롤링 로직 시작

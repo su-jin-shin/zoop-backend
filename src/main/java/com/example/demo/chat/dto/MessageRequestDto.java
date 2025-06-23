@@ -20,6 +20,12 @@ public class MessageRequestDto {
     private SenderType senderType;
     private FilterRequestDto filterRequestDto;
 
+    public MessageRequestDto(Long chatRoomId, String content, SenderType senderType) {
+        this.chatRoomId = chatRoomId;
+        this.content = content;
+        this.senderType = senderType;
+    }
+
     public void applyUserMessage() {
         this.senderType = SenderType.USER;
     }
