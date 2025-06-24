@@ -18,7 +18,6 @@ public class MessageRequestDto {
     private String title;
     private String content;
     private SenderType senderType;
-    private FilterRequestDto filterRequestDto;
 
     public MessageRequestDto(Long chatRoomId, String content, SenderType senderType) {
         this.chatRoomId = chatRoomId;
