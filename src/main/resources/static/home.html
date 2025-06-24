@@ -6,11 +6,15 @@
     <link rel="icon" href="data:,">
     <style>
         body { font-family: sans-serif; margin: 2rem; }
-        #user-card {
-            background:#f5f5f5; padding:1rem; border-radius:8px; margin-bottom:1rem;
+        #user-card, #token-card {
+            background: #f5f5f5;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
         }
-        img { width:80px; height:80px; border-radius:50%; }
-        button, textarea { margin-top:1rem; }
+        img { width: 80px; height: 80px; border-radius: 50%; }
+        button { margin-top: 1rem; }
+        code { word-break: break-all; display: block; background: #eee; padding: 0.3rem; border-radius: 4px; }
     </style>
 </head>
 <body>
@@ -23,6 +27,15 @@
     <small id="email"></small>
 </section>
 
+<!-- (추가) 토큰 정보 카드 -->
+<section id="token-card" hidden>
+    <h4>토큰 정보</h4>
+    <div>Access Token:</div>
+    <code id="access-token"></code>
+    <div>Refresh Token:</div>
+    <code id="refresh-token"></code>
+</section>
+
 <button id="logout-btn">로그아웃</button>
 
 <h3>회원 탈퇴</h3>
@@ -30,42 +43,82 @@
 <button id="withdraw-btn">탈퇴하기</button>
 
 <script>
-    /* -------------------------------------------------- */
-    /* 공통 util                                          */
-    /* -------------------------------------------------- */
     const API = "http://localhost:8080";
 
-    /* access 갱신 (쿠키 기반) */
-    async function refreshAccess() {
-        const res = await fetch(`${API}/users/auth/refresh`, {
-            method: "POST",
-            credentials: "include"          // ★ 쿠키 포함
-        });
-        return res.ok;                      // 200이면 재시도 가능
+    function getAccess()      { return localStorage.getItem("access"); }
+    function getRefresh()     { return localStorage.getItem("refresh"); }
+    function getKakaoAccess() { return localStorage.getItem("kakaoAccess"); }
+
+    function saveTokens(a, r, k){
+        localStorage.setItem("access", a);
+        localStorage.setItem("refresh", r);
+        if (k) localStorage.setItem("kakaoAccess", k);
+        showTokens();  // 토큰 카드 업데이트
     }
 
-    /* 인증이 필요한 fetch 래퍼 */
-    async function authFetch(url, opt = {}) {
+    function showTokens() {
+        const a = getAccess();
+        const r = getRefresh();
+        if (a && r) {
+            document.getElementById("access-token").textContent = a;
+            document.getElementById("refresh-token").textContent = r;
+            document.getElementById("token-card").hidden = false;
+        }
+    }
+
+    // URL 해시에서 토큰 추출
+    (function setTokensFromHash(){
+        if(!location.hash.startsWith("#")) return;
+        const p = new URLSearchParams(location.hash.slice(1));
+        if(p.get("access_token")){
+            saveTokens(
+                p.get("access_token"),
+                p.get("refresh_token"),
+                p.get("kakao_access")
+            );
+            history.replaceState(null, null, location.pathname);
+        }
+    })();
+
+    async function refreshAccess(){
+        const res = await fetch(`${API}/users/auth/refresh`, {
+            method: "POST",
+            headers: { "Authorization": "Bearer " + getRefresh() }
+        });
+        if (res.ok) {
+            const { access_token } = await res.json();
+            localStorage.setItem("access", access_token);
+            showTokens();  // 토큰 갱신 후 UI 갱신
+            return true;
+        }
+        return false;
+    }
+
+    async function authFetch(url, opt = {}){
         const res = await fetch(url, {
             ...opt,
-            credentials: "include"          // ★ 쿠키 자동 전송
+            headers: {
+                ...(opt.headers || {}),
+                "Authorization": "Bearer " + getAccess()
+            }
         });
         if (res.status === 401 && await refreshAccess()) {
-            /* 새 access 쿠키가 내려왔으니 한 번만 재시도 */
-            return fetch(url, { ...opt, credentials: "include" });
+            return fetch(url, {
+                ...opt,
+                headers: {
+                    ...(opt.headers || {}),
+                    "Authorization": "Bearer " + getAccess()
+                }
+            });
         }
         return res;
     }
 
-    /* -------------------------------------------------- */
-    /* 초기 사용자 정보 로드                              */
-    /* -------------------------------------------------- */
-    async function loadUser() {
+    async function loadUser(){
         try {
-            const res   = await authFetch(`${API}/users/auth/me`);
+            const res = await authFetch(`${API}/users/auth/me`);
             if (!res.ok) throw new Error();
-            const user  = await res.json();
-
+            const user = await res.json();
             document.getElementById("profile-image").src = user.profileImage || "";
             document.getElementById("nickname").textContent = user.nickname || "(닉네임 없음)";
             document.getElementById("email").textContent = user.email;
@@ -76,15 +129,16 @@
         }
     }
 
-    /* -------------------------------------------------- */
-    /* 이벤트 핸들러                                      */
-    /* -------------------------------------------------- */
     document.getElementById("logout-btn").onclick = async () => {
         const res = await fetch(`${API}/users/auth/logout`, {
             method: "POST",
-            credentials: "include"
+            headers: {
+                "Authorization": "Bearer " + getAccess(),
+                "Kakao-Access": getKakaoAccess()
+            }
         });
         if (res.status === 204) {
+            localStorage.clear();
             alert("로그아웃 완료");
             location.href = "/login.html";
         } else {
@@ -107,13 +161,16 @@
 
         if (res.ok) {
             alert((await res.text()) || "탈퇴가 완료되었습니다.");
+            localStorage.clear();
             location.href = "/login.html";
         } else {
             alert("탈퇴 실패: " + (await res.text()));
         }
     };
 
-    window.onload = loadUser;
+    window.onload = () => {
+        loadUser().then(showTokens);
+    };
 </script>
 </body>
 </html>
