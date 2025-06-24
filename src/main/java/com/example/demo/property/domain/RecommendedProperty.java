@@ -44,11 +44,14 @@ public class RecommendedProperty {
     @JoinColumn(name = "filter_id")
     private Filter filter; //필터 아이디(외래키)
 
-
+    private Long messageId; //메시지 아이디
+    
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime createdAt;   // 지역 추가 시각
 
     @UpdateTimestamp
     private LocalDateTime updatedAt;   // 지역 수정 시각
+
+
 }

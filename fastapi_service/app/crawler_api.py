@@ -314,11 +314,11 @@ async def fetch_articles_by_dong(session: ClientSession, cond: dict, pool):
 
             # 마지막에 한 번에 저장
             timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-            OUTPUT_DIR = CURRENT_DIR / 'output'
-            json_file_subject = f'{OUTPUT_DIR}/detail_data_{timestamp}_{dong_name}_{trade_type_name}_{real_estate_type_name}.json'
+            SAVE_DIR = Path("/app/output")
+            json_file_subject = f'{SAVE_DIR}/detail_data_{timestamp}_{dong_name}_{trade_type_name}_{real_estate_type_name}.json'
 
             # 성공한 매물 저장
-            os.makedirs(OUTPUT_DIR, exist_ok=True)
+            os.makedirs(SAVE_DIR, exist_ok=True)
             async with aiofiles.open(json_file_subject, 'w', encoding='utf-8') as f:
                 await f.write(json.dumps(dong_properties, ensure_ascii=False, indent=2))
             print(f'[DONE] 저장 완료: {json_file_subject}')
@@ -425,11 +425,13 @@ async def fetch_articles_by_dong(session: ClientSession, cond: dict, pool):
 
     # 마지막에 한 번에 저장
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-    OUTPUT_DIR = CURRENT_DIR / 'output'
-    json_file_subject = f'{OUTPUT_DIR}/detail_data_{timestamp}_{dong_name}_{trade_type_name}_{real_estate_type_name}.json'
+    SAVE_DIR = Path("/app/output")
+    # OUTPUT_DIR = CURRENT_DIR / 'output'
+    SAVE_DIR = Path("/app/output")
+    json_file_subject = f'{SAVE_DIR}/detail_data_{timestamp}_{dong_name}_{trade_type_name}_{real_estate_type_name}.json'
 
     # 성공한 매물 저장
-    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    os.makedirs(SAVE_DIR, exist_ok=True)
     async with aiofiles.open(json_file_subject, 'w', encoding='utf-8') as f:
         await f.write(json.dumps(dong_properties, ensure_ascii=False, indent=2))
     print(f'[DONE] 저장 완료: {json_file_subject}')
