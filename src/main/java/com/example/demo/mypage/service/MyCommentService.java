@@ -25,7 +25,7 @@ public class MyCommentService {
     }
     public List<MyCommentResponse> getMyComments(Long userId) {
         validateUserId(userId);
-        List<ReviewComment> comments = reviewCommentRepository.findByUser_UserIdAndDeletedAtIsNullOrderByCreatedAtDesc(userId);
+        List<ReviewComment> comments = reviewCommentRepository.findActiveByUserWithAliveReview(userId);
         return comments.stream().map(this::convertToDto).toList();
     }
 
