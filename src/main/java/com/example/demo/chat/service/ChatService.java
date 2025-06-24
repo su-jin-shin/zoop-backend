@@ -131,7 +131,7 @@ public class ChatService {
                 .orElseThrow(() -> new NotFoundException());
 
         // 여기서 필터 제목으로 직접 갱신
-        chatRoom.setTitle(filterRequestDto.buildFilterTitle());
+        chatRoom.updateTitle(filterRequestDto.buildFilterTitle());
 
         ChatRoom saved = chatRoomRepository.save(chatRoom);
 
@@ -199,15 +199,18 @@ public class ChatService {
         UserInfo userInfo = userInfoRepository.findByUserId(userId)
                 .orElseThrow(UserNotFoundException::new);
 
+        // 대소문자 구분없이 조회
+        String keyword = searchText == null ? "" : searchText.trim().toLowerCase();
+
         // 삭제되지 않은 채팅방 전체 조회 (생성일 내림차순 정렬)
         return chatRoomRepository.findByUserInfoAndIsDeletedFalseOrderByCreatedAtDesc(userInfo).stream()
                 .map(chatRoom -> {
                     String title = chatRoom.getTitle();
-                    boolean matchesTitle = title.contains(searchText);
+                    boolean matchesTitle = title != null && title.toLowerCase().contains(keyword);
 
                     // 사용자가 검색한 검색어와 매칭되는 채팅방 내용중에서 가장 최신의 데이터 담기
                     Optional<Message> lastMatchingMessage = messageRepository
-                            .findTopByChatRoomAndContentContainingIgnoreCaseOrderByMessageIdDesc(chatRoom, searchText);
+                            .findTopByChatRoomAndContentContainingIgnoreCaseOrderByMessageIdDesc(chatRoom, keyword);
 
                     if (matchesTitle || lastMatchingMessage.isPresent()) {
                         String messageContent = lastMatchingMessage
