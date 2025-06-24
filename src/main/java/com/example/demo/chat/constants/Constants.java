@@ -3,8 +3,13 @@ package com.example.demo.chat.constants;
 public class Constants {
     public static final int MAXIMUM_PROPERTY_COUNT = 10;
 
-    public static final String CRAWL_AND_RECOMMEND_URL = "http://43.201.121.201:8000/crawl";
-    public static final String CRAWL_BY_ARTICLE_NO_URL = "http://43.201.121.201:8000/{articleNo}/crawl";
+    // public static final String CRAWL_AND_RECOMMEND_URL = "http://43.201.121.201:8000/crawl";
+    // public static final String CRAWL_BY_ARTICLE_NO_URL = "http://43.201.121.201:8000/{articleNo}/crawl";
+    public static final String CRAWL_AND_RECOMMEND_URL =
+        System.getProperty("crawl.and-recommend-url", "http://localhost:8000/crawl");
+
+    public static final String CRAWL_BY_ARTICLE_NO_URL =
+            System.getProperty("crawl.by-article-no-url", "http://localhost:8000/{articleNo}/crawl");
 
 //    public static final String CRAWL_AND_RECOMMEND_URL = "http://localhost:8000/crawl";
 //    public static final String CRAWL_BY_ARTICLE_NO_URL = "http://localhost:8000/{articleNo}/crawl";
