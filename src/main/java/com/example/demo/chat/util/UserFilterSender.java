@@ -8,12 +8,14 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 
 
+@Slf4j
 public class UserFilterSender {
     private static final ObjectMapper mapper = new ObjectMapper();
 
@@ -31,6 +33,7 @@ public class UserFilterSender {
         }
 
         JsonNode root = mapper.readTree(body);
+        log.info("root: {}", root);
         JsonNode resultsNode = root.path("data").path("results");
 
         if (resultsNode == null || resultsNode.isMissingNode()) {

@@ -46,10 +46,11 @@ def upload_dong_properties(address: str, properties: List[Dict[str, Any]], cond:
         response_data = search_dong_properties(address, cond)
         print("==============================")
         # 마지막에 한 번에 저장
-        OUTPUT_DIR = Path(__file__).resolve().parent / 'output'
-        json_file_subject = f'{OUTPUT_DIR}/detail_data.json'
+        # OUTPUT_DIR = Path(__file__).resolve().parent / 'output'
+        SAVE_DIR = Path("/app/output")
+        json_file_subject = f'{SAVE_DIR}/detail_data.json'
         # 성공한 매물 저장
-        os.makedirs(OUTPUT_DIR, exist_ok=True)
+        os.makedirs(SAVE_DIR, exist_ok=True)
         with open(json_file_subject, 'w', encoding='utf-8') as f:
             json.dump(response_data, f, ensure_ascii=False, indent=2)
         print(f'[DONE] 저장 완료: {json_file_subject}')
