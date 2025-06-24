@@ -56,10 +56,12 @@ public class RecentViewedPropertyServiceImpl implements RecentViewedPropertyServ
         recentViewedPropertyRepository.findByUserAndProperty(user, property)
                 .ifPresentOrElse(
                         existing -> {
+                            // 이미 존재하는 경우 → viewedAt만 갱신
                             existing.setViewedAt(LocalDateTime.now());
                             recentViewedPropertyRepository.save(existing);
                         },
                         () -> {
+                            // 처음 보는 매물일 경우 새로 저장
                             RecentViewedProperty newOne = RecentViewedProperty.builder()
                                     .user(user)
                                     .property(property)
