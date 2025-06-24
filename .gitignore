@@ -1,3 +1,2 @@
 target/
 fastapi_service/app/output/
-fastapi_service/app/my_secrets/

@@ -4,7 +4,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 try:
-    env_path = Path(__file__).resolve().parents[3] # .env 파일 경로
+    env_path = Path(__file__).resolve().parents[2] # .env 파일 경로
     load_dotenv(dotenv_path=env_path / ".env.local") # .env 불러오기
     print("env_path: ", env_path)
 except Exception as e:
@@ -12,10 +12,13 @@ except Exception as e:
 
 try:
     DB_CONFIG = {
-        'database': os.getenv('POSTGRES_DB'),
-        'user': os.getenv('SPRING_DATASOURCE_USERNAME'),
-        'password': os.getenv('SPRING_DATASOURCE_PASSWORD'),
-        'host': os.getenv('POSTGRES_HOST', 'localhost'),
+        #'database': os.getenv('POSTGRES_DB'),
+        'database': 'mydb',
+        #'user': os.getenv('SPRING_DATASOURCE_USERNAME'),
+        'user': 'myuser',
+        #'password': os.getenv('SPRING_DATASOURCE_PASSWORD'),
+        'password': 'mypass',
+        'host': os.getenv('POSTGRES_HOST', 'db'),
         'port': os.getenv('POSTGRES_PORT', 5432)
     }
 except Exception as e:

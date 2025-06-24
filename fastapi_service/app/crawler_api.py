@@ -11,9 +11,9 @@ import aiohttp
 from aiohttp import ClientSession, ClientTimeout
 from more_itertools import chunked
 
-from config.loader import DB_CONFIG
-from insert_crawl_estate_data import insert_property, insert_many_properties
-import estate_api_client as eapi
+from app.config.loader import DB_CONFIG
+from app.insert_crawl_estate_data import insert_property, insert_many_properties
+import app.estate_api_client as eapi
 
 CURRENT_DIR = Path(__file__).resolve().parent
 

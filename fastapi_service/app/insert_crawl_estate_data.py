@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 CURRENT_DIR = Path(__file__).resolve().parent
 MODULE_BASE_DIR = CURRENT_DIR.parent
 sys.path.insert(0, str(MODULE_BASE_DIR))
-from config.loader import DB_CONFIG
+from app.config.loader import DB_CONFIG
 
 IMAGE_BASE_URL = "https://landthumb-phinf.pstatic.net"
 
