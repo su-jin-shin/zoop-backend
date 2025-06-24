@@ -27,16 +27,21 @@ jobs:
           BRANCH="main"
           TOKEN="$GH_PAT"
 
-          rm -rf "$APP_DIR"
+          # ── 컨테이너 + 볼륨 완전 정리 ─────────────────────────────
+          docker compose -f "$APP_DIR/docker-compose.yml" down -v --remove-orphans || true
+
+          # ── 권한 상관없이 기존 코드 삭제 ─────────────────────────
+          sudo rm -rf "$APP_DIR"
+
+          # ── 새 코드 클론 ────────────────────────────────────────
           git clone --depth 1 -b "$BRANCH" \
             https://${TOKEN}@github.com/${REPO}.git "$APP_DIR"
 
+          # ── 이미지 풀(존재 안 하면 통과) ──────────────────────────
           docker pull ${{ secrets.DOCKERHUB_USERNAME }}/zoop_server:latest  || echo "No server image yet"
           docker pull ${{ secrets.DOCKERHUB_USERNAME }}/zoop_fastapi:latest || echo "No fastapi image yet"
 
-          docker compose -f "$APP_DIR/docker-compose.yml" down --remove-orphans || true
-          docker rm -f postgres-db zoop-app 2>/dev/null || true
-
+          # ── 컨테이너 재기동 ───────────────────────────────────────
           docker compose -f "$APP_DIR/docker-compose.yml" \
             up -d --pull=never --force-recreate
 
@@ -44,11 +49,11 @@ jobs:
       - name: Wait for app warm-up
         run: sleep 30
 
-      # 3) 헬스체크 80  ← 이름만 바꿔도 OK
+      # 3) 헬스체크
       - name: Health-check 80
         uses: jtalk/url-health-check-action@v4
         with:
-          url: http://localhost/hc          # 여기만 수정
+          url: http://localhost/hc
           max-attempts: 60
           retry-delay: 5s
           follow-redirect: false

@@ -1,5 +1,6 @@
 package com.example.demo.auth.controller;
 
+import com.example.demo.auth.annotation.CheckUserOwner;
 import com.example.demo.auth.domain.UserInfo;
 import com.example.demo.auth.dto.LoginResponseDto;
 import com.example.demo.auth.dto.LoginUser;
@@ -68,6 +69,7 @@ public class AuthController {
     /* -------------------------------------------------
      * 2) 카카오 콜백 처리
      * ------------------------------------------------- */
+// AuthController
     @GetMapping("/kakao/callback")
     public ResponseEntity<Void> kakaoCallback(@RequestParam String code,
                                               HttpServletRequest request) {
@@ -75,17 +77,42 @@ public class AuthController {
         String clientIp = getClientIpAddress(request);
         LoginResponseDto res = loginService.kakaoLogin(code, clientIp, request);
 
-        /* --- 쿠키 삭제 → URL fragment 전달 --- */
-        String redirect = front.buildRedirect(res.getNeedsNickname()) +
-                "#access_token="  + res.getAccessToken() +
-                "&refresh_token=" + res.getRefreshToken() +
-                "&kakao_access="  + res.getKakaoAccessToken() +
-                "&needsNickname=" + res.getNeedsNickname();
+        /* --- ① 토큰을 HttpOnly 쿠키로 설정 --- */
+        ResponseCookie accessCookie = ResponseCookie.from("ACCESS_TOKEN", res.getAccessToken())
+                .httpOnly(false)
+                .secure(true)             // http 로 개발 중이면 false
+                .sameSite("Lax")          // SPA → 필요하면 "None"
+                .path("/")
+                .maxAge(Duration.ofMinutes(15))        // access 토큰 만료와 맞추기
+                .build();
+
+        ResponseCookie refreshCookie = ResponseCookie.from("REFRESH_TOKEN", res.getRefreshToken())
+                .httpOnly(false)
+                .secure(true)
+                .sameSite("Lax")
+                .path("/")
+                .maxAge(Duration.ofDays(14))           // 원하는 기간
+                .build();
+
+        ResponseCookie kakaoCookie = ResponseCookie.from("KAKAO_ACCESS", res.getKakaoAccessToken())
+                .httpOnly(false)
+                .secure(true)
+                .sameSite("Lax")
+                .path("/")
+                .maxAge(Duration.ofDays(1))
+                .build();
+
+        /* --- ② URL 프래그먼트에 토큰을 실어 보낼 필요가 없으므로 제거 --- */
+        String redirect = front.buildRedirect(res.getNeedsNickname());
 
         return ResponseEntity.status(HttpStatus.FOUND)
                 .header(HttpHeaders.LOCATION, redirect)
+                .header(HttpHeaders.SET_COOKIE, accessCookie.toString())
+                .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
+                .header(HttpHeaders.SET_COOKIE, kakaoCookie.toString())
                 .build();
     }
+
     /* -------------------------------------------------
      * 3) 신규 사용자 닉네임 등록
      * ------------------------------------------------- */
@@ -109,33 +136,46 @@ public class AuthController {
      * ------------------------------------------------- */
     @PostMapping("/refresh")
     public ResponseEntity<Map<String, String>> refresh(
-            @RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader) {
+            /* ③ 헤더 대신 쿠키에서 꺼낸다 */
+            @CookieValue("REFRESH_TOKEN") String refresh) {
 
-        if (authHeader == null || !authHeader.startsWith("Bearer "))
-            throw new UnauthorizedAccessException();
-
-        String refresh = authHeader.substring(7);           // "Bearer " 제거
         if (jwtUtil.isExpired(refresh))
             throw new UnauthorizedAccessException();
 
-        String email       = jwtUtil.getSubject(refresh);
-        String newAccess   = jwtUtil.generateAccess(email);
+        String email     = jwtUtil.getSubject(refresh);
+        String newAccess = jwtUtil.generateAccess(email);
 
-        return ResponseEntity.ok(Map.of("access_token", newAccess));
+        // 새 access 토큰을 다시 쿠키로 내려줌
+        ResponseCookie newAccessCookie = ResponseCookie.from("ACCESS_TOKEN", newAccess)
+                .httpOnly(false).secure(true).sameSite("Lax")
+                .path("/").maxAge(Duration.ofMinutes(15)).build();
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, newAccessCookie.toString())
+                .body(Map.of("result", "ok"));      // 바디는 아무거나
     }
+
     /* -------------------------------------------------
      * 5) 로그아웃
      * ------------------------------------------------- */
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(@RequestHeader("Kakao-Access") String kakaoAccess) {
-        try {
-            kakaoAuthService.logout(kakaoAccess);
-        } catch (Exception e) {
-            log.warn("Kakao logout failed (ignored): {}", e.getMessage());
-        }
-        return ResponseEntity.noContent().build(); // 204
-    }
+    public ResponseEntity<Void> logout(@CookieValue("KAKAO_ACCESS") String kakaoAccess) {
+        try { kakaoAuthService.logout(kakaoAccess); } catch(Exception ignored){ }
 
+        // ④ maxAge=0 쿠키로 덮어써서 삭제
+        ResponseCookie del = ResponseCookie.from("ACCESS_TOKEN","")
+                .path("/").maxAge(0).build();
+        ResponseCookie delR = ResponseCookie.from("REFRESH_TOKEN","")
+                .path("/").maxAge(0).build();
+        ResponseCookie delK = ResponseCookie.from("KAKAO_ACCESS","")
+                .path("/").maxAge(0).build();
+
+        return ResponseEntity.noContent()
+                .header(HttpHeaders.SET_COOKIE, del.toString())
+                .header(HttpHeaders.SET_COOKIE, delR.toString())
+                .header(HttpHeaders.SET_COOKIE, delK.toString())
+                .build();
+    }
     /* -------------------------------------------------
      * 6) 로그인된 사용자 정보 조회
      * ------------------------------------------------- */
