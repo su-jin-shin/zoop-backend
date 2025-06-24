@@ -40,10 +40,15 @@ async def crawl_estate_data(data: Filter):
 
     # 크롤링 실행 (비동기)
     crawl_and_recommendation = await crawl_main(search_condition)
+    if isinstance(crawl_and_recommendation, dict) and "results" in crawl_and_recommendation:
+        print("crawl_and_recommendation가 dictionary 타입")
+        crawl_and_recommendation = crawl_and_recommendation["results"]
 
     return {
         "status": "completed",
-        "data": crawl_and_recommendation
+        "data": {
+            "results": crawl_and_recommendation
+        }
     }
 
 @app.post("/{article_no}/crawl")
