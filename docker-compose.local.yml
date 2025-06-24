@@ -47,7 +47,7 @@ services:
       # FastAPI 쪽 DB 접속
       DB_URL: postgresql://myuser:mypass@db:5432/mydb
     ports:
-      - "18000:8000"                     # http://localhost:18000
+      - "8000:8000"
 
 
 

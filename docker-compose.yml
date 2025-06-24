@@ -52,9 +52,8 @@ services:
         condition: service_healthy       # Spring 앱 OK 뒤 기동
     environment:
       DB_URL: postgresql://myuser:mypass@db:5432/mydb
-    # 외부 호출용이면 주석 해제
-    # ports:
-    #   - "8000:8000"
+    ports:
+      - "8000:8000"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health || exit 1"]
       interval: 10s
