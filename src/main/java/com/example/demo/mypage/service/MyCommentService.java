@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -26,10 +27,16 @@ public class MyCommentService {
     public List<MyCommentResponse> getMyComments(Long userId) {
         validateUserId(userId);
         List<ReviewComment> comments = reviewCommentRepository.findActiveByUserWithAliveReview(userId);
-        return comments.stream().map(this::convertToDto).toList();
+        List<Long> commentIds = comments.stream().map(ReviewComment::getId).toList();
+
+        Map<Long, Long> likeCountMap = reviewCommentRepository.getLikeCountMap(commentIds);
+
+        return comments.stream()
+                .map(comment -> convertToDto(comment, likeCountMap.getOrDefault(comment.getId(), 0L)))
+                .toList();
     }
 
-    private MyCommentResponse convertToDto(ReviewComment comment) {
+    private MyCommentResponse convertToDto(ReviewComment comment,  Long likeCount) {
         Long complexId = null;
         Long propertyId = null;
         String articleName = "매물 정보 없음";
@@ -40,7 +47,7 @@ public class MyCommentService {
                     comment.getId(),
                     comment.getContent(),
                     comment.getCreatedAt().toLocalDate(),
-                    comment.getLikeCount().intValue(),
+                    likeCount.intValue(),
                     null // 리뷰 정보 없음
             );
         }
@@ -70,7 +77,7 @@ public class MyCommentService {
                 comment.getId(),
                 comment.getContent(),
                 comment.getCreatedAt().toLocalDate(),
-                comment.getLikeCount().intValue(),
+                likeCount.intValue(),
                 reviewDto
         );
     }

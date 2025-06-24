@@ -63,5 +63,19 @@ public interface MyReviewCommentRepository extends JpaRepository<ReviewComment, 
 """)
     List<ReviewComment> findActiveByUserWithAliveReview(@Param("userId") Long userId);
 
+    @Query("""
+    SELECT l.reviewComment.id, COUNT(l)
+    FROM ReviewCommentLike l
+    WHERE l.reviewComment.id IN :commentIds AND l.isLiked = true
+    GROUP BY l.reviewComment.id
+""")
+    List<Object[]> countLikesByCommentIds(@Param("commentIds") List<Long> commentIds);
 
+    default Map<Long, Long> getLikeCountMap(List<Long> commentIds) {
+        return countLikesByCommentIds(commentIds).stream()
+                .collect(Collectors.toMap(
+                        row -> (Long) row[0],
+                        row -> (Long) row[1]
+                ));
+    }
 }
