@@ -1,6 +1,5 @@
 package com.example.demo.chat.controller;
 
-import com.example.demo.Filter.domain.Filter;
 import com.example.demo.Filter.dto.request.FilterRequestDto;
 import com.example.demo.Filter.dto.request.RefinedFilterDto;
 import com.example.demo.Filter.service.FilterService;
@@ -25,7 +24,6 @@ import org.springframework.web.context.request.async.DeferredResult;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import static com.example.demo.common.response.SuccessMessage.GET_SUCCESS;
 
@@ -160,6 +158,7 @@ public class ChatController {
 
         } else {
             chatRooms = chatService.searchChatRooms(userId, searchText); // 검색한 결과 조회
+            System.out.println(chatRooms);
         }
         return ResponseEntity.ok(
                 ResponseResult.success(
