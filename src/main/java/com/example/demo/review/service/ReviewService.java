@@ -8,7 +8,7 @@
  * - 단지 또는 매물 기준 리뷰 목록 조회
  * - 리뷰 좋아요 등록 및 취소, 좋아요 여부 및 개수 조회
  *
- * 📌 설계 포인트:
+ *  설계 포인트:
  * - 리뷰는 원칙적으로 단지 단위로 작성되도록 설계
  *   예: OO아파트(단지) → 의미 있는 피드백이 가능
  * - 단지 정보가 없는 매물도 일부 존재하여, fallback으로 매물 단위 조회 허용
@@ -55,15 +55,13 @@ public class ReviewService {
     private final UserInfoRepository userInfoRepository;
 
     /*
-     *   리뷰 목록 조회 (단지 or 매물 단위 분기 처리)
+     *   리뷰 전체 조회 (단지 or 매물 단위 분기 처리)
     */
 
     public ReviewListResponse getReviews(Long userId, Long propertyId) {
         // 1. 유저 및 매물 유효성 검사
-        UserInfo loginUser = userInfoRepository.findByUserId(userId)
-                .orElseThrow(UserNotFoundException::new);
-        Property property = propertyRepository.findById(propertyId)
-                .orElseThrow(PropertyNotFoundException::new);
+        UserInfo loginUser = getUserInfo(userId);
+        Property property = propertyRepository.findById(propertyId).orElseThrow(PropertyNotFoundException::new);
 
         // 2. complexId 유무에 따라 리뷰 조회 방식 분기
         Long complexId = property.getComplex() != null ? property.getComplex().getId() : null;
@@ -123,10 +121,8 @@ public class ReviewService {
     @Transactional
     public ReviewCreateResponse createReview(Long propertyId, ReviewCreateRequest request, Long userId) {
         // 1. 유저 및 매물 유효성 검사
-        UserInfo loginUser = userInfoRepository.findByUserId(userId)
-                .orElseThrow(UserNotFoundException::new);
-        propertyRepository.findById(propertyId)
-                .orElseThrow(NotFoundException::new);
+        UserInfo loginUser = getUserInfo(userId);
+        propertyRepository.findById(propertyId).orElseThrow(NotFoundException::new);
 
 
         Review review = reviewMapper.toEntity(propertyId, request, loginUser);
@@ -141,11 +137,8 @@ public class ReviewService {
     @Transactional
     public ReviewCreateResponse updateReview(Long reviewId, ReviewUpdateRequest request, Long userId) {
         // 1. 유저 및 리뷰 유효성 검사
-        UserInfo loginUser = userInfoRepository.findByUserId(userId)
-                .orElseThrow(UserNotFoundException::new);  // 유저가 없으면 예외 처리
-
-        Review review = reviewRepository.findActiveById(reviewId)
-                .orElseThrow(ReviewNotFoundException::new);
+        UserInfo loginUser = getUserInfo(userId);
+        Review review = getReview(reviewId);
 
         // 2. 작성자 본인 확인
         if (!review.isMine(loginUser)) throw new UnauthorizedAccessException();
@@ -169,10 +162,8 @@ public class ReviewService {
     @Transactional
     public void deleteReview(Long reviewId, Long userId) {
         // 1. 유저 및 리뷰 유효성 검사
-        UserInfo loginUser = userInfoRepository.findByUserId(userId)
-                .orElseThrow(UserNotFoundException::new);
-        Review review = reviewRepository.findActiveById(reviewId)
-                .orElseThrow(ReviewNotFoundException::new);
+        UserInfo loginUser = getUserInfo(userId);
+        Review review = getReview(reviewId);
 
         // 2. 작성자 본인 확인
         if (!review.isMine(loginUser)) throw new UnauthorizedAccessException();
@@ -187,12 +178,11 @@ public class ReviewService {
     @Transactional
     public ReviewLikeResponse updateLikeStatus(Long reviewId, boolean isLiked, Long userId) {
         // 1. 유저 및 리뷰 유효성 검사
-        UserInfo loginUser = userInfoRepository.findByUserId(userId)
-                .orElseThrow(UserNotFoundException::new);
-        Review review = reviewRepository.findActiveById(reviewId)
-                .orElseThrow(ReviewNotFoundException::new);
+        UserInfo loginUser = getUserInfo(userId);
+        Review review = getReview(reviewId);
 
-        // 기존 좋아요가 있는지 확인 후 없으면 생성, 있으면 상태 변경
+
+        // 2. 기존 좋아요가 있는지 확인 후 없으면 생성, 있으면 상태 변경
         ReviewLike like = reviewLikeRepository.findByReviewIdAndUser(reviewId, loginUser)
                 .orElseGet(() -> {
                     ReviewLike newLike = ReviewLike.of(review, loginUser, isLiked);
@@ -204,20 +194,19 @@ public class ReviewService {
 
         long likeCount = reviewLikeRepository.countByReviewIdAndIsLikedTrue(reviewId);
 
-        //  Mapper 위임
+        // 3. Mapper 위임
         return reviewMapper.likeResponse(reviewId, loginUser.getUserId(), isLiked, likeCount);
     }
+
+
 
     /**
      * 좋아요 여부 조회
      */
     public ReviewLikeResponse getLikeStatus(Long reviewId, Long userId) {
-
         // 1. 유저 및 리뷰 유효성 검사
-        UserInfo loginUser = userInfoRepository.findByUserId(userId)
-                .orElseThrow(UserNotFoundException::new);
-        reviewRepository.findActiveById(reviewId)
-                .orElseThrow(ReviewNotFoundException::new);
+        UserInfo loginUser = getUserInfo(userId);
+        getReview(reviewId);
 
         // 2. 좋아요 여부 조회
         boolean isLiked = reviewLikeRepository.findByReviewIdAndUser(reviewId, loginUser)
@@ -233,14 +222,13 @@ public class ReviewService {
     }
 
 
+
+
     /**
      * 좋아요 수 조회 
      */
     public Long getLikeCount(Long reviewId) {
-        // 리뷰 검증
-        reviewRepository.findActiveById(reviewId)
-                .orElseThrow(ReviewNotFoundException::new);
-        
+        getReview(reviewId); // 리뷰 유효성 검증
         return reviewLikeRepository.countByReviewIdAndIsLikedTrue(reviewId);
     }
 
@@ -248,11 +236,25 @@ public class ReviewService {
      * 댓글 개수
      */
     public Long getCommentCount(Long reviewId) {
-        // 리뷰 검증
-        reviewRepository.findActiveById(reviewId)
-                .orElseThrow(ReviewNotFoundException::new);
-
+        getReview(reviewId);  // 리뷰 유효성 검증
         return reviewCommentRepository.commentCount(reviewId);
+    }
+
+    //============== 공통 메서드 ===============
+
+    // 1. 리뷰 검증 및 가져오기
+    private Review getReview(Long reviewId) {
+        // 등록 된 적 없는 리뷰 요청인지 확인
+        reviewRepository.findReviewById(reviewId).orElseThrow(NotFoundException::new);
+        // 삭제되지 않은 리뷰인지 검증
+        Review review = reviewRepository.findActiveById(reviewId).orElseThrow(ReviewNotFoundException::new);
+        return review;
+    }
+
+    // 2. 로그인한 유저 검증 및 가져오기
+    private UserInfo getUserInfo(Long userId) {
+        UserInfo loginUser = userInfoRepository.findByUserId(userId).orElseThrow(UserNotFoundException::new);
+        return loginUser;
     }
 
 
