@@ -28,6 +28,10 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     @Query("SELECT r FROM Review r WHERE r.id = :id AND r.deletedAt IS NULL")
     Optional<Review> findActiveById(@Param("id") Long id);
 
+    // 삭제된것 포함 리뷰 단건 조회 (404 에러)
+    @Query("SELECT r FROM Review r WHERE r.id = :id")
+    Optional<Review> findReviewById(@Param("id") Long id);
+
     /**
      * 특정 단지에 속한 매물들의 리뷰 페이지 조회
      * - 매물과 리뷰 모두 삭제되지 않은 조건

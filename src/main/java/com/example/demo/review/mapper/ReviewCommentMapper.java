@@ -58,38 +58,6 @@ public class ReviewCommentMapper {
                 .updatedAt(LocalDateTime.now())
                 .build();
     }
-//    /**
-//     * @ 댓글 수정 요청을 기존 엔티티에 반영
-//     * @ 내용만 업데이트
-//     */
-//    public ReviewComment updateEntity(ReviewComment comment, ReviewCommentUpdateRequest request) {
-//        comment.updateContent(request.getContent());
-//        return comment;
-//    }
-//    /**
-//     * @ 댓글 좋아요 엔티티 생성
-//     * @ 댓글과 사용자 연결
-//     */
-//    public ReviewCommentLike toEntity(ReviewComment comment, UserInfo user, boolean isLiked) {
-//        return ReviewCommentLike.builder()
-//                .reviewComment(comment)
-//                .user(user)
-//                .isLiked(isLiked)
-//                .build();
-//    }
-//    /**
-//     * @ 댓글 좋아요 상태를 응답 DTO로 변환
-//     * @ 좋아요 수 포함
-//     */
-//    public ReviewCommentLikeResponse toDto(ReviewComment comment, UserInfo user, boolean isLiked, long likeCount) {
-//        return ReviewCommentLikeResponse.builder()
-//                .reviewId(comment.getReview().getId())
-//                .commentId(comment.getId())
-//                .userId(user.getUserId())
-//                .isLiked(isLiked)
-//                .likeCount(likeCount)
-//                .build();
-//    }
 
 }
 

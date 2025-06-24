@@ -2,10 +2,8 @@
 package com.example.demo.review.service;
 
 import com.example.demo.auth.domain.UserInfo;
-import com.example.demo.auth.dto.LoginUser;
 import com.example.demo.auth.repository.UserInfoRepository;
 import com.example.demo.common.exception.*;
-import com.example.demo.property.repository.PropertyRepository;
 import com.example.demo.review.domain.Review;
 import com.example.demo.review.domain.ReviewComment;
 import com.example.demo.review.domain.ReviewCommentLike;
@@ -27,12 +25,9 @@ import java.util.Map;
  * ReviewCommentService
  *
  * 리뷰에 달린 **댓글**과 관련된 기능을 담당하는 서비스
- *
- * 주요 기능:
+
  * - 댓글 목록 조회, 작성, 수정, 삭제 (Soft Delete 방식)
  * - 댓글 좋아요 등록 및 취소, 좋아요 여부 및 개수 조회
- *
- * 설계 :
  * - 리뷰가 삭제되면 댓글 조회 불가
  * - 댓글 좋아요는 사용자 + 댓글 조합으로 관리 (중복 좋아요 방지)
  * - 댓글은 Soft Delete 방식으로 `deletedAt` 필드 기준 관리
@@ -58,13 +53,9 @@ public class ReviewCommentService {
      * - 각 댓글에 대해 좋아요 수, 내가 누른 여부, 내가 쓴 댓글 여부를 포함
      */
     public List<ReviewCommentCreateResponse> getComments(Long reviewId, Long userId) {
-        // 유저 확인
-        UserInfo loginUser = userInfoRepository.findByUserId(userId)
-                .orElseThrow(UserNotFoundException::new);  
-
-        // 리뷰 유효성 확인(삭제 여부 포함) 
-        reviewRepository.findActiveById(reviewId)
-                .orElseThrow(ReviewNotFoundException::new);
+        // 유저 및 리뷰 유효성 확인
+        UserInfo loginUser = getUserInfo(userId);
+        getReview(reviewId);
 
         // 댓글 리스트 조회 
         List<ReviewComment> comments = commentRepository.findByReviewId(reviewId);
@@ -97,13 +88,9 @@ public class ReviewCommentService {
      */
     @Transactional
     public ReviewCommentCreateResponse createComment(Long reviewId, Long userId, ReviewCommentCreateRequest request) {
-        // 유저 확인
-        UserInfo loginUser = userInfoRepository.findByUserId(userId)
-                .orElseThrow(UserNotFoundException::new);
-
-        // 리뷰 유효성 확인(삭제 여부 포함)
-        Review review = reviewRepository.findActiveById(reviewId)
-                .orElseThrow(ReviewNotFoundException::new);
+        // 유저 및 리뷰 유효성 확인
+        UserInfo loginUser = getUserInfo(userId);
+        Review review = getReview(reviewId);
 
         // 엔티티 변환 및 저장
         ReviewComment comment = commentMapper.toEntity(request, loginUser, review);
@@ -119,11 +106,8 @@ public class ReviewCommentService {
      */
     @Transactional
     public ReviewCommentCreateResponse updateComment(Long commentId, Long userId, ReviewCommentUpdateRequest request) {
-        // 유저 확인
-        UserInfo loginUser = userInfoRepository.findByUserId(userId)
-                .orElseThrow(UserNotFoundException::new);
-
-        // 본인 댓글인지 검증
+        // 유저 확인 및 본인 댓글 검증
+        UserInfo loginUser = getUserInfo(userId);
         ReviewComment comment = getOwnCommentOrThrow(commentId, loginUser.getUserId());
 
         // 내용 수정 후 저장
@@ -144,7 +128,7 @@ public class ReviewCommentService {
      */
     @Transactional
     public void deleteComment(Long commentId, Long userId) {
-        // 본인 댓글인지 확인
+        // 댓글 유효성 검증
         ReviewComment comment = getOwnCommentOrThrow(commentId, userId);
         // 삭제
         comment.deleteReviewComment();
@@ -157,18 +141,9 @@ public class ReviewCommentService {
      */
     @Transactional
     public ReviewCommentLikeResponse updateLikeStatus(Long commentId, boolean isLiked, Long userId) {
-        UserInfo loginUser = userInfoRepository.findByUserId(userId)
-                .orElseThrow(UserNotFoundException::new);
-
-        // 리뷰와 연결된 댓글 + 리뷰가 삭제되지 않은 것만 조회
-        ReviewComment comment = commentRepository.findActiveCommentWithAliveReview(commentId)
-                .orElseThrow(CommentNotFoundException::new);
-
-
-        if (comment.getReview() == null) {
-            log.error("[댓글에 연결된 리뷰가 null] commentId={}, userId={}", commentId, userId);
-            throw new ReviewNotFoundException();
-        }
+        // 유저 확인 및 댓글 유효성 검증
+        UserInfo loginUser = getUserInfo(userId);
+        ReviewComment comment = getOwnCommentOrThrow(commentId,userId);
 
         // 기존 좋아요가 있는지 확인
         ReviewCommentLike like = likeRepository.findByReviewCommentIdAndUser(commentId, loginUser)
@@ -198,11 +173,8 @@ public class ReviewCommentService {
      * 댓글 좋아요 여부 + 메타 정보 조회
      */
     public CommentLikeStatusResponse getLikeStatus(Long commentId, Long userId) {
-        UserInfo user = userInfoRepository.findByUserId(userId)
-                .orElseThrow(UserNotFoundException::new);
-
-        ReviewComment comment = commentRepository.findActiveCommentWithAliveReview(commentId)
-                .orElseThrow(CommentNotFoundException::new);
+        UserInfo user = userInfoRepository.findByUserId(userId).orElseThrow(UserNotFoundException::new);
+        ReviewComment comment = getOwnCommentOrThrow(commentId,userId);
 
         boolean isLiked = likeRepository.findByReviewCommentIdAndUser(commentId, user)
                 .map(ReviewCommentLike::isLiked)
@@ -221,11 +193,8 @@ public class ReviewCommentService {
      * 댓글 좋아요 여부 단건 조회
      */
     public boolean isLiked(Long commentId, Long userId) {
-        UserInfo loginUser = userInfoRepository.findByUserId(userId)
-                .orElseThrow(UserNotFoundException::new);
-
-        ReviewComment comment = commentRepository.findActiveCommentWithAliveReview(commentId)
-                .orElseThrow(CommentNotFoundException::new);
+        UserInfo loginUser = getUserInfo(userId);
+        ReviewComment comment = getOwnCommentOrThrow(commentId,userId);
 
         return likeRepository.findByReviewCommentIdAndUser(comment.getId(), loginUser)
                 .map(ReviewCommentLike::isLiked)
@@ -237,8 +206,8 @@ public class ReviewCommentService {
      * 댓글 좋아요 수 조회
      */
     public CommentLikeCountResponse commentLikeCount(Long commentId) {
-        ReviewComment comment = commentRepository.findActiveCommentWithAliveReview(commentId)
-                .orElseThrow(CommentNotFoundException::new);
+        commentRepository.findById(commentId).orElseThrow(NotFoundException::new);
+        ReviewComment comment = commentRepository.findActiveCommentWithAliveReview(commentId).orElseThrow(CommentNotFoundException::new);
 
         long likeCount = likeRepository.countByReviewCommentIdAndIsLikedTrue(commentId);
 
@@ -252,25 +221,30 @@ public class ReviewCommentService {
 
 
 
+    //============== 공통 메서드 ===============
 
-    /**
-     * 댓글 작성자 확인 및 삭제 여부 검증
-     * - 본인 댓글이 아니거나 삭제된 경우 예외 발생
-     */
+    // 1. 댓글 유효성 검증
     private ReviewComment getOwnCommentOrThrow(Long commentId, Long userId) {
-        ReviewComment comment = commentRepository.findById(commentId)
-                .orElseThrow(NotFoundException::new);
+        ReviewComment comment = commentRepository.findById(commentId).orElseThrow(NotFoundException::new);  // 아예 등록된적 없는 댓글
 
-        if (!comment.getUser().getUserId().equals(userId)) {
-            throw new UnauthorizedAccessException();
-        }
-
-        if (comment.getDeletedAt() != null) {
-            throw new CommentNotFoundException(); // 삭제된 댓글
-        }
-
+        if (!comment.getUser().getUserId().equals(userId)) {throw new UnauthorizedAccessException();} //본인 댓글 아님
+        if (comment.getDeletedAt() != null) {throw new CommentNotFoundException(); }  //삭제된 댓글
 
         return comment;
+    }
+    // 2. 리뷰 검증 및 가져오기
+    private Review getReview(Long reviewId) {
+        // 등록 된 적 없는 리뷰 요청인지 확인
+        reviewRepository.findReviewById(reviewId).orElseThrow(NotFoundException::new);
+        // 삭제되지 않은 리뷰인지 검증
+        Review review = reviewRepository.findActiveById(reviewId).orElseThrow(ReviewNotFoundException::new);
+        return review;
+    }
+
+    // 3. 로그인한 유저 검증 및 가져오기
+    private UserInfo getUserInfo(Long userId) {
+        UserInfo loginUser = userInfoRepository.findByUserId(userId).orElseThrow(UserNotFoundException::new);
+        return loginUser;
     }
 
 

@@ -65,8 +65,8 @@ public class ReviewSummaryService {
     // ============= AI 서버 요청 ============================
 
     private AiSummaryResponse fetchFromAi(Long propertyId) {
-        Property property = propertyRepository.findById(propertyId)
-                .orElseThrow(PropertyNotFoundException::new);
+        // 매물 유효성 검증
+        Property property = propertyRepository.findById(propertyId).orElseThrow(PropertyNotFoundException::new);
 
         String district = property.getDivisionName();      // 지역구 이름(예 : "강남구")
         String articleNo = property.getArticleNo();       // 매물 번호
@@ -118,8 +118,8 @@ public class ReviewSummaryService {
     //=================응답받은 요약 저장 ================
 
     public void saveSummary(Long propertyId, AiSummaryResponse dto) {
-        Property property = propertyRepository.findById(propertyId)
-                .orElseThrow(() -> new PropertyNotFoundException());
+        // 매물 유효성 검증
+        Property property = propertyRepository.findById(propertyId).orElseThrow(() -> new PropertyNotFoundException());
 
         Complex complex = property.getComplex(); // 매물의 단지 정보
 
