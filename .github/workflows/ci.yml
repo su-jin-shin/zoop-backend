@@ -2,6 +2,9 @@ name: Maven CI All Checks
 
 on:
   push:
+    branches:
+      - main
+      - dev
   pull_request:
 
 jobs:
