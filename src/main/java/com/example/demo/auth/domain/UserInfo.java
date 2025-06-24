@@ -53,6 +53,7 @@ public class UserInfo {
         if (this.deletedAt == null) return;     // 이미 활성 상태면 무시
         this.deletedAt = null;
         this.withdrawReason = null;
+        this.profileImage = null;
         this.lastLoginAt = LocalDateTime.now();
     }
 

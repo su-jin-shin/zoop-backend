@@ -59,8 +59,9 @@ public class LoginServiceImpl implements LoginService {
             if (user != null) {
                 user.reactivate();          // ← 탈퇴 상태면 deletedAt·withdrawReason NULL 처리
                 String currentImage = user.getProfileImage();
-                if (currentImage == null) {
-                    user.setProfileImage(profile);
+                // 탈퇴 상태였거나 프로필 이미지가 비어있을 경우 최신 이미지 저장
+                if (currentImage == null || user.getDeletedAt() != null) {
+                    user.setProfileImage(profile);  // ← 카카오에서 가져온 최신 이미지
                 }
             } else {
                 user = UserInfoFactory.createFromKakao(kakaoId, email, profile);
