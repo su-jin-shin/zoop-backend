@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 
-from crawler_api import main as crawl_main, crawl_by_article_no
+from app.crawler_api import main as crawl_main, crawl_by_article_no
 
 app = FastAPI()
 
@@ -14,6 +14,7 @@ class Filter(BaseModel):
     realEstateTypeCode: str
     dealOrWarrantPrc: int
     rentPrice: int
+    userMessage: str
 
 
 @app.post("/crawl")
@@ -34,6 +35,7 @@ async def crawl_estate_data(data: Filter):
         },
         "deal_or_warrant_price": data.dealOrWarrantPrc,
         "rent_price": data.rentPrice,
+        "user_message": data.userMessage
     }
 
     # 크롤링 실행 (비동기)

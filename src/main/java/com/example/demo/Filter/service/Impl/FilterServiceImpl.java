@@ -179,13 +179,22 @@ public class FilterServiceImpl implements FilterService {
 //
 //    }
 
-
     // 중복된 필터 조건이 아니면 필터 조건 등록
     private Filter createOrFind(Filter newFilter) {
         return filterRepository.findDuplicate(newFilter)
                 .orElseGet(() -> filterRepository.save(newFilter));
-        }
-
     }
 
+    // 채팅 필터 히스토리 조회
+    @Override
+    public FilterRequestDto getFilterByChatRoomId(Long chatRoomId) {
+        ChatFilterHistory chatFilterHistory = chatFilterHistoryRepository
+                .findByChatRoom_ChatRoomIdFetchFilterAndRegion(chatRoomId)
+                .orElseThrow(NotFoundException::new);
 
+        Filter filter = chatFilterHistory.getFilter();
+
+        return FilterRequestDto.from(filter);
+    }
+
+}

@@ -1,5 +1,6 @@
 package com.example.demo.chat.controller;
 
+import com.example.demo.Filter.domain.Filter;
 import com.example.demo.Filter.dto.request.FilterRequestDto;
 import com.example.demo.Filter.dto.request.RefinedFilterDto;
 import com.example.demo.Filter.service.FilterService;
@@ -58,19 +59,20 @@ public class ChatController {
 
         Long userId = Long.valueOf(loginUser.getUsername());
         // 필터 저장
-        // filterService.saveChatFilter(filterRequestDto, chatRoomId);
+        filterService.saveChatFilter(filterRequestDto, chatRoomId);
         // 제목 저장
         ChatRoomResponseDto response = chatService.updateTitle(chatRoomId, filterRequestDto);
         // 크롤링 로직 시작
-        crawlAndRecommendProperties(userId, chatRoomId, filterRequestDto);
+        crawlAndRecommendProperties(userId, chatRoomId, filterRequestDto, "");
         return ResponseEntity.ok(response);
     }
 
-    private void crawlAndRecommendProperties(Long userId, Long chatRoomId, FilterRequestDto filterRequestDto) {
+    private void crawlAndRecommendProperties(Long userId, Long chatRoomId, FilterRequestDto filterRequestDto, String userMessage) {
 
         // 크롤링 로직 시작
         RefinedFilterDto filters = RefinedFilterDto.of(filterRequestDto);
         log.info("filters: {}", filters);
+        filters.applyUserMessage(userMessage);
 
         List<PropertyExcelDto> recommendedProperties;
 
@@ -105,6 +107,7 @@ public class ChatController {
     @PostMapping
     public ResponseEntity<MessageResponseDto> sendMessage(@AuthenticationPrincipal LoginUser loginUser, @RequestBody MessageRequestDto request) {
         log.info("request: {}", request);
+        Long userId = Long.valueOf(loginUser.getUsername());
         Long chatRoomId = request.getChatRoomId();
         String content = request.getContent();
 
@@ -117,6 +120,11 @@ public class ChatController {
 
         // 메시지 저장
         MessageResponseDto response = chatService.saveMessage(request);
+
+        // 필터 조회
+        FilterRequestDto filterRequestDto = filterService.getFilterByChatRoomId(chatRoomId);
+        crawlAndRecommendProperties(userId, chatRoomId, filterRequestDto, content);
+
         log.info("response: {}", response);
         return ResponseEntity.ok(response);
     }

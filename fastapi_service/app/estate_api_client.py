@@ -76,23 +76,25 @@ def search_dong_properties(address: str, cond: dict):
     real_estate_type_name = cond['real_estate_type']['name']
     deal_or_warrant_price = cond['deal_or_warrant_price']
     rent_price = cond['rent_price']
+    user_message = cond['user_message']
 
     base_url = get_request_url("PROPERTY_SEARCH_URL")
     url = f'{base_url}/{address}'
 
     deal_or_warrant_price_str = format_price(deal_or_warrant_price)
     rent_price_str = format_price(rent_price)
+    msg = f' {user_message}' if user_message else ''
 
-    if real_estate_type_name == '원룸 ⦁ 투룸':
+    if '원룸' in real_estate_type_name or '투룸' in real_estate_type_name:
         real_estate_type_name = '원룸'
 
     if trade_type_name == '월세':
         if deal_or_warrant_price == 0:  # 보증금을 입력하지 않았을 때
-            query = f'{real_estate_type_name} {trade_type_name} {rent_price_str} 이하 추천해줘'
+            query = f'{real_estate_type_name} {trade_type_name} {rent_price_str} 이하 추천해줘.{msg}'
         else:
-            query = f'{real_estate_type_name} {trade_type_name} {rent_price_str} 이하, 보증금 {deal_or_warrant_price_str} 이하 추천해줘'
+            query = f'{real_estate_type_name} {trade_type_name} {rent_price_str} 이하, 보증금 {deal_or_warrant_price_str} 이하 추천해줘.{msg}'
     else :
-        query = f'{real_estate_type_name} {trade_type_name} {deal_or_warrant_price_str} 이하 추천해줘'
+        query = f'{real_estate_type_name} {trade_type_name} {deal_or_warrant_price_str} 이하 추천해줘.{msg}'
 
 
     print('query: ', query)

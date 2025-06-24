@@ -1,5 +1,7 @@
 package com.example.demo.Filter.service;
 
+import com.example.demo.Filter.domain.ChatFilterHistory;
+import com.example.demo.Filter.domain.Filter;
 import com.example.demo.Filter.dto.request.FilterRequestDto;
 import com.example.demo.chat.dto.ChatRoomRequestDto;
 //import com.example.demo.Filter.dto.response.KeywordFilterHistoryResponseDto;
@@ -26,5 +28,7 @@ public interface FilterService {
     // 사용자 등록한 필터 조건 상세 조회
     //KeywordFilterHistoryResponseDto getKeywordFilterDetail(Long userId, Long keywordFilterHistoryId);
 
+    // 채팅 필터 히스토리 조회
+    FilterRequestDto getFilterByChatRoomId(Long chatRoomId);
 
 }

@@ -27,6 +27,12 @@ public class RefinedFilterDto {
     private int dealOrWarrantPrc;
     private int rentPrice;
 
+    private String userMessage;
+
+    public void applyUserMessage(String userMessage) {
+        this.userMessage = userMessage;
+    }
+
     private static final Map<String, String> ESTATE_TYPE_CODE_MAP = Map.of(
             "아파트", "APT",
             "오피스텔", "OPST",

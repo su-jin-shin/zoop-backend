@@ -20,6 +20,7 @@ import java.util.Optional;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class FilterRequestDto {
 
@@ -116,4 +117,19 @@ public class FilterRequestDto {
             return String.format("%,d만원", price);
         }
     }
+
+    public static FilterRequestDto from(Filter filter) {
+        return FilterRequestDto.builder()
+                .x(filter.getLongitude())
+                .y(filter.getLatitude())
+                .bCode(filter.getBCode())
+                .hCode(filter.getHCode())
+                .placeName(filter.getRegion().getCortarName())
+                .tradeTypeName(filter.getTradeTypeName())
+                .realEstateTypeName(filter.getRealEstateTypeName())
+                .dealOrWarrantPrc(filter.getDealOrWarrantPrc())
+                .rentPrice(filter.getRentPrice())
+                .build();
+    }
+
 }
