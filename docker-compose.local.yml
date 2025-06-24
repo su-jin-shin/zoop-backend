@@ -19,8 +19,6 @@ services:
     container_name: zoop-app-local
     depends_on:
       - db
-    ports:
-      - "18080:8080"
     environment:
       PROFILES: local
       ENV: local
