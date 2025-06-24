@@ -35,7 +35,7 @@ services:
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
       FRONT_BASE_URL: http://localhost:3000
       FRONT_NICKNAME_PATH: /login/set-nickname
-      FRONT_HOME_PATH: /
+      FRONT_HOME_PATH: /login/complete
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/hc"]
       interval: 10s

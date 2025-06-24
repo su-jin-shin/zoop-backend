@@ -75,6 +75,7 @@ front:
   base-url: ${FRONT_BASE_URL}
   nickname-path: ${FRONT_NICKNAME_PATH}
   home-path: ${FRONT_HOME_PATH}
+
 crawl:
   and-recommend-url: ${CRAWL_AND_RECOMMEND_URL}
   by-article-no-url: ${CRAWL_BY_ARTICLE_NO_URL}
