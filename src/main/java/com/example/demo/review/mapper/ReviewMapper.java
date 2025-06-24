@@ -87,17 +87,7 @@ public class ReviewMapper {
                 .build();
     }
 
-//    /**
-//     * @ 리뷰 + 유저 + 좋아요 여부로 ReviewLike 생성
-//     * @ 좋아요 등록 시 사용
-//     */
-//    public ReviewLike toEntity(Review review, UserInfo loginUser, boolean isLiked) {
-//        return ReviewLike.builder()
-//                .review(review)  // 해당 리뷰
-//                .user(loginUser)  // 로그인된 유저의 UserInfo 객체
-//                .isLiked(isLiked)  // 좋아요 여부
-//                .build();
-//    }
+
 
 
     /**
@@ -123,89 +113,5 @@ public class ReviewMapper {
 
 
 
-
-
-//package com.example.demo.review.mapper;
-//
-//import com.example.demo.auth.dto.LoginUser;
-//import com.example.demo.auth.domain.UserInfo;
-//import com.example.demo.review.domain.Review;
-//import com.example.demo.review.domain.ReviewLike;
-//import com.example.demo.review.dto.Review.*;
-//
-//import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-//import lombok.RequiredArgsConstructor;
-//import org.springframework.data.domain.Page;
-//import org.springframework.stereotype.Component;
-//
-//import java.math.BigDecimal;
-//import java.time.LocalDateTime;
-//import java.util.List;
-//
-//@Component
-//@RequiredArgsConstructor
-//@SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
-//public class ReviewMapper {
-//
-//    public ReviewCreateResponse toDto(Review review,
-//                                      long likeCount,
-//                                      long commentCount,
-//                                      boolean isLikedByMe,
-//                                      boolean isMine) {
-//        UserInfo user = review.getUser();
-//        return ReviewCreateResponse.builder()
-//                .reviewId(review.getId())
-//                .userId(user != null ? user.getUserId() : null)
-//                .nickname(user != null ? user.getNickname() : null)
-//                .profileImage(user != null ? user.getProfileImage() : null)
-//                .rating(review.getRating())
-//                .content(review.getContent())
-//                .hasChildren(review.isHasChildren())
-//                .isResident(review.isResident())
-//                .likeCount(likeCount)
-//                .commentCount(commentCount)
-//                .isLikedByMe(isLikedByMe)
-//                .isMine(isMine)
-//                .createdAt(review.getCreatedAt())
-//                .updatedAt(review.getUpdatedAt())
-//                .build();
-//    }
-//
-//    public ReviewListResponse toListResponse(Page<Review> page,
-//                                             List<ReviewCreateResponse> reviewCreateRespons,
-//                                             Long complexId,
-//                                             Long propertyId) {
-//        return ReviewListResponse.builder()
-//                .complexId(complexId)
-//                .propertyId(propertyId)
-//                .reviews(reviewCreateRespons)
-//                .page(page.getNumber())
-//                .size(page.getSize())
-//                .totalCount(page.getTotalElements())
-//                .build();
-//    }
-//
-//    public Review toEntity(Long propertyId, ReviewCreateRequest request, LoginUser loginUser) {
-//        return Review.builder()
-//                .propertyId(propertyId)
-//                .user(loginUser.getUserInfo())
-//                .rating(request.getRating() != null ? request.getRating() : BigDecimal.valueOf(0.5))
-//                .content(request.getContent() != null ? request.getContent() : "")
-//                .hasChildren(Boolean.TRUE.equals(request.getHasChildren()))
-//                .isResident(Boolean.TRUE.equals(request.getIsResident()))
-//                .likeCount(0L)
-//                .createdAt(LocalDateTime.now())
-//                .updatedAt(LocalDateTime.now())
-//                .build();
-//    }
-//
-//    public ReviewLike toEntity(Review review, LoginUser loginUser, boolean isLiked) {
-//        return ReviewLike.builder()
-//                .review(review)
-//                .user(loginUser.getUserInfo())
-//                .isLiked(isLiked)
-//                .build();
-//    }
-//}
 
 
