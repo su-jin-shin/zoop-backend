@@ -52,4 +52,9 @@ public interface BookmarkedPropertyRepository extends JpaRepository<BookmarkedPr
 
     boolean existsByUser_UserIdAndProperty_PropertyIdAndIsBookmarkedTrue(Long userId, Long propertyId);
 
+    /** user_id = ? AND property_id IN (?)  */
+    List<BookmarkedProperty> findByUser_UserIdAndProperty_PropertyIdIn(
+            Long userId,
+            List<Long> propertyIds);
+
 }

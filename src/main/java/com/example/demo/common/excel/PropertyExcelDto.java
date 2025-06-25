@@ -120,6 +120,11 @@ public class PropertyExcelDto {
                 .longitude(property.getLongitude())
                 .summary(safeList(property.getTagList())) // ✅ 복사 안전하게 처리
 
+                // 추가
+                .aptName(property.getAptName())
+                .buildingName(property.getBuildingName())
+                .realEstateTypeName(property.getRealEstateTypeName())
+
                 .realtorName(realtor != null ? realtor.getRealtorName() : null)
                 .representativeName(realtor != null ? realtor.getRepresentativeName() : null)
                 .realtorAddress(realtor != null ? realtor.getAddress() : null)

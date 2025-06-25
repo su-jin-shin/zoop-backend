@@ -1,5 +1,6 @@
 package com.example.demo.chat.dto;
 
+import com.example.demo.chat.domain.Message;
 import com.example.demo.chat.type.SenderType;
 import com.example.demo.common.excel.PropertyExcelDto;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -19,6 +20,7 @@ public class MessageDto {
     private Long messageId;
     private String content;
     private SenderType senderType;
+    private boolean isRecommended;
 
     @Getter(AccessLevel.NONE)
     private List<PropertyExcelDto> properties;

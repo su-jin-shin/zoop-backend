@@ -22,15 +22,20 @@ import com.example.demo.property.repository.PropertySummaryRepository;
 
 import com.example.demo.property.util.PropertyDtoConverter;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@SuppressFBWarnings("EI_EXPOSE_REP2")
 public class PropertyServiceImpl  implements PropertyService{
 
     private final PropertyRepository propertyRepository;
@@ -39,7 +44,7 @@ public class PropertyServiceImpl  implements PropertyService{
     private final BookmarkedPropertyRepository bookmarkedPropertyRepository;
     private final UserInfoRepository userInfoRepository;
     private final FilterRepository filterRepository;
-
+    private final ObjectMapper objectMapper;
 
 
     //매물 상세조회 (기본정보) userId없는 버전
@@ -238,8 +243,23 @@ public class PropertyServiceImpl  implements PropertyService{
         return RealtyWithPropertiesResponseDto.of(property, dealCount, leaseCount, rentCount);
     }
 
-    //ai
+    // ai가 추천해준 매물의 번호(articleNo)를 통해 매물 id를 조회
+    public Property findByArticleNo(String articleNo) {
+        Optional<Property> optionalProperty = propertyRepository.findByArticleNo(articleNo);
+        return optionalProperty.orElse(null); // 매물테이블에 추천 받은 매물의 정보가 존재하지 않으면 null 반환
+    }
 
+    // ai 요약 update
+    @Transactional
+    public void updateAiMessage(Long propertyId,
+                                Map<String, List<String>> summary) {
 
+        try {
+            String json = objectMapper.writeValueAsString(summary);
+            propertyRepository.updateAiSummaryNative(propertyId, json);
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException("aiSummary 직렬화 실패", e);
+        }
+    }
 
 }

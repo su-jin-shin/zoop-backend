@@ -17,13 +17,13 @@ public class MessageReplyDto {
     private String content; // ai의 답변
     private List<PropertyExcelDto> properties;
     private SenderType senderType;
-    //private boolean isRecommended;
+    private boolean isRecommended;
 
     public MessageReplyDto generateAiResponse(String aiReply, List<PropertyExcelDto> recommendedProperties, boolean isRecommended) {
         this.content = aiReply;
         this.properties = recommendedProperties;
         this.senderType = SenderType.CHATBOT;
-        //this.isRecommended = isRecommended;
+        this.isRecommended = isRecommended;
         return this;
     }
 
