@@ -36,7 +36,7 @@ public class SecurityConfig {
                 // ④ 인가 규칙 (필요하면 OPTIONS 모두 허용)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .anyRequest().permitAll()
+                        .anyRequest().authenticated()
                 )
 
                 // ⑤ JWT 필터
