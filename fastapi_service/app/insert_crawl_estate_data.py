@@ -199,6 +199,9 @@ async def insert_many_properties(pool, article_list, real_estate_type_code):
             article_no = item.get('articleNo')
             if not article_no:
                 continue
+            details = item.get('articleDetails', {})
+            detail = details.get('articleDetail', {})
+            price = details.get('articlePrice', {})
 
             article_info = article_to_property_id.get(article_no)
             if not article_info:
