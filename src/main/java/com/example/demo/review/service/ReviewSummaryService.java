@@ -15,7 +15,6 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
-import java.util.Iterator;
 
 @Slf4j
 @Service
@@ -80,38 +79,21 @@ public class ReviewSummaryService {
 
         try {
             JsonNode root = objectMapper.readTree(responseBody);
-            if (root == null || root.isNull()) {
-                log.error("[AI 응답 파싱 실패] root is null");
-                throw new RuntimeException("AI 응답 파싱 실패: root가 null입니다.");
-            }
-
             JsonNode summaries = root.path("summaries");
-            if (summaries == null || summaries.isMissingNode() || summaries.isNull()) {
-                log.error("[summaries 없음] 응답에 summaries 노드 없음");
-                throw new RuntimeException("AI 응답에 summaries 노드가 없습니다.");
+            JsonNode item = summaries.path(articleNo);
+
+            if (item.isMissingNode() || item.isNull()) {
+                log.warn("[요약 미존재] articleNo: {}", articleNo);
+                throw new RuntimeException("해당 articleNo에 대한 AI 요약 없음");
             }
 
-            for (Iterator<String> it = summaries.fieldNames(); it.hasNext(); ) {
-                String key = it.next();
-                JsonNode item = summaries.get(key);
-                String responseArticleNo = item.path("articleNo").asText();
-
-                log.debug("[응답 요약 비교] 응답 articleNo: {}", responseArticleNo);
-
-                if (articleNo.equals(responseArticleNo)) {
-                    return extractSummary(item, articleNo);
-                }
-            }
-
-            log.warn("[요약 미존재] articleNo: {}", articleNo);
-            throw new RuntimeException("해당 articleNo에 대한 AI 요약 없음");
+            return extractSummary(item, articleNo);
 
         } catch (JsonProcessingException e) {
             log.error("[요약 파싱 실패] articleNo: {}, 에러: {}", articleNo, e.getMessage(), e);
             throw new RuntimeException("AI 응답 파싱 실패", e);
         }
     }
-
 
     private AiSummaryResponse extractSummary(JsonNode item, String articleNo) {
         JsonNode summaryNode = item.get("summary");
