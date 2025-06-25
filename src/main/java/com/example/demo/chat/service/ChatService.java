@@ -202,6 +202,16 @@ public class ChatService {
 //        return ChatRoomDetailResponseDto.from(chatRoom, messageDtos);
 //    }
 
+    public static String toKoreanUnit(String manWonStr) {   // "120000"
+        if (manWonStr == null || manWonStr.isBlank()) return "-";
+        long man = Long.parseLong(manWonStr);               // 120000
+        long eok = man / 10_000;                            // 12
+        long restMan = man % 10_000;                       // 0
+        if (eok > 0 && restMan > 0) return "%d억 %,d만".formatted(eok, restMan);
+        if (eok > 0)                    return eok + "억";
+        return "%,d만".formatted(restMan);
+    }
+
     @Transactional(readOnly = true)
     public ChatRoomDetailResponseDto getUserChatRoomMessages(Long userId, Long chatRoomId) {
 
@@ -225,6 +235,7 @@ public class ChatService {
         List<RecommendedProperty> recProps = recMsgIds.isEmpty()
                 ? List.of()
                 : recommendedPropertyRepository.findByMessage_MessageIdIn(recMsgIds);
+
 
         /* 4) propertyId 목록, 대표 썸네일 -------------------------------- */
         List<Long> propertyIds = recProps.stream()

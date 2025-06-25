@@ -17,7 +17,12 @@ public interface MyReviewRepository extends JpaRepository<Review, Long> {
         List<Review> findByUserUserIdAndDeletedAtIsNullOrderByCreatedAtDesc(Long userId);
 
         // ✅ 댓글 수
-        @Query("SELECT COUNT(rc) FROM ReviewComment rc WHERE rc.review.id = :reviewId")
+        @Query("""
+            SELECT COUNT(c)
+            FROM ReviewComment c
+            WHERE c.review.id = :reviewId
+              AND c.deletedAt IS NULL
+        """)
         int countCommentsByReviewId(@Param("reviewId") Long reviewId);
 
         // ✅ 좋아요 수
