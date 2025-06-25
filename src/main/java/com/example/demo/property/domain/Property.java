@@ -4,6 +4,8 @@ package com.example.demo.property.domain;
 import com.example.demo.property.converter.JsonStringListConverter;
 import com.example.demo.realty.domain.Realty;
 import com.example.demo.review.domain.Complex;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -11,11 +13,14 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @SuppressFBWarnings(
         value = { "EI_EXPOSE_REP", "EI_EXPOSE_REP2" },
@@ -141,6 +146,10 @@ public class Property {
     @Convert(converter = JsonStringListConverter.class)
     private List<String> tagList; //태그
 
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "jsonb")
+    private String aiSummary; //ai요약
+    
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime createdAt;   // 지역 추가 시각
@@ -149,5 +158,13 @@ public class Property {
     private LocalDateTime updatedAt;   // 지역 수정 시각
     private LocalDateTime deletedAt;   // 지역 삭제 시각
 
+    public void updateAiSummary(Map<String, List<String>> summary) {
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            this.aiSummary = objectMapper.writeValueAsString(summary);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("AI 요약 변환 실패", e);
+        }
+    }
 
 }

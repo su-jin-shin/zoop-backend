@@ -54,5 +54,16 @@ public class ChatRoomDetailResponseDto {
                     .createdAt(message.getCreatedAt())
                     .build();
         }
+
+        public static MessageDto from(Message message, List<PropertyExcelDto> recommendedProperties) {
+            return MessageDto.builder()
+                    .messageId(message.getMessageId())
+                    .senderType(message.getSenderType())
+                    .content(message.getContent())
+                    .properties(recommendedProperties)
+                    .createdAt(message.getCreatedAt())
+                    .build();
+        }
+
     }
 }
