@@ -26,7 +26,7 @@ jobs:
           APP_DIR="/home/ubuntu/zoop-app"
           BRANCH="main"
           TOKEN="$GH_PAT"
-
+          sudo chown -R ubuntu:ubuntu "$APP_DIR"
           rm -rf "$APP_DIR"
           git clone --depth 1 -b "$BRANCH" \
             https://${TOKEN}@github.com/${REPO}.git "$APP_DIR"
