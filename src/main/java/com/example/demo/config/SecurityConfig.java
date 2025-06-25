@@ -24,29 +24,34 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                // ① CORS 필터 활성화
                 .cors(Customizer.withDefaults())
-
-                // ② CSRF 비활성
                 .csrf(csrf -> csrf.disable())
+                .sessionManagement(sm ->
+                        sm.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
 
-                // ③ 세션 정책
-                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
-
-                // ④ 인가 규칙 (필요하면 OPTIONS 모두 허용)
                 .authorizeHttpRequests(auth -> auth
+                        // 헬스 체크·Swagger·회원가입 등 “익명 허용” 경로
+                        .requestMatchers("/hc").permitAll()
+                        .requestMatchers(
+                                "/api-docs/**", "/swagger-ui/**",
+                                "/users/auth/**",          // 소셜 로그인, 토큰 재발급
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/css/**", "/js/**", "/images/**", "/favicon.ico"
+                        ).permitAll()
+                        // Preflight
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        // 그 외는 모두 인증 필요
                         .anyRequest().authenticated()
                 )
 
-                // ⑤ JWT 필터
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 }
 
-//
+
 //import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 //import lombok.RequiredArgsConstructor;
 //import org.springframework.context.annotation.Bean;
