@@ -62,7 +62,7 @@ springdoc:
     doc-expansion: none
 
 app:
-  base-url: http://43.201.121.201
+  base-url: https://zoopzoop.shop
 
 jwt:
   secret: ${JWT_SECRET_KEY}  # prod 환경에서는 환경변수로 주입
