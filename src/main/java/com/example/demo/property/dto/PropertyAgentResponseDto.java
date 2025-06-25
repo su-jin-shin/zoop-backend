@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 public class PropertyAgentResponseDto {
 
     private Long propertyId; //매물 아이디 (기본키)
-
+    private Long realtyId; //부동산 아이디(인조)
     private String realtorName; //중개사이름
     private String representativeName; //대표자이름
     private String establishRegistrationNo; //개설등록번호
@@ -27,7 +27,7 @@ public class PropertyAgentResponseDto {
         Realty realty =property.getRealty();
         return PropertyAgentResponseDto.builder()
                 .propertyId(property.getPropertyId())
-
+                .realtyId(realty.getRealtyId())
                 .realtorName(realty.getRealtorName())
                 .representativeName(realty.getRepresentativeName())
                 .establishRegistrationNo(realty.getEstablishRegistrationNo())
