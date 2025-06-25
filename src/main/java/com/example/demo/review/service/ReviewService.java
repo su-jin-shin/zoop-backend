@@ -24,7 +24,11 @@ import com.example.demo.common.exception.*;
 import com.example.demo.property.domain.Property;
 import com.example.demo.property.repository.PropertyRepository;
 import com.example.demo.review.domain.*;
-import com.example.demo.review.dto.Review.*;
+import com.example.demo.review.dto.Review.Request.ReviewCreateRequest;
+import com.example.demo.review.dto.Review.Request.ReviewUpdateRequest;
+import com.example.demo.review.dto.Review.Response.ReviewCreateResponse;
+import com.example.demo.review.dto.Review.Response.ReviewLikeResponse;
+import com.example.demo.review.dto.Review.Response.ReviewListResponse;
 import com.example.demo.review.mapper.ReviewMapper;
 import com.example.demo.review.repository.*;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -143,12 +147,11 @@ public class ReviewService {
         // 2. 작성자 본인 확인
         if (!review.isMine(loginUser)) throw new UnauthorizedAccessException();
 
-
-        // 3. 요청 필드가 null이 아닐 때만 업데이트
-        if (request.getContent() != null) review.updateContent(request.getContent());
-        if (request.getRating() != null) review.updateRating(request.getRating());
-        if (request.getIsResident() != null) review.updateIsResident(request.getIsResident());
-        if (request.getHasChildren() != null) review.updateHasChildren(request.getHasChildren());
+        // 3. 요청 필드 업데이트
+        review.updateContent(request.getContent());
+        review.updateRating(request.getRating());
+        review.updateHasChildren(request.getHasChildren());
+        review.updateIsResident(request.getIsResident());
 
 
         Long likeCount = reviewLikeRepository.countByReviewIdAndIsLikedTrue(reviewId);
@@ -244,9 +247,9 @@ public class ReviewService {
 
     // 1. 리뷰 검증 및 가져오기
     private Review getReview(Long reviewId) {
-        // 등록 된 적 없는 리뷰 요청인지 확인
+        // 1-1. 등록 된 적 없는 리뷰 요청인지 확인
         reviewRepository.findReviewById(reviewId).orElseThrow(NotFoundException::new);
-        // 삭제되지 않은 리뷰인지 검증
+        // 1-2. 삭제되지 않은 리뷰인지 검증
         Review review = reviewRepository.findActiveById(reviewId).orElseThrow(ReviewNotFoundException::new);
         return review;
     }

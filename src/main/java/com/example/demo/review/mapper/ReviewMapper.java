@@ -1,11 +1,13 @@
 package com.example.demo.review.mapper;
 
 import com.example.demo.auth.domain.UserInfo;
-import com.example.demo.review.domain.HasChildren;
-import com.example.demo.review.domain.IsResident;
+import com.example.demo.review.domain.enums.HasChildren;
+import com.example.demo.review.domain.enums.IsResident;
 import com.example.demo.review.domain.Review;
-import com.example.demo.review.domain.ReviewLike;
-import com.example.demo.review.dto.Review.*;
+import com.example.demo.review.dto.Review.Request.ReviewCreateRequest;
+import com.example.demo.review.dto.Review.Response.ReviewCreateResponse;
+import com.example.demo.review.dto.Review.Response.ReviewLikeResponse;
+import com.example.demo.review.dto.Review.Response.ReviewListResponse;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

@@ -56,7 +56,7 @@ public class ReviewLike {
 
     /* 비즈니스 메서드 */
 
-    // 좋아요 등록/해제 --> ReviewCommentLike도 이거 해야함
+    // 좋아요 등록/해제
     public void updateLikeStatus(boolean isLiked) {
         this.isLiked = isLiked;
         this.updatedAt = LocalDateTime.now();

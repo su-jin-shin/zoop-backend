@@ -1,5 +1,6 @@
 package com.example.demo.review.domain;
 
+import com.example.demo.review.domain.enums.SummaryType;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.persistence.*;
 import lombok.*;
@@ -24,7 +25,7 @@ public class ReviewSummary {
     @JoinColumn(name = "complex_id")
     private Complex complex;
 
-    // 매물 ID (nullable = false 아님 → 유연성 확보)
+    // 매물 ID
     @Column(name = "property_id")
     private Long propertyId;
 

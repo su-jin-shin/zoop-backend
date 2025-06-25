@@ -1,7 +1,8 @@
 package com.example.demo.review.domain;
 
 import com.example.demo.auth.domain.UserInfo;
-import com.example.demo.auth.dto.LoginUser;
+import com.example.demo.review.domain.enums.HasChildren;
+import com.example.demo.review.domain.enums.IsResident;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.*;
 import jakarta.persistence.*;
@@ -80,7 +81,7 @@ public class Review {
     /* 비즈니스 메서드 */
 
 
-
+    // 본인 확인
     public boolean isMine(UserInfo currentUser) {
         return user != null && user.getUserId().equals(currentUser.getUserId());
     }
@@ -91,6 +92,8 @@ public class Review {
         this.content = content;
         onUpdate();
     }
+
+    // 별점
     public void updateRating(BigDecimal rating){
         this.rating = rating;
         onUpdate();
@@ -106,8 +109,6 @@ public class Review {
         this.isResident = isResident;
         onUpdate();
     }
-
-
 
     // 리뷰 삭제
     public void deleteReview() {
