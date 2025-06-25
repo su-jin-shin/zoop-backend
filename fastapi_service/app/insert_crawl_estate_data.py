@@ -434,7 +434,8 @@ def extract_article_info(item, real_estate_type_code):
         parking_count = detail.get('parkingCount')
 
         return (
-            (complex_info.get('complexName') or '') + ' ' + (complex_info.get('dongName') or '') if complex_info else item.get('articleName'),
+            # (complex_info.get('complexName') or '') + ' ' + (complex_info.get('dongName') or '') if complex_info else item.get('articleName'),
+            (detail.get('articleName') or '').strip() or None,
             details.get('articleBuildingRegister', {}).get('bldNm'),
             facility.get('heatMethodTypeName'),
             facility.get('heatFuelTypeName'),
@@ -445,7 +446,7 @@ def extract_article_info(item, real_estate_type_code):
         )
     elif real_estate_type_code in ['APT', 'OPST']:
         return (
-            detail.get('articleName'),
+            (detail.get('articleName') or '').strip() or None,
             detail.get('aptName'),
             detail.get('aptHeatMethodTypeName'),
             detail.get('aptHeatFuelTypeName'),

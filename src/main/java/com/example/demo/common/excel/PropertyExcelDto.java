@@ -124,6 +124,7 @@ public class PropertyExcelDto {
                 .aptName(property.getAptName())
                 .buildingName(property.getBuildingName())
                 .realEstateTypeName(property.getRealEstateTypeName())
+                .dealOrWarrantPrc(property.getDealOrWarrantPrc())
 
                 .realtorName(realtor != null ? realtor.getRealtorName() : null)
                 .representativeName(realtor != null ? realtor.getRepresentativeName() : null)
@@ -180,10 +181,23 @@ public class PropertyExcelDto {
         }
     }
 
-    public String getDealOrWarrantPrc() {
-        if (dealPrice != null) return dealPrice.toPlainString();
-        if (warrantPrice != null) return warrantPrice.toPlainString();
-        return "-";
+//    public String getDealOrWarrantPrc() {
+//        if (dealPrice != null) return dealPrice.toPlainString();
+//        if (warrantPrice != null) return warrantPrice.toPlainString();
+//        return "-";
+//    }
+
+    public String toKoreanUnit(String manWonStr) {   // "120000"
+        if (manWonStr == null || manWonStr.isBlank()) return "-";
+        long man = Long.parseLong(manWonStr);               // 120000
+        long eok = man / 10_000;                            // 12
+        long restMan = man % 10_000;                       // 0
+        if (eok > 0 && restMan > 0) return "%d억 %,d만".formatted(eok, restMan);
+        if (eok > 0)                    return eok + "억";
+        this.dealOrWarrantPrc = "%,d만".formatted(restMan);
+        return "%,d만".formatted(restMan);
     }
+
+
 
 }
