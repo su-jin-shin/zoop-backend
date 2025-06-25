@@ -24,10 +24,19 @@ public class WebConfig implements WebMvcConfigurer {
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
                 .allowedOriginPatterns(
+                        // ──────── [로컬 개발] ────────
                         "http://localhost:3000",
+
+                        // ──────── [배포 프론트(Vercel)] ────────
                         "https://zoop-frontend-sable.vercel.app",
                         "https://zoop-frontend-sable-git-*.vercel.app",
-                        "http://localhost:8000"    // FastAPI Swagger 등 브라우저 접근 시
+
+                        // ──────── [새 프로덕션 도메인] ────────
+                        "https://zoopzoop.shop",
+                        "https://www.zoopzoop.shop",
+
+                        // ↓ Swagger용 IP/포트
+                         "http://localhost:8000"
                 )
                 .allowedMethods("GET","POST","PUT","DELETE","OPTIONS","PATCH")
                 .allowedHeaders("*")
