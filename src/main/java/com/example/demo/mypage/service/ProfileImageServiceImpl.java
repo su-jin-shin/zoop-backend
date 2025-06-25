@@ -5,6 +5,7 @@ import com.example.demo.mypage.util.FileUploader;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import com.example.demo.common.exception.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -21,6 +22,15 @@ public class ProfileImageServiceImpl implements ProfileImageService {
     private final MypageUserInfoRepository userInfoRepository;
     private final FileUploader fileUploader;
 
+    @Value("${app.base-url}")
+    private String baseUrl;
+
+    private String toFullUrl(String imagePath) {
+        if (imagePath == null || imagePath.isBlank()) return baseUrl + DEFAULT_PROFILE_IMAGE;
+        if (imagePath.startsWith("http")) return imagePath;
+        return baseUrl + imagePath;
+    }
+
     @Override
     @Transactional
     public String uploadAndSave(Long userId, MultipartFile file) throws IOException {
@@ -30,14 +40,14 @@ public class ProfileImageServiceImpl implements ProfileImageService {
                 .orElseThrow(UserNotFoundException::new);
 
         user.setProfileImage(uploadedUrl);
-        return uploadedUrl;
+        return toFullUrl(uploadedUrl);
     }
 
     @Override
     @Transactional
     public String resetToDefaultImage(Long userId) {
         var user = userInfoRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
+                .orElseThrow(UserNotFoundException::new);
 
         String currentImage = user.getProfileImage();
 
@@ -46,7 +56,7 @@ public class ProfileImageServiceImpl implements ProfileImageService {
         }
 
         user.setProfileImage(DEFAULT_PROFILE_IMAGE);
-        return DEFAULT_PROFILE_IMAGE;
+        return toFullUrl(DEFAULT_PROFILE_IMAGE);
     }
 
 }
