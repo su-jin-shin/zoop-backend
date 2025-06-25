@@ -1,11 +1,11 @@
-package com.example.demo.review.dto.ReviewComment;
+package com.example.demo.review.dto.ReviewComment.Response;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.*;
 
 import java.time.LocalDateTime;
 
-// 리뷰 댓글 단건 Response용 DTO  -> 나중에 Mapper랑 합치던지...
+// 댓글 작성 응답
 @Getter
 @Builder
 @AllArgsConstructor

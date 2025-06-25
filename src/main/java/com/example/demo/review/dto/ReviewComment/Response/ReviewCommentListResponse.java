@@ -1,12 +1,12 @@
-package com.example.demo.review.dto.ReviewComment;
+package com.example.demo.review.dto.ReviewComment.Response;
 
-//리뷰 댓글 리스트 조회용 Response DTO
+
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.*;
 
 import java.util.List;
-
+// 한 리뷰에 대한 댓글 목록 조회 응답
 @Getter
 @Builder
 @AllArgsConstructor

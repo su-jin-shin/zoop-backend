@@ -1,23 +1,19 @@
-package com.example.demo.review.dto.Review;
+package com.example.demo.review.dto.Review.Request;
 
 
 
-import com.example.demo.review.domain.HasChildren;
-import com.example.demo.review.domain.IsResident;
+import com.example.demo.review.domain.enums.HasChildren;
+import com.example.demo.review.domain.enums.IsResident;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import jakarta.persistence.Column;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-
+// 리뷰 작성 요청
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor

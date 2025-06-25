@@ -2,7 +2,8 @@ package com.example.demo.review.domain;
 
 
 import com.example.demo.auth.domain.UserInfo;
-import com.example.demo.auth.dto.LoginUser;
+import com.example.demo.review.domain.enums.HasChildren;
+import com.example.demo.review.domain.enums.IsResident;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.persistence.*;
 import lombok.*;
@@ -71,7 +72,6 @@ public class ReviewComment {
 
 
     //본인 확인
-
     public boolean isMine(UserInfo currentUser) {
         return user != null && user.getUserId().equals(currentUser.getUserId());
     }
