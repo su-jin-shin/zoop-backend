@@ -21,6 +21,7 @@ public interface ImageRepository extends JpaRepository<Image,Long> {
     FROM image i
     WHERE i.property_id IN (:propertyIds)
       AND i.deleted_at IS NULL
+      AND i.image_type = 'PROPERTY'
     ORDER BY i.property_id,
              CASE WHEN i.is_main THEN 0 ELSE 1 END,
              i.image_order ASC
