@@ -30,8 +30,8 @@ public class WebConfig implements WebMvcConfigurer {
                         "http://localhost:8000"    // FastAPI Swagger 등 브라우저 접근 시
                 )
                 .allowedMethods("GET","POST","PUT","DELETE","OPTIONS","PATCH")
-                .allowedHeaders("*", "Authorization")
-                .allowCredentials(false);
+                .allowedHeaders("*")
+                .allowCredentials(true);
     }
 }
 
