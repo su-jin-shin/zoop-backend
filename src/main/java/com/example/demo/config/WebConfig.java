@@ -34,8 +34,8 @@ public class WebConfig implements WebMvcConfigurer {
                         "https://www.zoopzoop.shop"
                 )
                 .allowedMethods("GET","POST","PUT","DELETE","OPTIONS","PATCH")
-                .allowedHeaders("*")
-                .allowCredentials(true);
+                .allowedHeaders("*")          // * 하나면 Authorization 포함 전부 허용
+                .allowCredentials(true);     // 쿠키·세션이 필요하면 true 로
     }
 }
 
