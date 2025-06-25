@@ -2,6 +2,8 @@ package com.example.demo.review.controller;
 
 import com.example.demo.auth.dto.LoginUser;
 import com.example.demo.common.exception.InvalidRequestException;
+import com.example.demo.common.exception.PropertyNotFoundException;
+import com.example.demo.common.response.FailedMessage;
 import com.example.demo.common.response.ResponseResult;
 import com.example.demo.common.response.SuccessMessage;
 import com.example.demo.review.dto.Review.Request.ReviewCreateRequest;
@@ -10,16 +12,23 @@ import com.example.demo.review.dto.Review.Request.ReviewUpdateRequest;
 import com.example.demo.review.dto.Review.Response.*;
 import com.example.demo.review.service.ReviewService;
 import com.example.demo.review.service.ReviewSummaryService;
+import com.fasterxml.jackson.databind.JsonNode;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.RequiredArgsConstructor;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.URI;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 @RestController
@@ -30,6 +39,8 @@ public class ReviewController {
 
     private final ReviewService reviewService;
     private final ReviewSummaryService reviewSummaryService;
+    private final RestTemplate restTemplate;                        // 외부 AI 서버 요청용
+    private final ObjectMapper objectMapper;
 
     // 리뷰 목록 조회
     @GetMapping("/{propertyId}")
@@ -143,15 +154,34 @@ public class ReviewController {
                 ResponseResult.success(HttpStatus.OK, SuccessMessage.COMMENT_COUNT_FETCHED.getMessage(), response));
     }
 
-    // AI 리뷰 요약 조회
+//    // AI 리뷰 요약 조회
+//    @GetMapping("/{propertyId}/summary")
+//    public ResponseEntity<?> getSummary(@PathVariable Long propertyId) {
+//
+//        AiSummaryResponse summary = reviewSummaryService.getOrFetchSummary(propertyId);
+//        return ResponseEntity.ok(
+//                ResponseResult.success(HttpStatus.OK, "요청이 정상적으로 처리되었습니다.", summary)
+//        );
+//    }
     @GetMapping("/{propertyId}/summary")
     public ResponseEntity<?> getSummary(@PathVariable Long propertyId) {
-
-        AiSummaryResponse summary = reviewSummaryService.getOrFetchSummary(propertyId);
-        return ResponseEntity.ok(
-                ResponseResult.success(HttpStatus.OK, "요청이 정상적으로 처리되었습니다.", summary)
-        );
+        try {
+            AiSummaryResponse summary = reviewSummaryService.getSummaryFromAi(propertyId); // 또는 getOrFetchSummary()
+            return ResponseEntity.ok(
+                    ResponseResult.success(HttpStatus.OK, "요약 정보를 성공적으로 불러왔습니다.", summary)
+            );
+        } catch (PropertyNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    ResponseResult.failed(HttpStatus.NOT_FOUND, FailedMessage.PROPERTY_NOT_FOUND.getMessage(), null)
+            );
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    ResponseResult.failed(HttpStatus.INTERNAL_SERVER_ERROR, FailedMessage.INTERNAL_SERVER_ERROR.getMessage(), null)
+            );
+        }
     }
+
+
 
 
 

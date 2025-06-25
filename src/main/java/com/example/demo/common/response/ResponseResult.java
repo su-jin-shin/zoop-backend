@@ -22,4 +22,7 @@ public class ResponseResult {
         return new ResponseResult(status.value(), false, message, data);
     }
 
+
+
+
 }

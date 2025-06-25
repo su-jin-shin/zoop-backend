@@ -231,15 +231,26 @@ public class PropertyServiceImpl  implements PropertyService{
 
         Long realtyId = property.getRealty().getRealtyId();
 
+        // 부동산 소속 매물 전체 조회
         List<Property> properties = propertyRepository.findByRealty_RealtyId(realtyId);
 
-        Map<String, Long> tradeTypeCountMap = properties.stream()
-                .collect(Collectors.groupingBy(Property::getTradeTypeName, Collectors.counting()));
+        //  tradeTypeName 기준으로 실제 매물 수 세기
+        int dealCount = 0;
+        int leaseCount = 0;
+        int rentCount = 0;
 
-        int dealCount = tradeTypeCountMap.getOrDefault("매매", 0L).intValue();
-        int leaseCount = tradeTypeCountMap.getOrDefault("전세", 0L).intValue();
-        int rentCount = tradeTypeCountMap.getOrDefault("월세", 0L).intValue();
+        for (Property p : properties) {
+            String type = p.getTradeTypeName();
+            if ("매매".equals(type)) {
+                dealCount++;
+            } else if ("전세".equals(type)) {
+                leaseCount++;
+            } else if ("월세".equals(type)) {
+                rentCount++;
+            }
+        }
 
+        // 기존과 동일하게 DTO 변환
         return RealtyWithPropertiesResponseDto.of(property, dealCount, leaseCount, rentCount);
     }
 
