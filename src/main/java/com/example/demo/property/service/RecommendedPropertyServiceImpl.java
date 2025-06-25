@@ -7,6 +7,7 @@ import com.example.demo.property.domain.RecommendedProperty;
 import com.example.demo.property.dto.RecommendedPropertyDto;
 import com.example.demo.property.repository.PropertyRepository;
 import com.example.demo.property.repository.RecommendedPropertyRepository;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,6 +16,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@SuppressFBWarnings("EI_EXPOSE_REP2")
 public class RecommendedPropertyServiceImpl implements RecommendedPropertyService {
 
     private final PropertyRepository propertyRepository;

@@ -24,6 +24,7 @@ import com.example.demo.property.util.PropertyDtoConverter;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Service;
@@ -34,6 +35,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@SuppressFBWarnings("EI_EXPOSE_REP2")
 public class PropertyServiceImpl  implements PropertyService{
 
     private final PropertyRepository propertyRepository;
