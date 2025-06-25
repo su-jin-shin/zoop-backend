@@ -2,6 +2,7 @@ package com.example.demo.property.domain;
 
 import com.example.demo.Filter.domain.Filter;
 import com.example.demo.auth.domain.UserInfo;
+import com.example.demo.chat.domain.Message;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -20,7 +21,8 @@ import java.time.LocalDateTime;
 @Entity
 @Table(
         name = "recommended_property",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"user_id","property_id"})
+//        uniqueConstraints = @UniqueConstraint(columnNames = {"user_id","property_id"})
+        uniqueConstraints = @UniqueConstraint(columnNames = {"property_id", "message_id"})
 )
 @Getter
 @Builder
@@ -36,22 +38,23 @@ public class RecommendedProperty {
     @JoinColumn(name = "property_id")
     private Property property; //매물 아이디(외래키)
 
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "user_id")
+//    private UserInfo userInfo; //유저 아이디(외래키)
+//
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "filter_id")
+//    private Filter filter; //필터 아이디(외래키)
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private UserInfo userInfo; //유저 아이디(외래키)
+    @JoinColumn(name = "message_id")
+    private Message message; //메시지 아이디(외래키)
 
-    @ManyToOne(fetch =   FetchType.LAZY)
-    @JoinColumn(name = "filter_id")
-    private Filter filter; //필터 아이디(외래키)
-
-    private Long messageId; //메시지 아이디
-    
     @CreationTimestamp
     @Column(updatable = false)
-    private LocalDateTime createdAt;   // 지역 추가 시각
+    private LocalDateTime createdAt; //추천 매물 추가 시각
 
     @UpdateTimestamp
-    private LocalDateTime updatedAt;   // 지역 수정 시각
-
+    private LocalDateTime updatedAt; //추천 매물 수정 시각
 
 }

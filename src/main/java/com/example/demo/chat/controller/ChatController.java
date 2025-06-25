@@ -12,6 +12,10 @@ import com.example.demo.chat.util.UserFilterSender;
 import com.example.demo.common.excel.PropertyExcelDto;
 import com.example.demo.common.exception.UserNotFoundException;
 import com.example.demo.common.response.ResponseResult;
+import com.example.demo.property.domain.Property;
+import com.example.demo.property.dto.RecommendedPropertyDto;
+import com.example.demo.property.service.PropertyService;
+import com.example.demo.property.service.RecommendedPropertyService;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +41,8 @@ public class ChatController {
     private final ChatService chatService;
     private final ChatUpdateService chatUpdateService;
     private final FilterService filterService;
+    private final PropertyService propertyService;
+    private final RecommendedPropertyService recommendedPropertyService;
 
     // 채팅방 생성
     @PostMapping("/new")
@@ -72,7 +78,7 @@ public class ChatController {
         log.info("filters: {}", filters);
         filters.applyUserMessage(userMessage);
 
-        List<PropertyExcelDto> recommendedProperties;
+        List<RecommendedPropertyDto> recommendedProperties;
 
         MessageRequestDto request = new MessageRequestDto();
         request.setChatRoomId(chatRoomId);
@@ -82,24 +88,56 @@ public class ChatController {
             log.info("추천 매물 {}개, recommendedProperties: {}", recommendedProperties.size(), recommendedProperties);
         } catch(Exception e) {
             log.error("크롤링 또는 ai의 호출에 실패하였습니다.", e);
-            chatService.generateAndSaveAiResponse(userId, request, Constants.MessageResultType.FAILURE, null);
+            chatService.generateAndSaveAiResponse(userId, request, Constants.MessageResultType.FAILURE, null, null);
             return;
         }
 
         if (CollectionUtils.isEmpty(recommendedProperties)) {
             log.info("ai가 추천해준 매물이 없습니다.");
-            chatService.generateAndSaveAiResponse(userId, request, Constants.MessageResultType.FAILURE, null);
+            chatService.generateAndSaveAiResponse(userId, request, Constants.MessageResultType.FAILURE, null, null);
             return;
         }
 
-        // 이 중 10개만 보내기!! //얘가 지금 db저장이 된 것은 아님. 근데 일단 message테이블의 properties필드에 저장하면 될것같다.!!!!
-        // 10개만 반환
-        int limit = Math.min(recommendedProperties.size(), Constants.MAXIMUM_PROPERTY_COUNT);
-        List<PropertyExcelDto> validRecommendedProperties = new ArrayList<>(recommendedProperties.subList(0, limit));
-        log.info("정제된 추천 매물 {}개", validRecommendedProperties.size());
-        //chatService.updateMessage(messageId, validRecommendedProperties);
-        chatService.generateAndSaveAiResponse(userId, request, Constants.MessageResultType.SUCCESS, validRecommendedProperties);
+        // 이 중 10개만 보내기
+        List<RecommendedPropertyDto> validRecommendedProperties = new ArrayList<>();
+        List<PropertyExcelDto> excelProperties = new ArrayList<>();
 
+        int propertyCount = 0;
+        for(RecommendedPropertyDto p : recommendedProperties) {
+            if (propertyCount >= Constants.MAXIMUM_PROPERTY_COUNT) break;
+
+            if (p == null || p.getArticleNo() == null) {
+                log.warn("추천받은 매물의 정보가 존재하지 않습니다.");
+                continue;
+            }
+
+            Property property = propertyService.findByArticleNo(p.getArticleNo());
+            if (property == null) {
+                log.debug("추천받은 매물의 articleNo({})를 가진 매물이 존재하지 않습니다.", p.getArticleNo());
+                continue;
+            }
+
+            propertyCount++;
+            Long propertyId = property.getPropertyId();
+            p.applyPropertyId(propertyId);
+            validRecommendedProperties.add(p);
+            excelProperties.add(p.getPropertyExcelDto());
+
+            if (!CollectionUtils.isEmpty(p.getAiSummary())) {
+                // 매물테이블의 ai요약 컬럼 update
+                propertyService.updateAiMessage(propertyId, p.getAiSummary());
+            }
+
+        }
+        log.info("정제된 추천 매물 {}개", validRecommendedProperties.size());
+        if (CollectionUtils.isEmpty(validRecommendedProperties)) {
+            log.info("ai가 추천해준 매물이 없습니다.");
+            chatService.generateAndSaveAiResponse(userId, request, Constants.MessageResultType.FAILURE, null, null);
+            return;
+        }
+
+        //chatService.updateMessage(messageId, validRecommendedProperties);
+        chatService.generateAndSaveAiResponse(userId, request, Constants.MessageResultType.SUCCESS, validRecommendedProperties, excelProperties);
     }
 
     @PostMapping

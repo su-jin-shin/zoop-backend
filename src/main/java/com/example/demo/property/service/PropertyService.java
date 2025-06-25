@@ -1,5 +1,6 @@
 package com.example.demo.property.service;
 
+import com.example.demo.property.domain.Property;
 import com.example.demo.property.dto.*;
 import com.example.demo.property.dto.RealtyWithPropertiesResponseDto;
 import com.example.demo.property.dto.RealtyWithPropertiesResponseDto;
@@ -8,6 +9,7 @@ import com.example.demo.property.dto.RealtyWithPropertiesResponseDto;
 
 
 import java.util.List;
+import java.util.Map;
 
 public interface PropertyService {
 
@@ -52,6 +54,10 @@ public interface PropertyService {
     //부동산 별 매물 (부동산 정보) 조회
     RealtyWithPropertiesResponseDto getRealtyWithProperties(Long propertyId);
 
+    //ai가 추천해준 매물의 번호(articleNo)를 통해 매물 id를 조회
+    Property findByArticleNo(String articleNo);
 
+    //ai의 매물 요약 저장
+    void updateAiMessage(Long propertyId, Map<String, List<String>> summary);
 
 }

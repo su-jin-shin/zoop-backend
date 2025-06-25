@@ -2,6 +2,7 @@ package com.example.demo.chat.domain;
 
 import com.example.demo.chat.type.SenderType;
 import com.example.demo.common.excel.PropertyExcelDto;
+import com.example.demo.property.domain.RecommendedProperty;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -12,6 +13,7 @@ import org.hibernate.dialect.PostgreSQLEnumJdbcType;
 import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -27,11 +29,12 @@ public class Message {
         this.content = content;
     }
 
-    public Message(ChatRoom chatRoom, SenderType senderType, String content, List<PropertyExcelDto> properties) {
+    public Message(ChatRoom chatRoom, SenderType senderType, String content, List<PropertyExcelDto> properties, boolean isRecommended) {
         this.chatRoom = chatRoom;
         this.senderType = senderType;
         this.content = content;
         this.properties = properties;
+        this.isRecommended = isRecommended;
     }
 
 
@@ -54,10 +57,17 @@ public class Message {
     @Getter
     private String content;
 
+    @Column
+    @Getter
+    private boolean isRecommended;
+
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
     @Getter
     private List<PropertyExcelDto> properties;
+
+    @OneToMany(mappedBy = "message", fetch = FetchType.LAZY)
+    private List<RecommendedProperty> recommendedProperties = new ArrayList<>();
 
     @Column
     @Getter
