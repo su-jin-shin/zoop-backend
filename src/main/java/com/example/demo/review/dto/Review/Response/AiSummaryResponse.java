@@ -1,10 +1,11 @@
-package com.example.demo.review.dto.Review;
+package com.example.demo.review.dto.Review.Response;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.*;
 
 import java.util.List;
 
+// 리뷰 요약 응답
 @Getter
 @Builder
 @NoArgsConstructor

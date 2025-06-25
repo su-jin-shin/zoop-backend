@@ -1,14 +1,14 @@
-package com.example.demo.review.dto.Review;
+package com.example.demo.review.dto.Review.Response;
 
-import com.example.demo.review.domain.HasChildren;
-import com.example.demo.review.domain.IsResident;
+import com.example.demo.review.domain.enums.HasChildren;
+import com.example.demo.review.domain.enums.IsResident;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-//개별 리뷰 정보 DTO
+//리뷰 작성 응답 (개별 리뷰 정보 )
 @Getter
 @Builder
 @AllArgsConstructor

@@ -1,4 +1,4 @@
-package com.example.demo.review.dto.ReviewComment;
+package com.example.demo.review.dto.ReviewComment.Request;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.validation.constraints.NotBlank;
@@ -6,7 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-
+// 댓글 수정 요청
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor

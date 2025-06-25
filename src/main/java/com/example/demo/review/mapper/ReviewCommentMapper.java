@@ -1,11 +1,10 @@
 package com.example.demo.review.mapper;
 
 import com.example.demo.auth.domain.UserInfo;
-import com.example.demo.auth.dto.LoginUser;
 import com.example.demo.review.domain.Review;
 import com.example.demo.review.domain.ReviewComment;
-import com.example.demo.review.domain.ReviewCommentLike;
-import com.example.demo.review.dto.ReviewComment.*;
+import com.example.demo.review.dto.ReviewComment.Request.ReviewCommentCreateRequest;
+import com.example.demo.review.dto.ReviewComment.Response.ReviewCommentCreateResponse;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

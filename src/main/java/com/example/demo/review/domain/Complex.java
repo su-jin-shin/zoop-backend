@@ -9,7 +9,7 @@ import lombok.Getter;
 
 import java.time.LocalDateTime;
 
-
+// 설계 실패로 실제로는 complex 도메인을 서비스에서 잘 사용 안함
 
 @Entity
 @Table(name = "complex"

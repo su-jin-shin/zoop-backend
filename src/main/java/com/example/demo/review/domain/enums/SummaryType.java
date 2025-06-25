@@ -1,4 +1,4 @@
-package com.example.demo.review.domain;
+package com.example.demo.review.domain.enums;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;

@@ -48,7 +48,7 @@ public class ReviewCommentLike {
         this.updatedAt = LocalDateTime.now();
     }
 
-    @PreUpdate  //db update 전 업데이트
+    @PreUpdate
     public void onUpdate(){
         this.updatedAt = LocalDateTime.now();
     }

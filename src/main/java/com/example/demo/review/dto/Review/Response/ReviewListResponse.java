@@ -1,4 +1,4 @@
-package com.example.demo.review.dto.Review;
+package com.example.demo.review.dto.Review.Response;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.*;
@@ -6,7 +6,7 @@ import lombok.*;
 import java.math.BigDecimal;
 import java.util.List;
 
-//리뷰 전체 리스트 응답 DTO
+//리뷰 전체 리스트 응답
 @Getter
 @Builder
 @AllArgsConstructor

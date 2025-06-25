@@ -1,7 +1,7 @@
-package com.example.demo.review.dto.Review;
+package com.example.demo.review.dto.Review.Request;
 
-import com.example.demo.review.domain.HasChildren;
-import com.example.demo.review.domain.IsResident;
+import com.example.demo.review.domain.enums.HasChildren;
+import com.example.demo.review.domain.enums.IsResident;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 
-
+// 리뷰 수정 요청
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor

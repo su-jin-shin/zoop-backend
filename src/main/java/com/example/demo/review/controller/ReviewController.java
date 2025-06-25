@@ -2,10 +2,12 @@ package com.example.demo.review.controller;
 
 import com.example.demo.auth.dto.LoginUser;
 import com.example.demo.common.exception.InvalidRequestException;
-import com.example.demo.common.response.FailedMessage;
 import com.example.demo.common.response.ResponseResult;
 import com.example.demo.common.response.SuccessMessage;
-import com.example.demo.review.dto.Review.*;
+import com.example.demo.review.dto.Review.Request.ReviewCreateRequest;
+import com.example.demo.review.dto.Review.Request.ReviewLikeRequest;
+import com.example.demo.review.dto.Review.Request.ReviewUpdateRequest;
+import com.example.demo.review.dto.Review.Response.*;
 import com.example.demo.review.service.ReviewService;
 import com.example.demo.review.service.ReviewSummaryService;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -33,11 +35,12 @@ public class ReviewController {
     @GetMapping("/{propertyId}")
     public ResponseEntity<?> getReviews(
             @PathVariable Long propertyId,
-            @AuthenticationPrincipal LoginUser loginUser
-    ){
+            @AuthenticationPrincipal LoginUser loginUser){
+
         Long userId = Long.valueOf(loginUser.getUsername()); //로그인 유저 정보 추출
         ReviewListResponse response = reviewService.getReviews(userId, propertyId);
-        return ResponseEntity.ok(ResponseResult.success(HttpStatus.OK, SuccessMessage.REVIEW_FETCHED.getMessage(), response));
+        return ResponseEntity.ok(
+                ResponseResult.success(HttpStatus.OK, SuccessMessage.REVIEW_FETCHED.getMessage(), response));
     }
 
     // 리뷰 작성
@@ -45,8 +48,8 @@ public class ReviewController {
     public ResponseEntity<?> createReview(
             @PathVariable Long propertyId,
             @RequestBody @Valid ReviewCreateRequest request,
-            @AuthenticationPrincipal LoginUser loginUser
-    ) {
+            @AuthenticationPrincipal LoginUser loginUser) {
+
         Long userId = Long.valueOf(loginUser.getUsername());
 
         ReviewCreateResponse response = reviewService.createReview(propertyId, request, userId);
@@ -59,24 +62,26 @@ public class ReviewController {
     public ResponseEntity<?> updateReview(
             @PathVariable Long reviewId,
             @RequestBody @Valid ReviewUpdateRequest request,
-            @AuthenticationPrincipal LoginUser loginUser
-    ) {
+            @AuthenticationPrincipal LoginUser loginUser) {
+
         Long userId = Long.valueOf(loginUser.getUsername());
 
         ReviewCreateResponse response = reviewService.updateReview(reviewId, request, userId);
-        return ResponseEntity.ok(ResponseResult.success(HttpStatus.OK, SuccessMessage.REVIEW_UPDATED.getMessage(), response));
+        return ResponseEntity.ok(
+                ResponseResult.success(HttpStatus.OK, SuccessMessage.REVIEW_UPDATED.getMessage(), response));
     }
 
     // 리뷰 삭제
     @DeleteMapping("/{reviewId}")
     public ResponseEntity<?> deleteReview(
             @PathVariable Long reviewId,
-            @AuthenticationPrincipal LoginUser loginUser
-    ) {
+            @AuthenticationPrincipal LoginUser loginUser) {
+
         Long userId = Long.valueOf(loginUser.getUsername());
 
         reviewService.deleteReview(reviewId, userId);
-        return ResponseEntity.ok(ResponseResult.success(HttpStatus.OK, SuccessMessage.REVIEW_DELETED.getMessage(), null));
+        return ResponseEntity.ok(
+                ResponseResult.success(HttpStatus.OK, SuccessMessage.REVIEW_DELETED.getMessage(), null));
     }
 
     // 리뷰 좋아요 등록/해제
@@ -88,11 +93,8 @@ public class ReviewController {
 
         Long userId = Long.valueOf(loginUser.getUsername());
 
-
         Boolean isLiked = request.getIsLiked();
-        if (isLiked == null) {
-            throw new InvalidRequestException();
-        }
+        if (isLiked == null) {throw new InvalidRequestException();}
 
         ReviewLikeResponse response = reviewService.updateLikeStatus(reviewId, isLiked, userId);
         HttpStatus status = isLiked ? HttpStatus.CREATED : HttpStatus.OK;
@@ -108,7 +110,6 @@ public class ReviewController {
 
         Long userId = Long.valueOf(loginUser.getUsername());
 
-        // DTO 바로 받아서 응답
         ReviewLikeResponse response = reviewService.getLikeStatus(reviewId, userId);
 
         return ResponseEntity.ok(
@@ -119,6 +120,7 @@ public class ReviewController {
     // 좋아요 수 조회
     @GetMapping("/{reviewId}/likes/counts")
     public ResponseEntity<?> getLikeCount(@PathVariable Long reviewId) {
+
         long likeCount = reviewService.getLikeCount(reviewId);
 
         Map<String, Object> responseData = new HashMap<>();
@@ -133,15 +135,18 @@ public class ReviewController {
     // 댓글 수 조회
     @GetMapping("/{reviewId}/comments/counts")
     public ResponseEntity<?> getCommentCount(@PathVariable Long reviewId) {
+
         long count = reviewService.getCommentCount(reviewId);
         CommentCountResponse response = CommentCountResponse.builder()
                 .reviewId(reviewId).commentCount(count).build();
-        return ResponseEntity.ok(ResponseResult.success(HttpStatus.OK, SuccessMessage.COMMENT_COUNT_FETCHED.getMessage(), response));
+        return ResponseEntity.ok(
+                ResponseResult.success(HttpStatus.OK, SuccessMessage.COMMENT_COUNT_FETCHED.getMessage(), response));
     }
 
     // AI 리뷰 요약 조회
     @GetMapping("/{propertyId}/summary")
     public ResponseEntity<?> getSummary(@PathVariable Long propertyId) {
+
         AiSummaryResponse summary = reviewSummaryService.getOrFetchSummary(propertyId);
         return ResponseEntity.ok(
                 ResponseResult.success(HttpStatus.OK, "요청이 정상적으로 처리되었습니다.", summary)
