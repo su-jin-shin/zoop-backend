@@ -32,6 +32,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // 헬스 체크·Swagger·회원가입 등 “익명 허용” 경로
                         .requestMatchers("/hc").permitAll()
+                        .requestMatchers("/mypage/check-user-nickname").permitAll()
                         .requestMatchers(
                                 "/api-docs/**", "/swagger-ui/**",
                                 "/users/auth/**",          // 소셜 로그인, 토큰 재발급
