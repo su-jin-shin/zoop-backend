@@ -6,6 +6,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
@@ -14,18 +15,33 @@ import org.springframework.security.config.Customizer;
 
 @Configuration
 @RequiredArgsConstructor
-@SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "JwtAuthFilter는 Spring DI로 주입되며, 외부 변경 위험이 없습니다.")
+@SuppressFBWarnings(value = "EI_EXPOSE_REP2",
+        justification = "JwtAuthFilter는 Spring DI로 주입되며, 외부 변경 위험이 없습니다.")
 public class SecurityConfig {
+
     private final JwtAuthFilter jwtAuthFilter;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+                // ① CORS 필터 활성화
+                .cors(Customizer.withDefaults())
+
+                // ② CSRF 비활성
                 .csrf(csrf -> csrf.disable())
+
+                // ③ 세션 정책
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+
+                // ④ 인가 규칙 (필요하면 OPTIONS 모두 허용)
                 .authorizeHttpRequests(auth -> auth
-                        .anyRequest().permitAll())  // 전체 허용
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .anyRequest().permitAll()
+                )
+
+                // ⑤ JWT 필터
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+
         return http.build();
     }
 }
