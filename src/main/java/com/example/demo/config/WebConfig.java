@@ -10,39 +10,33 @@ import java.nio.file.Paths;
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
-    // 정적 리소스 매핑 (예: /uploads/** → 실제 경로)
+    // 정적 파일 매핑 (/uploads/**)
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        String uploadDir = Paths.get(System.getProperty("user.dir"), "uploads").toAbsolutePath().toString();
-
+        String uploadDir = Paths.get(System.getProperty("user.dir"), "uploads")
+                .toAbsolutePath().toString();
         registry.addResourceHandler("/uploads/**")
                 .addResourceLocations("file:" + uploadDir + "/");
     }
 
-    // CORS 설정 (프론트에서 API 호출 허용)
+    // CORS 설정
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
                 .allowedOriginPatterns(
-                        // ──────── [로컬 개발] ────────
+                        // 로컬 개발
                         "http://localhost:3000",
-
-                        // ──────── [배포 프론트(Vercel)] ────────
+                        // Vercel 정식 & 프리뷰
                         "https://zoop-frontend-sable.vercel.app",
-                        "https://zoop-frontend-sable-git-*.vercel.app",
-
-                        // ──────── [새 프로덕션 도메인] ────────
+                        "https://*.vercel.app",
+                        // 새 백엔드 도메인
                         "https://zoopzoop.shop",
-                        "https://www.zoopzoop.shop",
-
-                        // ↓ Swagger용 IP/포트
-                         "http://localhost:8000"
+                        "https://www.zoopzoop.shop"
                 )
                 .allowedMethods("GET","POST","PUT","DELETE","OPTIONS","PATCH")
                 .allowedHeaders("*")
                 .allowCredentials(true);
     }
 }
-
 
 
