@@ -10,6 +10,7 @@ import com.example.demo.chat.service.ChatService;
 import com.example.demo.chat.service.ChatUpdateService;
 import com.example.demo.chat.util.UserFilterSender;
 import com.example.demo.common.excel.PropertyExcelDto;
+import com.example.demo.common.exception.UnauthorizedAccessException;
 import com.example.demo.common.exception.UserNotFoundException;
 import com.example.demo.common.response.ResponseResult;
 import com.example.demo.property.domain.Property;
@@ -143,6 +144,8 @@ public class ChatController {
     @PostMapping
     public ResponseEntity<MessageResponseDto> sendMessage(@AuthenticationPrincipal LoginUser loginUser, @RequestBody MessageRequestDto request) {
         log.info("request: {}", request);
+
+        if (loginUser == null) throw new UnauthorizedAccessException();
         Long userId = Long.valueOf(loginUser.getUsername());
         Long chatRoomId = request.getChatRoomId();
         String content = request.getContent();
@@ -188,6 +191,9 @@ public class ChatController {
     @GetMapping
     public ResponseEntity<?> searchChatRoom(@AuthenticationPrincipal LoginUser loginUser,
                                             @RequestParam(required = false) String searchText) {
+
+        if (loginUser == null) throw new UnauthorizedAccessException();
+
         Long userId = Long.valueOf(loginUser.getUsername());
         List<ChatRoomRequestDto> chatRooms;
 
@@ -211,6 +217,9 @@ public class ChatController {
     @GetMapping("/{chatRoomId}")
     public ResponseEntity<?> getChatRoomsDetails(@AuthenticationPrincipal LoginUser loginUser,
                                                  @PathVariable("chatRoomId") Long chatRoomId) {
+
+        if (loginUser == null) throw new UnauthorizedAccessException();
+
         Long userId = Long.valueOf(loginUser.getUsername());
         ChatRoomDetailResponseDto responseDto = chatService.getUserChatRoomMessages(userId, chatRoomId);
         return ResponseEntity.ok(
