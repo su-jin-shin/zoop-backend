@@ -26,13 +26,12 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowedOriginPatterns(
                         "http://localhost:3000",
                         "https://zoop-frontend-sable.vercel.app/",
-                        "https://*.vercel.app",               // 프리뷰 도메인 포함
                         "https://zoopzoop.shop",
                         "https://www.zoopzoop.shop"
                 )
                 .allowedMethods("*")
                 .allowedHeaders("*")
-                .exposedHeaders("Set-Cookie")                 // 이거 매우 중요!
+                .exposedHeaders("Set-Cookie", "Authorization")                 // 이거 매우 중요!
                 .allowCredentials(true);
     }
 }
