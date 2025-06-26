@@ -48,8 +48,8 @@ public class Message {
     @JoinColumn(name = "chat_room_id", nullable = false)
     private ChatRoom chatRoom;
 
+    @Column(name = "sender_type")
     @Enumerated(EnumType.STRING)
-    @JdbcType(PostgreSQLEnumJdbcType.class)
     @Getter
     private SenderType senderType;
 
