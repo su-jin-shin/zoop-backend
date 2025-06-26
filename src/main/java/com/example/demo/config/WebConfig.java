@@ -24,18 +24,16 @@ public class WebConfig implements WebMvcConfigurer {
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
                 .allowedOriginPatterns(
-                        // 로컬 개발
                         "http://localhost:3000",
-                        // Vercel 정식 & 프리뷰
                         "https://zoop-frontend-sable.vercel.app",
-                        "https://*.vercel.app",
-                        // 새 백엔드 도메인
+                        "https://*.vercel.app",               // 프리뷰 도메인 포함
                         "https://zoopzoop.shop",
                         "https://www.zoopzoop.shop"
                 )
-                .allowedMethods("GET","POST","PUT","DELETE","OPTIONS","PATCH")
-                .allowedHeaders("*")          // * 하나면 Authorization 포함 전부 허용
-                .allowCredentials(true);     // 쿠키·세션이 필요하면 true 로
+                .allowedMethods("*")
+                .allowedHeaders("*")
+                .exposedHeaders("Set-Cookie")                 // 이거 매우 중요!
+                .allowCredentials(true);
     }
 }
 
