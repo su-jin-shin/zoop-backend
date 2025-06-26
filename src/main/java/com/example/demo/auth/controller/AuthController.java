@@ -81,6 +81,7 @@ public class AuthController {
         ResponseCookie accessCookie = ResponseCookie.from("ACCESS_TOKEN", res.getAccessToken())
                 .httpOnly(false)
                 .secure(true)             // https니까 그대로 유지
+                .domain("zoopzoop.shop")
                 .sameSite("None")         // cross-site 대응 필수
                 .path("/")
                 .maxAge(Duration.ofMinutes(15))
@@ -89,6 +90,7 @@ public class AuthController {
         ResponseCookie refreshCookie = ResponseCookie.from("REFRESH_TOKEN", res.getRefreshToken())
                 .httpOnly(false)
                 .secure(true)
+                .domain("zoopzoop.shop")
                 .sameSite("None")
                 .path("/")
                 .maxAge(Duration.ofDays(14))           // 원하는 기간
@@ -97,6 +99,7 @@ public class AuthController {
         ResponseCookie kakaoCookie = ResponseCookie.from("KAKAO_ACCESS", res.getKakaoAccessToken())
                 .httpOnly(false)
                 .secure(true)
+                .domain("zoopzoop.shop")
                 .sameSite("None")
                 .path("/")
                 .maxAge(Duration.ofDays(1))
@@ -148,6 +151,7 @@ public class AuthController {
         // 새 access 토큰을 다시 쿠키로 내려줌
         ResponseCookie newAccessCookie = ResponseCookie.from("ACCESS_TOKEN", newAccess)
                 .httpOnly(false).secure(true).sameSite("None")
+                .domain("zoopzoop.shop")
                 .path("/").maxAge(Duration.ofMinutes(15)).build();
 
         return ResponseEntity.ok()
@@ -163,11 +167,16 @@ public class AuthController {
         try { kakaoAuthService.logout(kakaoAccess); } catch(Exception ignored){ }
 
         // ④ maxAge=0 쿠키로 덮어써서 삭제
-        ResponseCookie del = ResponseCookie.from("ACCESS_TOKEN","")
+        ResponseCookie del = ResponseCookie.from("ACCESS_TOKEN", "")
+                .domain("zoopzoop.shop")
                 .path("/").maxAge(0).build();
-        ResponseCookie delR = ResponseCookie.from("REFRESH_TOKEN","")
+
+        ResponseCookie delR = ResponseCookie.from("REFRESH_TOKEN", "")
+                .domain("zoopzoop.shop")
                 .path("/").maxAge(0).build();
-        ResponseCookie delK = ResponseCookie.from("KAKAO_ACCESS","")
+
+        ResponseCookie delK = ResponseCookie.from("KAKAO_ACCESS", "")
+                .domain("zoopzoop.shop")
                 .path("/").maxAge(0).build();
 
         return ResponseEntity.noContent()
