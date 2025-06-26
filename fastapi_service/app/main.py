@@ -17,6 +17,7 @@ class Filter(BaseModel):
     userMessage: str
 
 
+
 @app.post("/crawl")
 async def crawl_estate_data(data: Filter):
 
@@ -63,6 +64,10 @@ async def crawl_estate_data_by_article_no(article_no: str, data: Filter):
         "status": "completed",
         "data": property_id
     }
+
+@app.get("/health")
+async def health():
+    return {"status": "ok"}
 
 
 
