@@ -25,7 +25,7 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addMapping("/**")
                 .allowedOriginPatterns(
                         "http://localhost:3000",
-                        "https://zoop-frontend-sable.vercel.app",
+                        "https://zoop-frontend-sable.vercel.app/",
                         "https://*.vercel.app",               // 프리뷰 도메인 포함
                         "https://zoopzoop.shop",
                         "https://www.zoopzoop.shop"
