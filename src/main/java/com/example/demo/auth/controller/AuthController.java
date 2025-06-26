@@ -80,16 +80,16 @@ public class AuthController {
         /* --- ① 토큰을 HttpOnly 쿠키로 설정 --- */
         ResponseCookie accessCookie = ResponseCookie.from("ACCESS_TOKEN", res.getAccessToken())
                 .httpOnly(false)
-                .secure(true)             // http 로 개발 중이면 false
-                .sameSite("Lax")          // SPA → 필요하면 "None"
+                .secure(true)             // https니까 그대로 유지
+                .sameSite("None")         // cross-site 대응 필수
                 .path("/")
-                .maxAge(Duration.ofMinutes(15))        // access 토큰 만료와 맞추기
+                .maxAge(Duration.ofMinutes(15))
                 .build();
 
         ResponseCookie refreshCookie = ResponseCookie.from("REFRESH_TOKEN", res.getRefreshToken())
                 .httpOnly(false)
                 .secure(true)
-                .sameSite("Lax")
+                .sameSite("None")
                 .path("/")
                 .maxAge(Duration.ofDays(14))           // 원하는 기간
                 .build();
@@ -97,7 +97,7 @@ public class AuthController {
         ResponseCookie kakaoCookie = ResponseCookie.from("KAKAO_ACCESS", res.getKakaoAccessToken())
                 .httpOnly(false)
                 .secure(true)
-                .sameSite("Lax")
+                .sameSite("None")
                 .path("/")
                 .maxAge(Duration.ofDays(1))
                 .build();
@@ -147,7 +147,7 @@ public class AuthController {
 
         // 새 access 토큰을 다시 쿠키로 내려줌
         ResponseCookie newAccessCookie = ResponseCookie.from("ACCESS_TOKEN", newAccess)
-                .httpOnly(false).secure(true).sameSite("Lax")
+                .httpOnly(false).secure(true).sameSite("None")
                 .path("/").maxAge(Duration.ofMinutes(15)).build();
 
         return ResponseEntity.ok()

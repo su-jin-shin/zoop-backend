@@ -35,13 +35,14 @@ import org.springframework.security.config.Customizer;
 //                        .requestMatchers("/mypage/check-user-nickname").permitAll()
 //                        .requestMatchers(
 //                                "/api-docs/**", "/swagger-ui/**",
-//                                "/users/auth/**",          // 소셜 로그인, 토큰 재발급
 //                                "/v3/api-docs/**",
 //                                "/swagger-ui/**",
+//                                "/users/auth/kakao/login",
+//                                "/users/auth/kakao/callback",
+//                                "/users/auth/refresh",
+//                                "/users/auth/logout",
 //                                "/css/**", "/js/**", "/images/**", "/favicon.ico"
 //                        ).permitAll()
-//                        // Preflight
-//                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 //                        // 그 외는 모두 인증 필요
 //                        .anyRequest().authenticated()
 //                )
@@ -63,13 +64,23 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .cors(Customizer.withDefaults())
-                .csrf(csrf -> csrf.disable())
-                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 상태 저장 X
+                .cors(Customizer.withDefaults())                 // 프론트 호출 허용
+                .csrf(csrf -> csrf.disable())                   // CSRF 끔 (쿠키 기반 API에서 필요 없음)
+                .sessionManagement(sm ->
+                        sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 비사용 (JWT 기반)
                 .authorizeHttpRequests(auth -> auth
-                        .anyRequest().permitAll() // 모든 요청 허용
+                        // 로그인 인증 없이 허용할 API만 열기
+                        .requestMatchers(
+                                "/users/auth/kakao/login",
+                                "/users/auth/kakao/callback",
+                                "/users/auth/refresh",
+                                "/users/auth/logout",
+                                "/hc"
+                        ).permitAll()
+                        // 그 외는 모두 인증 필요 (LoginUser 주입 대상)
+                        .anyRequest().authenticated()
                 )
-                .addFilterBefore(jwtAuthFilter, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
