@@ -23,7 +23,7 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOriginPatterns(
+                .allowedOrigins(
                         "http://localhost:3000",
                         "https://zoop-frontend-sable.vercel.app",
                         "https://zoopzoop.shop",
