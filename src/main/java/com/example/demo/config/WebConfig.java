@@ -25,13 +25,13 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addMapping("/**")
                 .allowedOriginPatterns(
                         "http://localhost:3000",
-                        "https://zoop-frontend-sable.vercel.app/",
+                        "https://zoop-frontend-sable.vercel.app",
                         "https://zoopzoop.shop",
                         "https://www.zoopzoop.shop"
                 )
                 .allowedMethods("*")
                 .allowedHeaders("*")
-                .exposedHeaders("Set-Cookie", "Authorization")                 // 이거 매우 중요!
+                .exposedHeaders("Set-Cookie")                 // 이거 매우 중요!
                 .allowCredentials(true);
     }
 }
