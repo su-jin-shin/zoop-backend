@@ -1,9 +1,21 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-
 from app.crawler_api import main as crawl_main, crawl_by_article_no
 
 app = FastAPI()
+
+# CORS 미들웨어 추가
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "https://zoop-frontend-sable.vercel.app",
+        "https://zoopzoop.shop"
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class Filter(BaseModel):
     regionName: str
@@ -15,6 +27,7 @@ class Filter(BaseModel):
     dealOrWarrantPrc: int
     rentPrice: int
     userMessage: str
+
 
 
 
