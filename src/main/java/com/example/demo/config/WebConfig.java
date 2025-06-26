@@ -26,7 +26,6 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowedOriginPatterns(
                         "http://localhost:3000",
                         "https://zoop-frontend-sable.vercel.app/",
-                        "https://*.vercel.app",               // 프리뷰 도메인 포함
                         "https://zoopzoop.shop",
                         "https://www.zoopzoop.shop"
                 )
