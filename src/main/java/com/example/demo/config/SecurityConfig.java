@@ -30,7 +30,7 @@ import org.springframework.security.config.Customizer;
 //                        sm.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
 //
 //                .authorizeHttpRequests(auth -> auth
-//                        // 헬스 체크·Swagger·회원가입 등 “익명 허용” 경로
+//                        // 헬스 체크·Swagger·회원가입 등 "익명 허용" 경로
 //                        .requestMatchers("/hc").permitAll()
 //                        .requestMatchers("/mypage/check-user-nickname").permitAll()
 //                        .requestMatchers(
@@ -64,23 +64,13 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .cors(Customizer.withDefaults())                 // 프론트 호출 허용
-                .csrf(csrf -> csrf.disable())                   // CSRF 끔 (쿠키 기반 API에서 필요 없음)
-                .sessionManagement(sm ->
-                        sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 비사용 (JWT 기반)
+                .cors(Customizer.withDefaults())
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 상태 저장 X
                 .authorizeHttpRequests(auth -> auth
-                        // 로그인 인증 없이 허용할 API만 열기
-                        .requestMatchers(
-                                "/users/auth/kakao/login",
-                                "/users/auth/kakao/callback",
-                                "/users/auth/refresh",
-                                "/users/auth/logout",
-                                "/hc"
-                        ).permitAll()
-                        // 그 외는 모두 인증 필요 (LoginUser 주입 대상)
-                        .anyRequest().authenticated()
+                        .anyRequest().permitAll() // 모든 요청 허용
                 )
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthFilter, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
