@@ -29,10 +29,10 @@ import java.time.LocalDateTime;
 @Slf4j
 public class LoginServiceImpl implements LoginService {
 
-    private final KakaoAuthService kakaoAuthService;
-    private final UserInfoRepository userRepo;
-    private final LoginHistoryRepository loginHistoryRepo;
-    private final JwtUtil jwtUtil;
+    private final KakaoAuthService        kakaoAuthService;
+    private final UserInfoRepository      userRepo;
+    private final LoginHistoryRepository  loginHistoryRepo;
+    private final JwtUtil                 jwtUtil;
 
     /* -------------------------------------------------
      * 카카오 로그인
@@ -43,41 +43,34 @@ public class LoginServiceImpl implements LoginService {
                                        String clientIp,
                                        HttpServletRequest request) {
 
-        /* 1) 토큰·카카오 유저 조회 */
+        /* 1) 카카오 토큰 · 프로필 조회 */
         KakaoTokenResponse tokenRes = kakaoAuthService.getToken(code);
-        KakaoUserDto userDto       = kakaoAuthService.getUser(tokenRes.getAccessToken());
+        KakaoUserDto       userDto  = kakaoAuthService.getUser(tokenRes.getAccessToken());
 
         String email   = userDto.getKakaoAccount().getEmail();
         String profile = userDto.getKakaoAccount().getProfile().getProfileImageUrl();
         Long   kakaoId = userDto.getId();
 
-        /* 2) 탈퇴 회원 복구 또는 신규 생성 */
-        UserInfo user = userRepo.findByEmail(email).orElse(null);
+        /* 2) “활성” 계정 조회 (deletedAt IS NULL) */
+        UserInfo user = userRepo.findByEmailAndDeletedAtIsNull(email).orElse(null);
 
-
-
-            if (user != null) {
-                user.reactivate();          // ← 탈퇴 상태면 deletedAt·withdrawReason NULL 처리
-                String currentImage = user.getProfileImage();
-                // 탈퇴 상태였거나 프로필 이미지가 비어있을 경우 최신 이미지 저장
-                if (currentImage == null || user.getDeletedAt() != null) {
-                    user.setProfileImage(profile);  // ← 카카오에서 가져온 최신 이미지
-                }
-            } else {
-                user = UserInfoFactory.createFromKakao(kakaoId, email, profile);
+        /* 3) 없으면 새로 생성 */
+        if (user == null) {
+            user = UserInfoFactory.createFromKakao(kakaoId, email, profile);
+            userRepo.save(user);
+        } else {
+            // 활성 계정이라면 최신 프로필만 갱신
+            if (user.getProfileImage() == null) {
+                user.setProfileImage(profile);
             }
+            user.setLastLoginAt(LocalDateTime.now());
+        }
 
-
-        user.setLastLoginAt(LocalDateTime.now());
-//        user.setProfileImage(profile);      // 프로필 이미지 최신화
-        userRepo.save(user);
-
-
-        // 3) 로그인 히스토리 기록
+        /* 4) 로그인 히스토리 기록 */
         LoginHistory history = LoginHistoryFactory.create(user, clientIp);
         loginHistoryRepo.save(history);
 
-        // 4) SecurityContext 생성 & 세션 저장
+        /* 5) Spring Security 인증 컨텍스트 수립 */
         LoginUser principal = new LoginUser(user);
         var authToken = new UsernamePasswordAuthenticationToken(
                 principal, null, principal.getAuthorities());
@@ -86,16 +79,19 @@ public class LoginServiceImpl implements LoginService {
         context.setAuthentication(authToken);
         SecurityContextHolder.setContext(context);
 
-        HttpSession session = request.getSession(true); // JSESSIONID 생성/획득
+        HttpSession session = request.getSession(true);            // JSESSIONID 발급
         session.setAttribute(
                 HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY,
-                context);
+                context
+        );
 
-        /* 5) JWT 발급 */
+        /* 6) JWT 발급 */
         String access  = jwtUtil.generateAccess(email);
         String refresh = jwtUtil.generateRefresh(email);
-        boolean needsNickname = (user.getNickname() == null || user.getNickname().isBlank());
+        boolean needsNickname =
+                (user.getNickname() == null || user.getNickname().isBlank());
 
+        /* 7) 응답 DTO */
         return LoginResponseDto.builder()
                 .accessToken(access)
                 .refreshToken(refresh)
@@ -104,6 +100,4 @@ public class LoginServiceImpl implements LoginService {
                 .nickname(user.getNickname())
                 .build();
     }
-
-
 }

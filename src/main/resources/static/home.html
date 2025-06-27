@@ -6,15 +6,14 @@
     <link rel="icon" href="data:,">
     <style>
         body { font-family: sans-serif; margin: 2rem; }
-        #user-card, #token-card {
+        #user-card {
             background: #f5f5f5;
             padding: 1rem;
             border-radius: 8px;
             margin-bottom: 1rem;
         }
         img { width: 80px; height: 80px; border-radius: 50%; }
-        button { margin-top: 1rem; }
-        code { word-break: break-all; display: block; background: #eee; padding: 0.3rem; border-radius: 4px; }
+        button, textarea { margin-top: 1rem; }
     </style>
 </head>
 <body>
@@ -27,15 +26,6 @@
     <small id="email"></small>
 </section>
 
-<!-- (추가) 토큰 정보 카드 -->
-<section id="token-card" hidden>
-    <h4>토큰 정보</h4>
-    <div>Access Token:</div>
-    <code id="access-token"></code>
-    <div>Refresh Token:</div>
-    <code id="refresh-token"></code>
-</section>
-
 <button id="logout-btn">로그아웃</button>
 
 <h3>회원 탈퇴</h3>
@@ -43,82 +33,37 @@
 <button id="withdraw-btn">탈퇴하기</button>
 
 <script>
+    // ✅ 로컬 환경용 API 주소
     const API = "http://localhost:8080";
 
-    function getAccess()      { return localStorage.getItem("access"); }
-    function getRefresh()     { return localStorage.getItem("refresh"); }
-    function getKakaoAccess() { return localStorage.getItem("kakaoAccess"); }
-
-    function saveTokens(a, r, k){
-        localStorage.setItem("access", a);
-        localStorage.setItem("refresh", r);
-        if (k) localStorage.setItem("kakaoAccess", k);
-        showTokens();  // 토큰 카드 업데이트
-    }
-
-    function showTokens() {
-        const a = getAccess();
-        const r = getRefresh();
-        if (a && r) {
-            document.getElementById("access-token").textContent = a;
-            document.getElementById("refresh-token").textContent = r;
-            document.getElementById("token-card").hidden = false;
-        }
-    }
-
-    // URL 해시에서 토큰 추출
-    (function setTokensFromHash(){
-        if(!location.hash.startsWith("#")) return;
-        const p = new URLSearchParams(location.hash.slice(1));
-        if(p.get("access_token")){
-            saveTokens(
-                p.get("access_token"),
-                p.get("refresh_token"),
-                p.get("kakao_access")
-            );
-            history.replaceState(null, null, location.pathname);
-        }
-    })();
-
-    async function refreshAccess(){
+    // access 토큰 재발급
+    async function refreshAccess() {
         const res = await fetch(`${API}/users/auth/refresh`, {
             method: "POST",
-            headers: { "Authorization": "Bearer " + getRefresh() }
+            credentials: "include"
         });
-        if (res.ok) {
-            const { access_token } = await res.json();
-            localStorage.setItem("access", access_token);
-            showTokens();  // 토큰 갱신 후 UI 갱신
-            return true;
-        }
-        return false;
+        return res.ok;
     }
 
-    async function authFetch(url, opt = {}){
+    // 인증이 필요한 요청
+    async function authFetch(url, opt = {}) {
         const res = await fetch(url, {
             ...opt,
-            headers: {
-                ...(opt.headers || {}),
-                "Authorization": "Bearer " + getAccess()
-            }
+            credentials: "include"
         });
         if (res.status === 401 && await refreshAccess()) {
-            return fetch(url, {
-                ...opt,
-                headers: {
-                    ...(opt.headers || {}),
-                    "Authorization": "Bearer " + getAccess()
-                }
-            });
+            return fetch(url, { ...opt, credentials: "include" });
         }
         return res;
     }
 
-    async function loadUser(){
+    // 사용자 정보 로드
+    async function loadUser() {
         try {
             const res = await authFetch(`${API}/users/auth/me`);
             if (!res.ok) throw new Error();
             const user = await res.json();
+
             document.getElementById("profile-image").src = user.profileImage || "";
             document.getElementById("nickname").textContent = user.nickname || "(닉네임 없음)";
             document.getElementById("email").textContent = user.email;
@@ -129,16 +74,13 @@
         }
     }
 
+    // 로그아웃 처리
     document.getElementById("logout-btn").onclick = async () => {
         const res = await fetch(`${API}/users/auth/logout`, {
             method: "POST",
-            headers: {
-                "Authorization": "Bearer " + getAccess(),
-                "Kakao-Access": getKakaoAccess()
-            }
+            credentials: "include"
         });
         if (res.status === 204) {
-            localStorage.clear();
             alert("로그아웃 완료");
             location.href = "/login.html";
         } else {
@@ -146,6 +88,7 @@
         }
     };
 
+    // 탈퇴 처리
     document.getElementById("withdraw-btn").onclick = async () => {
         const reason = document.getElementById("withdraw-reason").value.trim();
         if (!reason) {
@@ -160,17 +103,14 @@
         });
 
         if (res.ok) {
-            alert((await res.text()) || "탈퇴가 완료되었습니다.");
-            localStorage.clear();
+            alert("탈퇴가 완료되었습니다.");
             location.href = "/login.html";
         } else {
             alert("탈퇴 실패: " + (await res.text()));
         }
     };
 
-    window.onload = () => {
-        loadUser().then(showTokens);
-    };
+    window.onload = loadUser;
 </script>
 </body>
 </html>
