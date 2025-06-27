@@ -148,12 +148,6 @@ public class AuthController {
 
         String email = jwtUtil.getSubject(refresh);
 
-        // 탈퇴 계정은 매칭되지 않도록 활성 계정만 조회
-        UserInfo user = userInfoRepository
-                .findByEmailAndDeletedAtIsNull(email)     // ← 여기만 수정
-                .orElseThrow(UnauthorizedAccessException::new);
-
-        // 활성 사용자 여부만 체크
         if (!userInfoRepository.existsByEmailAndDeletedAtIsNull(email)) {
             throw new UnauthorizedAccessException();
         }
@@ -169,7 +163,6 @@ public class AuthController {
                 .header(HttpHeaders.SET_COOKIE, newAccessCookie.toString())
                 .body(Map.of("result", "ok"));
     }
-
     /* -------------------------------------------------
      * 5) 로그아웃
      * ------------------------------------------------- */
