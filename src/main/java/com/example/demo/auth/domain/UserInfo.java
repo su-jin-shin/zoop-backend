@@ -20,12 +20,12 @@ public class UserInfo {
     @Setter
     private Long userId;
 
-    @Column(unique = true, nullable = false)
-    private Long kakaoId;
+
+    private Long kakaoId;       // ← NOT NULL 제약 제거
 
     private String email;
 
-    @Column(unique = true)
+
     private String nickname;
 
     @Column(columnDefinition = "TEXT")
@@ -40,12 +40,16 @@ public class UserInfo {
 
     /* --- 탈퇴 --- */
     public void withdraw(String reason) {
-        if (this.deletedAt != null) {
-            throw new IllegalStateException("이미 탈퇴 처리된 회원입니다.");
-        }
+        if (this.deletedAt != null) throw new IllegalStateException("이미 탈퇴 처리된 회원입니다.");
+
+        // 식별 정보 제거(또는 익명 처리)
+        this.email        = null;                    // 또는 "deleted_"+userId+"@anon"
+        this.kakaoId      = null;
+        this.nickname     = null;
+        this.profileImage = null;
+
         this.withdrawReason = reason;
-        this.nickname = null;
-        this.deletedAt = LocalDateTime.now();
+        this.deletedAt      = LocalDateTime.now();
     }
 
     /* --- 복구(재가입) --- */

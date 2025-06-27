@@ -13,6 +13,7 @@ import com.example.demo.common.exception.UnauthorizedAccessException;
 import com.example.demo.config.FrontProps;
 import com.example.demo.mypage.service.NicknameService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,6 +22,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -139,16 +141,20 @@ public class AuthController {
      * ------------------------------------------------- */
     @PostMapping("/refresh")
     public ResponseEntity<Map<String, String>> refresh(
-            /* ③ 헤더 대신 쿠키에서 꺼낸다 */
             @CookieValue("REFRESH_TOKEN") String refresh) {
 
         if (jwtUtil.isExpired(refresh))
             throw new UnauthorizedAccessException();
 
-        String email     = jwtUtil.getSubject(refresh);
+        String email = jwtUtil.getSubject(refresh);
+
+        // 탈퇴 계정은 매칭되지 않도록 활성 계정만 조회
+        UserInfo user = userInfoRepository
+                .findByEmailAndDeletedAtIsNull(email)     // ← 여기만 수정
+                .orElseThrow(UnauthorizedAccessException::new);
+
         String newAccess = jwtUtil.generateAccess(email);
 
-        // 새 access 토큰을 다시 쿠키로 내려줌
         ResponseCookie newAccessCookie = ResponseCookie.from("ACCESS_TOKEN", newAccess)
                 .httpOnly(false).secure(true).sameSite("None")
                 .domain("zoopzoop.shop")
@@ -156,28 +162,47 @@ public class AuthController {
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, newAccessCookie.toString())
-                .body(Map.of("result", "ok"));      // 바디는 아무거나
+                .body(Map.of("result", "ok"));
     }
 
     /* -------------------------------------------------
      * 5) 로그아웃
      * ------------------------------------------------- */
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(@CookieValue("KAKAO_ACCESS") String kakaoAccess) {
-        try { kakaoAuthService.logout(kakaoAccess); } catch(Exception ignored){ }
+    public ResponseEntity<Void> logout(
+            @CookieValue(name="KAKAO_ACCESS", required=false) String kakaoAccess,
+            HttpServletRequest req) {
+
+        try { if (kakaoAccess != null) kakaoAuthService.logout(kakaoAccess); } catch(Exception ignored){}
+
+        SecurityContextHolder.clearContext();
+        HttpSession s = req.getSession(false);
+        if (s != null) s.invalidate();
 
         // ④ maxAge=0 쿠키로 덮어써서 삭제
         ResponseCookie del = ResponseCookie.from("ACCESS_TOKEN", "")
                 .domain("zoopzoop.shop")
-                .path("/").maxAge(0).build();
+                .path("/")
+                .secure(true)
+                .sameSite("None")
+                .httpOnly(false)
+                .maxAge(0).build();
 
         ResponseCookie delR = ResponseCookie.from("REFRESH_TOKEN", "")
                 .domain("zoopzoop.shop")
-                .path("/").maxAge(0).build();
+                .path("/")
+                .secure(true)
+                .sameSite("None")
+                .httpOnly(false)
+                .maxAge(0).build();
 
         ResponseCookie delK = ResponseCookie.from("KAKAO_ACCESS", "")
                 .domain("zoopzoop.shop")
-                .path("/").maxAge(0).build();
+                .path("/")
+                .secure(true)
+                .sameSite("None")
+                .httpOnly(false)
+                .maxAge(0).build();
 
         return ResponseEntity.noContent()
                 .header(HttpHeaders.SET_COOKIE, del.toString())
@@ -195,6 +220,9 @@ public class AuthController {
         Long userId = Long.valueOf(loginUser.getUsername());
         UserInfo user = userInfoRepository.findById(userId)
                 .orElseThrow(UnauthorizedAccessException::new);
+
+        if (user.getDeletedAt() != null)
+            throw new UnauthorizedAccessException(); // ❌ 탈퇴 유저는 403
 
         Map<String, Object> dto = Map.of(
                 "userId",       user.getUserId(),
