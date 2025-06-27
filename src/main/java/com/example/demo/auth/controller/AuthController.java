@@ -153,6 +153,11 @@ public class AuthController {
                 .findByEmailAndDeletedAtIsNull(email)     // ← 여기만 수정
                 .orElseThrow(UnauthorizedAccessException::new);
 
+        // 활성 사용자 여부만 체크
+        if (!userInfoRepository.existsByEmailAndDeletedAtIsNull(email)) {
+            throw new UnauthorizedAccessException();
+        }
+
         String newAccess = jwtUtil.generateAccess(email);
 
         ResponseCookie newAccessCookie = ResponseCookie.from("ACCESS_TOKEN", newAccess)
