@@ -53,7 +53,8 @@ public interface ReviewCommentLikeRepository extends JpaRepository<ReviewComment
      */
     @Query("SELECT rcl.reviewComment.id, COUNT(rcl) " +
             "FROM ReviewCommentLike rcl " +
-            "WHERE rcl.reviewComment.id IN :commentIds AND rcl.isLiked = true " +
+            "JOIN rcl.user u " +
+            "WHERE rcl.reviewComment.id IN :commentIds AND rcl.isLiked = true AND u.deletedAt IS NULL " +
             "GROUP BY rcl.reviewComment.id")
     List<Object[]> countLikesGroupByCommentIds(@Param("commentIds") List<Long> commentIds);
 

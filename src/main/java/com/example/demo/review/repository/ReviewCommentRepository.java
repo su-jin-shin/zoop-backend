@@ -22,7 +22,9 @@ public interface ReviewCommentRepository extends JpaRepository<ReviewComment, Lo
      */
     @Query("SELECT c FROM ReviewComment c " +
             "JOIN FETCH c.review r " +
-            "WHERE c.id = :commentId AND r.deletedAt IS NULL AND c.deletedAt IS NULL ORDER BY c.createdAt DESC ")
+            "JOIN c.user u " +
+            "WHERE c.id = :commentId AND r.deletedAt IS NULL AND c.deletedAt IS NULL AND u.deletedAt IS NULL " +
+            "ORDER BY c.createdAt DESC")
     Optional<ReviewComment> findActiveCommentWithAliveReview(@Param("commentId") Long commentId);
 
 
@@ -31,7 +33,10 @@ public interface ReviewCommentRepository extends JpaRepository<ReviewComment, Lo
      * - 삭제되지 않은 댓글만 조회
      * - 작성일 기준 최신 순 정렬
      */
-    @Query("SELECT rc FROM ReviewComment rc WHERE rc.review.id = :reviewId AND rc.deletedAt IS NULL ORDER BY rc.createdAt DESC")
+    @Query("SELECT rc FROM ReviewComment rc " +
+            "JOIN rc.user u " +
+            "WHERE rc.review.id = :reviewId AND rc.deletedAt IS NULL AND u.deletedAt IS NULL " +
+            "ORDER BY rc.createdAt DESC")
     List<ReviewComment> findByReviewId(Long reviewId);
 
 
@@ -41,7 +46,8 @@ public interface ReviewCommentRepository extends JpaRepository<ReviewComment, Lo
      * - 삭제된 댓글 제외
      */
     @Query("SELECT rc.review.id, COUNT(rc) FROM ReviewComment rc " +
-            "WHERE rc.deletedAt IS NULL AND rc.review.id IN :reviewIds " +
+            "JOIN rc.user u " +
+            "WHERE rc.deletedAt IS NULL AND u.deletedAt IS NULL AND rc.review.id IN :reviewIds " +
             "GROUP BY rc.review.id")
     List<Object[]> countCommentsByReviewIds(List<Long> reviewIds);
 
@@ -63,7 +69,9 @@ public interface ReviewCommentRepository extends JpaRepository<ReviewComment, Lo
      * 특정 리뷰에 달린 댓글 개수 조회
      * - 삭제된 댓글 제외
      */
-    @Query("SELECT COUNT(rc) FROM ReviewComment rc WHERE rc.review.id = :reviewId AND rc.deletedAt IS NULL")
+    @Query("SELECT COUNT(rc) FROM ReviewComment rc " +
+            "JOIN rc.user u " +
+            "WHERE rc.review.id = :reviewId AND rc.deletedAt IS NULL AND u.deletedAt IS NULL")
     long commentCount(Long reviewId);
 
 }

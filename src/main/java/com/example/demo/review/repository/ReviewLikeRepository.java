@@ -44,12 +44,18 @@ public interface ReviewLikeRepository extends JpaRepository<ReviewLike, Long> {
 
     /**
      * 여러 리뷰 ID에 대해 좋아요 수를 집계
-     * - 삭제 여부와 관계없이 isLiked = true 기준
      */
-    @Query("SELECT rl.review.id, COUNT(rl) FROM ReviewLike rl " +
-            "WHERE rl.isLiked = true AND rl.review.id IN :reviewIds " +
-            "GROUP BY rl.review.id")
+        @Query("""
+    SELECT rl.review.id, COUNT(rl)
+    FROM ReviewLike rl
+    JOIN rl.user u
+    WHERE rl.isLiked = true
+      AND u.deletedAt IS NULL
+      AND rl.review.id IN :reviewIds
+    GROUP BY rl.review.id
+    """)
     List<Object[]> countLikesByReviewIds(List<Long> reviewIds);
+
 
     /**
      * 사용자가 누른 여러 리뷰의 좋아요 여부 조회
