@@ -40,10 +40,12 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     @Query("""
     SELECT r FROM Review r
     JOIN Property p ON r.propertyId = p.propertyId
+    JOIN UserInfo u ON r.user.userId = u.userId
     WHERE p.complex.id = :complexId
       AND r.deletedAt IS NULL
       AND p.deletedAt IS NULL
-        """)
+      AND u.deletedAt IS NULL
+    """)
     Page<Review> findReviewsByComplexId(@Param("complexId") Long complexId, Pageable pageable);
 
 
@@ -52,7 +54,9 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
      * 복합 단지 ID로 리뷰 조회 - 기본 정렬(createdAt DESC)
      */
     @Query("SELECT r FROM Review r " +
-            "WHERE r.complex.id = :complexId AND r.deletedAt IS NULL ORDER BY r.createdAt DESC")
+            "JOIN UserInfo u ON r.user.userId = u.userId " +
+            "WHERE r.complex.id = :complexId AND r.deletedAt IS NULL AND u.deletedAt IS NULL " +
+            "ORDER BY r.createdAt DESC")
     Page<Review> findByComplexId(@Param("complexId") Long complexId, Pageable pageable);
 
     /**
@@ -61,7 +65,9 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
      * - 최신순 정렬
      */
     @Query("SELECT r FROM Review r " +
-            "WHERE r.propertyId = :propertyId AND r.deletedAt IS NULL ORDER BY r.createdAt DESC")
+            "JOIN UserInfo u ON r.user.userId = u.userId " +
+            "WHERE r.propertyId = :propertyId AND r.deletedAt IS NULL AND u.deletedAt IS NULL " +
+            "ORDER BY r.createdAt DESC")
     Page<Review> findByPropertyId(@Param("propertyId") Long propertyId, Pageable pageable);
 
 
